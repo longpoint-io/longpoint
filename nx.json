@@ -143,12 +143,12 @@
       "@longpoint/devkit",
       "cli",
       "create-longpoint",
-      "longpoint-ai-claude",
-      "longpoint-ai-openai",
-      "longpoint-storage-local",
-      "longpoint-storage-s3",
-      "longpoint-storage-gcp",
-      "longpoint-vector-pinecone"
+      "longpoint-plugin-anthropic",
+      "longpoint-plugin-openai",
+      "longpoint-plugin-local",
+      "longpoint-plugin-s3",
+      "longpoint-plugin-gcp",
+      "longpoint-plugin-pinecone"
     ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"

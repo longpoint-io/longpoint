@@ -1,5 +1,5 @@
 {
-  "name": "longpoint-ai-openai",
+  "name": "longpoint-plugin-openai",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",

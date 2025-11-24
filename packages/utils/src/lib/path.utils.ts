@@ -42,8 +42,8 @@ export function findNodeModulesPath(startPath: string): string | null {
  * findPackagePath('@longpoint/core', '/path/to/project');
  * // returns '/path/to/project/node_modules/@longpoint/core'
  *
- * findPackagePath('longpoint-ai-openai', '/path/to/project/src');
- * // returns '/path/to/project/node_modules/longpoint-ai-openai'
+ * findPackagePath('longpoint-plugin-openai', '/path/to/project/src');
+ * // returns '/path/to/project/node_modules/longpoint-plugin-openai'
  * ```
  */
 export function findPackagePath(

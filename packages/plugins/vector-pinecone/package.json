@@ -1,5 +1,5 @@
 {
-  "name": "longpoint-vector-pinecone",
+  "name": "longpoint-plugin-pinecone",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",

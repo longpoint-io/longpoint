@@ -10,7 +10,7 @@ const swcJestConfig = JSON.parse(
 swcJestConfig.swcrc = false;
 
 export default {
-  displayName: 'longpoint-storage-s3',
+  displayName: 'longpoint-plugin-s3',
   preset: '../../../jest.preset.js',
   testEnvironment: 'node',
   transform: {

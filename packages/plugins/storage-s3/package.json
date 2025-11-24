@@ -1,5 +1,5 @@
 {
-  "name": "longpoint-storage-s3",
+  "name": "longpoint-plugin-s3",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",

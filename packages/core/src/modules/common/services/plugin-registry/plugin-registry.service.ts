@@ -64,7 +64,7 @@ export class PluginRegistryService implements OnModuleInit {
 
   /**
    * Get a specific plugin by its derived ID.
-   * @param id - The derived plugin ID (e.g., 'storage-s3', 'ai-openai')
+   * @param id - The derived plugin ID (e.g., 's3', 'openai', 'pinecone')
    * @returns The plugin registry entry or null if not found
    */
   getPluginById<T extends PluginType>(
@@ -75,15 +75,15 @@ export class PluginRegistryService implements OnModuleInit {
 
   /**
    * Derive plugin ID from package name.
-   * Converts 'longpoint-{type}-{name}' to '{type}-{name}'
-   * @param packageName - The package name (e.g., 'longpoint-storage-s3')
-   * @returns The derived ID (e.g., 'storage-s3')
+   * Converts 'longpoint-plugin-{name}' to '{name}'
+   * @param packageName - The package name (e.g., 'longpoint-plugin-s3')
+   * @returns The derived ID (e.g., 's3')
    */
   private derivePluginId(packageName: string): string {
-    if (!packageName.startsWith('longpoint-')) {
+    if (!packageName.startsWith('longpoint-plugin-')) {
       return packageName;
     }
-    return packageName.replace(/^longpoint-/, '');
+    return packageName.replace(/^longpoint-plugin-/, '');
   }
 
   /**

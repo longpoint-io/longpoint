@@ -10,7 +10,7 @@ const swcJestConfig = JSON.parse(
 swcJestConfig.swcrc = false;
 
 export default {
-  displayName: 'longpoint-ai-openai',
+  displayName: 'longpoint-plugin-openai',
   preset: '../../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
