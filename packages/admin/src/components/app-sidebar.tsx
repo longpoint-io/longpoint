@@ -65,7 +65,11 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="hover:bg-transparent active:bg-transparent"
+            >
               <div className="flex items-center gap-2">
                 <Avatar className="rounded-full">
                   <AvatarFallback className="rounded-full border">
