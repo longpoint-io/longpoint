@@ -9,12 +9,12 @@ export interface ClientConfig {
 
 export class Longpoint {
   private httpClient: AxiosInstance;
+  system: SystemClient;
   ai: AiClient;
   analysis: AnalysisClient;
   media: MediaClient;
   storage: StorageClient;
   search: SearchClient;
-  system: SystemClient;
 
   constructor(config: ClientConfig = {}) {
     this.httpClient = axios.create({
@@ -25,12 +25,61 @@ export class Longpoint {
         ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` })
       }
     });
+    this.system = new SystemClient(this.httpClient);
     this.ai = new AiClient(this.httpClient);
     this.analysis = new AnalysisClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
-    this.system = new SystemClient(this.httpClient);
+  }
+}
+
+class SystemClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * List all installed plugins
+   */
+    async listPlugins(): Promise<components['schemas']['PluginSummary'][]> {
+        const url = `plugins`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a plugin by ID
+   */
+    async getPlugin(pluginId: string): Promise<components['schemas']['Plugin']> {
+        const url = `plugins/${encodeURIComponent(String(pluginId))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update plugin settings
+   */
+    async updatePluginSettings(pluginId: string, data: components['schemas']['UpdatePluginSettings']): Promise<components['schemas']['Plugin']> {
+        const url = `plugins/${encodeURIComponent(String(pluginId))}/settings`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Get system setup status
+   */
+    async getSetupStatus(): Promise<components['schemas']['SetupStatus']> {
+        const url = `system/setup/status`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get system status
+   */
+    async getSystemStatus(): Promise<components['schemas']['SystemStatus']> {
+        const url = `system/status`;
+        const response = await this.httpClient.get(url);
+        return response.data;
   }
 }
 
@@ -403,28 +452,6 @@ class SearchClient {
     async updateVectorProviderConfig(providerId: string, data: components['schemas']['UpdateVectorProviderConfig']): Promise<components['schemas']['VectorProvider']> {
         const url = `search/vector-providers/${encodeURIComponent(String(providerId))}`;
         const response = await this.httpClient.patch(url, data);
-        return response.data;
-  }
-}
-
-class SystemClient {
-  constructor(private httpClient: AxiosInstance) {}
-
-    /**
-   * Get system setup status
-   */
-    async getSetupStatus(): Promise<components['schemas']['SetupStatus']> {
-        const url = `system/setup/status`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * Get system status
-   */
-    async getSystemStatus(): Promise<components['schemas']['SystemStatus']> {
-        const url = `system/status`;
-        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

@@ -8,6 +8,7 @@ import {
   FileDeliveryModule,
   LoggerModule,
   MediaModule,
+  PluginModule,
   SearchModule,
   StorageModule,
   SystemModule,
@@ -23,6 +24,7 @@ import { EventModule } from './modules/event';
     CommonModule,
     LoggerModule,
     EventModule,
+    PluginModule, // Must be before modules that depend on PluginRegistryService
     // Feature modules
     AiModule,
     AuthModule,

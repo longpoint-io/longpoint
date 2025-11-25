@@ -1,8 +1,8 @@
+import { ConfigSchemaService } from '@/modules/common/services';
 import {
-  ConfigSchemaService,
+  PluginRegistryEntry,
   PluginRegistryService,
-} from '@/modules/common/services';
-import { PluginRegistryEntry } from '@/modules/common/services/plugin-registry/plugin-registry.service';
+} from '@/modules/plugin/services';
 import { InvalidInput } from '@/shared/errors';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { AiModelManifest, AiProviderPlugin } from '@longpoint/devkit';

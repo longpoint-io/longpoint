@@ -1,8 +1,8 @@
 import {
   ConfigSchemaService,
-  PluginRegistryService,
   PrismaService,
 } from '@/modules/common/services';
+import { PluginRegistryService } from '@/modules/plugin/services';
 import { InvalidInput, InvalidProviderConfig } from '@/shared/errors';
 import { ConfigValues } from '@longpoint/config-schema';
 import { VectorProviderPlugin } from '@longpoint/devkit';

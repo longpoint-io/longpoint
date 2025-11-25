@@ -4,7 +4,7 @@ import {
   ClassifyArgs,
 } from '@longpoint/devkit/classifier';
 import { ConfigSchemaService } from '@/modules/common/services';
-import { ClassificationProviderRegistryEntry } from '@/modules/common/services/plugin-registry/plugin-registry.service';
+import { ClassificationProviderRegistryEntry } from '@/modules/plugin/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { JsonObject } from '@longpoint/types';
 import { parseBytes } from '@longpoint/utils/format';

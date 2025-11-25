@@ -220,6 +220,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/plugins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all installed plugins */
+        get: operations["listPlugins"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plugins/{pluginId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a plugin by ID */
+        get: operations["getPlugin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plugins/{pluginId}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update plugin settings */
+        patch: operations["updatePluginSettings"];
+        trace?: never;
+    };
     "/search": {
         parameters: {
             query?: never;
@@ -1120,7 +1171,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-25T14:34:46.062Z
+             * @example 2025-11-25T22:01:35.688Z
              */
             createdAt: string;
             /**
@@ -1172,7 +1223,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-25T14:34:46.062Z
+             * @example 2025-11-25T22:01:35.688Z
              */
             createdAt: string;
             /**
@@ -1201,7 +1252,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-25T14:34:46.062Z
+             * @example 2025-11-25T22:01:35.688Z
              */
             createdAt: string;
             /**
@@ -1288,6 +1339,71 @@ export interface components {
              * @example 100
              */
             pageSize: number;
+        };
+        Plugin: {
+            /** @description A brief description of the plugin */
+            description: string | null;
+            /**
+             * @description The display name of the plugin
+             * @example OpenAI
+             */
+            displayName: string;
+            /**
+             * @description Whether the plugin has configurable settings
+             * @example true
+             */
+            hasSettings: boolean;
+            /** @description An icon image of the plugin (URL or base64 data URI) */
+            icon: string | null;
+            /**
+             * @description The ID of the plugin
+             * @example openai
+             */
+            id: string;
+            /**
+             * @description The package name of the plugin
+             * @example longpoint-plugin-openai
+             */
+            packageName: string;
+            /** @description The schema for plugin settings */
+            settingsSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            } | null;
+            /** @description The current settings values for the plugin */
+            settingsValues: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * @description The type of the plugin
+             * @enum {string|null}
+             */
+            type: "storage" | "ai" | "vector" | null;
+        };
+        PluginSummary: {
+            /** @description A brief description of the plugin */
+            description: string | null;
+            /**
+             * @description The display name of the plugin
+             * @example OpenAI
+             */
+            displayName: string;
+            /**
+             * @description Whether the plugin has configurable settings
+             * @example true
+             */
+            hasSettings: boolean;
+            /** @description An icon image of the plugin (URL or base64 data URI) */
+            icon: string | null;
+            /**
+             * @description The ID of the plugin
+             * @example openai
+             */
+            id: string;
+            /**
+             * @description The type of the plugin
+             * @enum {string|null}
+             */
+            type: "storage" | "ai" | "vector" | null;
         };
         SearchIndex: {
             /**
@@ -1599,6 +1715,17 @@ export interface components {
              * @example /
              */
             path?: string;
+        };
+        UpdatePluginSettings: {
+            /**
+             * @description The configuration values to update
+             * @example {
+             *       "apiKey": "sk-1234567890"
+             *     }
+             */
+            config: {
+                [key: string]: unknown;
+            };
         };
         UpdateStorageConfig: {
             /**
@@ -2247,6 +2374,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MediaTree"];
+                };
+            };
+        };
+    };
+    listPlugins: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PluginSummary"][];
+                };
+            };
+        };
+    };
+    getPlugin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pluginId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Plugin"];
+                };
+            };
+            /** @description Plugin not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Plugin with id example-plugin-id not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updatePluginSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pluginId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePluginSettings"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Plugin"];
+                };
+            };
+            /** @description Plugin not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Plugin with id example-plugin-id not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
                 };
             };
         };

@@ -1,8 +1,8 @@
+import { ConfigSchemaService } from '@/modules/common/services';
 import {
-  ConfigSchemaService,
+  ClassificationProviderRegistryEntry,
   PluginRegistryService,
-} from '@/modules/common/services';
-import { ClassificationProviderRegistryEntry } from '@/modules/common/services/plugin-registry/plugin-registry.service';
+} from '@/modules/plugin/services';
 import { InvalidInput } from '@/shared/errors';
 import {
   ClassificationProvider,

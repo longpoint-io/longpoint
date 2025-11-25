@@ -1,9 +1,9 @@
 import {
   ConfigSchemaService,
   ConfigService,
-  PluginRegistryService,
   PrismaService,
 } from '@/modules/common/services';
+import { PluginRegistryService } from '@/modules/plugin/services';
 import { selectStorageUnit } from '@/shared/selectors/storage-unit.selectors';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
