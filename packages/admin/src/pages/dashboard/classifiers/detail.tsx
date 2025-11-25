@@ -32,7 +32,7 @@ export function ClassifierDetail() {
     error,
   } = useQuery({
     queryKey: ['classifier', classifierId],
-    queryFn: () => client.ai.getClassifier(classifierId!),
+    queryFn: () => client.analysis.getClassifier(classifierId!),
     enabled: !!classifierId,
   });
 
@@ -96,40 +96,41 @@ export function ClassifierDetail() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Model Information</CardTitle>
-            <CardDescription>Details about the AI model used</CardDescription>
+            <CardTitle>Provider Information</CardTitle>
+            <CardDescription>
+              Details about the classification provider used
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
               <Field>
-                <FieldLabel>Model Name</FieldLabel>
-                <p className="text-sm">{String(classifier.model.name)}</p>
-                {classifier.model.description && (
+                <FieldLabel>Provider Name</FieldLabel>
+                <p className="text-sm">
+                  {String(classifier.provider.displayName)}
+                </p>
+                {classifier.provider.description && (
                   <FieldDescription>
-                    {String(classifier.model.description)}
+                    {String(classifier.provider.description)}
                   </FieldDescription>
                 )}
               </Field>
               <Field>
-                <FieldLabel>Model ID</FieldLabel>
+                <FieldLabel>Provider ID</FieldLabel>
                 <p className="text-sm font-mono text-muted-foreground">
-                  {String(classifier.model.id)}
+                  {String(classifier.provider.id)}
                 </p>
               </Field>
               <Field>
-                <FieldLabel>Provider</FieldLabel>
-                <div className="flex items-center gap-2">
-                  {classifier.model.provider.image && (
-                    <img
-                      src={String(classifier.model.provider.image)}
-                      alt={String(classifier.model.provider.name)}
-                      className="h-5 w-5 rounded"
-                    />
-                  )}
-                  <span className="text-sm">
-                    {String(classifier.model.provider.name)}
-                  </span>
-                </div>
+                <FieldLabel>Fully Qualified ID</FieldLabel>
+                <p className="text-sm font-mono text-muted-foreground">
+                  {String(classifier.provider.fullyQualifiedId)}
+                </p>
+              </Field>
+              <Field>
+                <FieldLabel>Plugin</FieldLabel>
+                <p className="text-sm">
+                  {String(classifier.provider.pluginId)}
+                </p>
               </Field>
             </FieldGroup>
           </CardContent>

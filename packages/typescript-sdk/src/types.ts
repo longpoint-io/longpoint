@@ -4,43 +4,6 @@
  */
 
 export interface paths {
-    "/ai/classifiers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List classifiers */
-        get: operations["listClassifiers"];
-        put?: never;
-        /** Create a classifier */
-        post: operations["createClassifier"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/classifiers/{classifierId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a classifier */
-        get: operations["getClassifier"];
-        put?: never;
-        post?: never;
-        /** Delete a classifier */
-        delete: operations["deleteClassifier"];
-        options?: never;
-        head?: never;
-        /** Update a classifier */
-        patch: operations["updateClassifier"];
-        trace?: never;
-    };
     "/ai/models": {
         parameters: {
             query?: never;
@@ -108,6 +71,60 @@ export interface paths {
         head?: never;
         /** Update the config for an AI provider */
         patch: operations["updateAiProviderConfig"];
+        trace?: never;
+    };
+    "/analysis/classification-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List classification providers */
+        get: operations["listClassificationProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analysis/classifiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List classifiers */
+        get: operations["listClassifiers"];
+        put?: never;
+        /** Create a classifier */
+        post: operations["createClassifier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analysis/classifiers/{classifierId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a classifier */
+        get: operations["getClassifier"];
+        put?: never;
+        post?: never;
+        /** Delete a classifier */
+        delete: operations["deleteClassifier"];
+        options?: never;
+        head?: never;
+        /** Update a classifier */
+        patch: operations["updateClassifier"];
         trace?: never;
     };
     "/media/containers": {
@@ -564,6 +581,71 @@ export interface components {
              */
             needsConfig: boolean;
         };
+        ClassificationProvider: {
+            /** @description The schema for classifier input */
+            classifierInputSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /** @description A brief description of the classification provider */
+            description: string | null;
+            /**
+             * @description The display name of the classification provider
+             * @example GPT-5 Nano
+             */
+            displayName: string;
+            /**
+             * @description The fully qualified ID of the classification provider
+             * @example openai/gpt-5-nano-2025-08-07
+             */
+            fullyQualifiedId: string;
+            /**
+             * @description The ID of the classification provider
+             * @example gpt-5-nano-2025-08-07
+             */
+            id: string;
+            /**
+             * @description Maximum file size in bytes
+             * @example 52428800
+             */
+            maxFileSize: number;
+            /**
+             * @description The plugin ID that provides this classification provider
+             * @example openai
+             */
+            pluginId: string;
+            /**
+             * @description Supported MIME types
+             * @example [
+             *       "image/jpeg",
+             *       "image/png"
+             *     ]
+             */
+            supportedMimeTypes: string[];
+        };
+        ClassificationProviderSummary: {
+            /** @description A brief description of the classification provider */
+            description: string | null;
+            /**
+             * @description The display name of the classification provider
+             * @example GPT-5 Nano
+             */
+            displayName: string;
+            /**
+             * @description The fully qualified ID of the classification provider
+             * @example openai/gpt-5-nano-2025-08-07
+             */
+            fullyQualifiedId: string;
+            /**
+             * @description The ID of the classification provider
+             * @example gpt-5-nano-2025-08-07
+             */
+            id: string;
+            /**
+             * @description The plugin ID that provides this classification provider
+             * @example openai
+             */
+            pluginId: string;
+        };
         Classifier: {
             /**
              * Format: date-time
@@ -581,8 +663,6 @@ export interface components {
              * @example sajl1kih6emtwozh8y0zenkj
              */
             id: string;
-            /** @description The model used by the classifier */
-            model: components["schemas"]["AiModelSummary"];
             /**
              * @description The input values to use for the model
              * @example {
@@ -608,6 +688,8 @@ export interface components {
              * @example general-tagging
              */
             name: string;
+            /** @description The classification provider used by the classifier */
+            provider: components["schemas"]["ClassificationProviderSummary"];
             /**
              * Format: date-time
              * @description When the classifier was last updated
@@ -698,13 +780,13 @@ export interface components {
              * @example sajl1kih6emtwozh8y0zenkj
              */
             id: string;
-            /** @description The model used by the classifier */
-            model: components["schemas"]["AiModelSummary"];
             /**
              * @description The name of the classifier
              * @example general-tagging
              */
             name: string;
+            /** @description The classification provider used by the classifier */
+            provider: components["schemas"]["ClassificationProviderSummary"];
             /**
              * Format: date-time
              * @description When the classifier was last updated
@@ -1038,7 +1120,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-22T01:21:04.921Z
+             * @example 2025-11-25T14:34:46.062Z
              */
             createdAt: string;
             /**
@@ -1062,8 +1144,6 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /** @description Thumbnails for the media container */
-            thumbnails: components["schemas"]["MediaAsset"][];
             /**
              * @description The primary media type.
              * @example IMAGE
@@ -1092,7 +1172,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-22T01:21:04.921Z
+             * @example 2025-11-25T14:34:46.062Z
              */
             createdAt: string;
             /**
@@ -1116,14 +1196,12 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /** @description Thumbnails for the media container */
-            thumbnails: components["schemas"]["MediaAsset"][];
         };
         MediaContainerTreeItem: {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-22T01:21:04.921Z
+             * @example 2025-11-25T14:34:46.062Z
              */
             createdAt: string;
             /**
@@ -1147,8 +1225,6 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /** @description Thumbnails for the media container */
-            thumbnails: components["schemas"]["MediaAsset"][];
             /**
              * @description The type of the tree item
              * @example MEDIA
@@ -1633,6 +1709,148 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listModels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiModel"][];
+                };
+            };
+        };
+    };
+    getModel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiModel"];
+                };
+            };
+        };
+    };
+    listAiProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiProvider"][];
+                };
+            };
+        };
+    };
+    getAiProvider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiProvider"];
+                };
+            };
+            /** @description AI provider not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "AI provider with id r2qwyd76nvd98cu6ewg8ync2 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateAiProviderConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAiProviderConfig"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiProvider"];
+                };
+            };
+        };
+    };
+    listClassificationProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassificationProvider"][];
+                };
+            };
+        };
+    };
     listClassifiers: {
         parameters: {
             query?: never;
@@ -1791,129 +2009,6 @@ export interface operations {
                         errorCode?: string;
                         messages?: string[];
                     };
-                };
-            };
-        };
-    };
-    listModels: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiModel"][];
-                };
-            };
-        };
-    };
-    getModel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiModel"];
-                };
-            };
-        };
-    };
-    listAiProviders: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"][];
-                };
-            };
-        };
-    };
-    getAiProvider: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"];
-                };
-            };
-            /** @description AI provider not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "AI provider with id r2qwyd76nvd98cu6ewg8ync2 not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    updateAiProviderConfig: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateAiProviderConfig"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"];
                 };
             };
         };

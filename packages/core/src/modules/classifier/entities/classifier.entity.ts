@@ -218,7 +218,7 @@ export class ClassifierEntity {
       description: this.description,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      classificationProvider: this.classificationProvider.toSummaryDto(),
+      provider: this.classificationProvider.toSummaryDto(),
       modelInputSchema: this.classificationProvider.classifierInputSchema,
       modelInput: this.modelInput,
     });
@@ -231,7 +231,7 @@ export class ClassifierEntity {
       description: this.description,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      classificationProvider: this.classificationProvider.toSummaryDto(),
+      provider: this.classificationProvider.toSummaryDto(),
     });
   }
 

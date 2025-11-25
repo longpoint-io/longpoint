@@ -1,10 +1,9 @@
 import { ApiSchema, PickType } from '@nestjs/swagger';
 import { ClassifierDto, ClassifierParams } from './classifier.dto';
-import { ClassificationProviderSummaryDto } from './classification-provider-summary.dto';
 
 export type ClassifierSummaryParams = Pick<
   ClassifierParams,
-  'id' | 'name' | 'description' | 'createdAt' | 'updatedAt' | 'classificationProvider'
+  'id' | 'name' | 'description' | 'createdAt' | 'updatedAt' | 'provider'
 >;
 
 @ApiSchema({ name: 'ClassifierSummary' })
@@ -12,7 +11,7 @@ export class ClassifierSummaryDto extends PickType(ClassifierDto, [
   'id',
   'name',
   'description',
-  'classificationProvider',
+  'provider',
   'createdAt',
   'updatedAt',
 ] as const) {
@@ -20,7 +19,7 @@ export class ClassifierSummaryDto extends PickType(ClassifierDto, [
     super();
     this.id = data.id;
     this.name = data.name;
-    this.classificationProvider = data.classificationProvider;
+    this.provider = data.provider;
     this.description = data.description;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;

@@ -54,7 +54,7 @@ export function ClassifierCombobox({
   const client = useClient();
   const { data: classifiers, isLoading: modelsLoading } = useQuery({
     queryKey: ['classifiers'],
-    queryFn: () => client.ai.listClassifiers(),
+    queryFn: () => client.analysis.listClassifiers(),
   });
 
   if (!classifiers || modelsLoading) {

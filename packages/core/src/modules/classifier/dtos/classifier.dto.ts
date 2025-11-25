@@ -16,7 +16,7 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 import { ClassificationProviderSummaryDto } from './classification-provider-summary.dto';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
-  classificationProvider: ClassificationProviderSummaryDto;
+  provider: ClassificationProviderSummaryDto;
   modelInputSchema: ConfigSchemaDefinition;
 }
 
@@ -75,7 +75,7 @@ export class ClassifierDto {
     description: 'The classification provider used by the classifier',
     type: ClassificationProviderSummaryDto,
   })
-  classificationProvider: ClassificationProviderSummaryDto;
+  provider: ClassificationProviderSummaryDto;
 
   @ApiProperty({
     description: 'When the classifier was created',
@@ -96,7 +96,7 @@ export class ClassifierDto {
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
     this.modelInput = data.modelInput as ConfigValues | null;
-    this.classificationProvider = data.classificationProvider;
+    this.provider = data.provider;
     this.modelInputSchema = Object.entries(data.modelInputSchema).reduce(
       (acc, [key, value]) => {
         acc[key] = new ConfigSchemaValueDto(value);
