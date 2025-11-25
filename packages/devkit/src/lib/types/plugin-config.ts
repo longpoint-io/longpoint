@@ -1,8 +1,10 @@
+import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { AiPluginManifest } from '../ai/ai-manifest.js';
 import {
   AiProviderPlugin,
   AiProviderPluginArgs,
 } from '../ai/ai-provider-plugin.js';
+import { ClassifierContribution } from '../classifier/types.js';
 import {
   StoragePluginManifest,
   StorageProviderPlugin,
@@ -52,3 +54,36 @@ export type PluginConfig =
   | StoragePluginConfig<any>
   | AiPluginConfig<any>
   | VectorPluginConfig<any>;
+
+export interface LongpointPluginConfig<
+  T extends ConfigSchemaDefinition = ConfigSchemaDefinition
+> {
+  /**
+   * The display name for the plugin.
+   */
+  displayName?: string;
+  /**
+   * A brief description of the plugin.
+   */
+  description?: string;
+  /**
+   * A URL or relative path to an icon image.
+   */
+  icon?: string;
+  contributes?: {
+    settings?: T;
+    storage?: {
+      [id: string]: {
+        // provider: StorageProviderPlugin;
+      };
+    };
+    vector?: {
+      [id: string]: {
+        // provider: VectorProviderPlugin;
+      };
+    };
+    classifiers?: {
+      [id: string]: ClassifierContribution<T>;
+    };
+  };
+}

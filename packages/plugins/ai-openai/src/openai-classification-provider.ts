@@ -1,53 +1,29 @@
 import {
-  AiModelManifest,
-  AiModelPlugin,
-  AiProviderPlugin,
+  ClassificationProvider,
+  ClassificationProviderArgs,
   ClassifyArgs,
-} from '@longpoint/devkit';
+  LLMFieldCaptureInputValues,
+} from '@longpoint/devkit/classifier';
 import { JsonObject } from '@longpoint/types';
-import { OpenAI } from 'openai';
+import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod.mjs';
-import { z } from 'zod';
-import { OpenAIPluginManifest } from './manifest.js';
+import z from 'zod';
+import { OpenAIPluginSettings } from './settings.js';
 
-export class OpenAIProvider extends AiProviderPlugin<OpenAIPluginManifest> {
-  protected override getModelInstance(
-    manifest: AiModelManifest
-  ): AiModelPlugin {
+export class OpenAIClassificationProvider extends ClassificationProvider<OpenAIPluginSettings> {
+  constructor(args: ClassificationProviderArgs<OpenAIPluginSettings>) {
+    super(args);
+  }
+
+  async classify(
+    args: ClassifyArgs<LLMFieldCaptureInputValues>
+  ): Promise<JsonObject> {
     const client = new OpenAI({
-      apiKey: this.configValues.apiKey,
+      apiKey: this.pluginSettings.apiKey,
     });
-    return new OpenAIModel({
-      manifest,
-      client,
-    });
-  }
-}
-
-export interface OpenAiModelArgs {
-  manifest: AiModelManifest;
-  client: OpenAI;
-}
-
-export interface OpenAiModelConfig {
-  fieldCapture: Array<{
-    name: string;
-    instructions?: string;
-  }>;
-}
-
-class OpenAIModel extends AiModelPlugin {
-  protected readonly client: OpenAI;
-
-  constructor(args: OpenAiModelArgs) {
-    super(args.manifest);
-    this.client = args.client;
-  }
-
-  override async classify(args: ClassifyArgs<OpenAiModelConfig>) {
     const mainTypes = [z.string(), z.number(), z.boolean()];
     const schema = z.object(
-      args.modelConfig.fieldCapture.reduce((acc, curr) => {
+      args.classifierInput.fieldCapture.reduce((acc, curr) => {
         acc[curr.name] = z.union([...mainTypes, z.array(z.union(mainTypes))]);
         return acc;
       }, {} as Record<string, z.ZodType>)
@@ -61,8 +37,8 @@ class OpenAIModel extends AiModelPlugin {
       e.g. For the field "type", with instructions "Choose the type of fruit", the response might be: {"type": "apple"}
     `;
 
-    const response = await this.client.responses.parse({
-      model: this.manifest.id,
+    const response = await client.responses.parse({
+      model: this.providerId,
       instructions: systemPrompt,
       input: [
         {

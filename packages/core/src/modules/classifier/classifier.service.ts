@@ -1,29 +1,31 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
 import { selectClassifier } from '../../shared/selectors/classifier.selectors';
-import { AiProviderService } from '../ai';
 import { PrismaService } from '../common/services';
 import { EventPublisher } from '../event';
 import { MediaContainerService } from '../media';
 import { ClassifierNotFound } from './classifier.errors';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { ClassifierEntity } from './entities';
+import { ClassificationProviderService } from './services/classification-provider.service';
 
 @Injectable()
 export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly aiProviderService: AiProviderService,
+    private readonly classificationProviderService: ClassificationProviderService,
     private readonly mediaContainerService: MediaContainerService,
     private readonly eventPublisher: EventPublisher
   ) {}
 
   async createClassifier(data: CreateClassifierDto) {
     const modelInput = data.modelInput ?? undefined;
-    const model = await this.aiProviderService.getModelOrThrow(data.modelId);
-    const processedModelInput = await model.processInboundClassifierInput(
-      modelInput
-    );
+    const classificationProvider =
+      await this.classificationProviderService.getClassificationProviderByIdOrThrow(
+        data.modelId
+      );
+    const processedModelInput =
+      await classificationProvider.processInboundClassifierInput(modelInput);
 
     const classifier = await this.prismaService.classifier.create({
       data: {
@@ -41,10 +43,10 @@ export class ClassifierService {
       description: classifier.description,
       createdAt: classifier.createdAt,
       updatedAt: classifier.updatedAt,
-      model,
+      classificationProvider,
       modelInput: processedModelInput,
       prismaService: this.prismaService,
-      aiProviderService: this.aiProviderService,
+      classificationProviderService: this.classificationProviderService,
       mediaContainerService: this.mediaContainerService,
       eventPublisher: this.eventPublisher,
     });
@@ -64,11 +66,16 @@ export class ClassifierService {
       return null;
     }
 
+    const classificationProvider =
+      await this.classificationProviderService.getClassificationProviderByIdOrThrow(
+        classifier.modelId
+      );
+
     return new ClassifierEntity({
       ...classifier,
-      model: await this.aiProviderService.getModelOrThrow(classifier.modelId),
+      classificationProvider,
       prismaService: this.prismaService,
-      aiProviderService: this.aiProviderService,
+      classificationProviderService: this.classificationProviderService,
       modelInput: classifier.modelInput as ConfigValues,
       mediaContainerService: this.mediaContainerService,
       eventPublisher: this.eventPublisher,
@@ -89,19 +96,20 @@ export class ClassifierService {
     });
 
     return Promise.all(
-      classifiers.map(
-        async (classifier) =>
-          new ClassifierEntity({
-            ...classifier,
-            model: await this.aiProviderService.getModelOrThrow(
-              classifier.modelId
-            ),
-            prismaService: this.prismaService,
-            aiProviderService: this.aiProviderService,
-            mediaContainerService: this.mediaContainerService,
-            eventPublisher: this.eventPublisher,
-          })
-      )
+      classifiers.map(async (classifier) => {
+        const classificationProvider =
+          await this.classificationProviderService.getClassificationProviderByIdOrThrow(
+            classifier.modelId
+          );
+        return new ClassifierEntity({
+          ...classifier,
+          classificationProvider,
+          prismaService: this.prismaService,
+          classificationProviderService: this.classificationProviderService,
+          mediaContainerService: this.mediaContainerService,
+          eventPublisher: this.eventPublisher,
+        });
+      })
     );
   }
 }

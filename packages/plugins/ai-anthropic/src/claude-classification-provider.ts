@@ -1,49 +1,24 @@
-import { Anthropic } from '@anthropic-ai/sdk';
+import Anthropic from '@anthropic-ai/sdk';
 import {
-  AiModelManifest,
-  AiModelPlugin,
-  AiProviderPlugin,
   AssetSource,
+  ClassificationProvider,
+  ClassificationProviderArgs,
   ClassifyArgs,
+  LLMFieldCaptureInputValues,
 } from '@longpoint/devkit';
-import { manifest } from './manifest.js';
+import { AnthropicPluginSettings } from './settings.js';
 
-export class AnthropicProvider extends AiProviderPlugin<typeof manifest> {
-  protected override getModelInstance(manifest: AiModelManifest) {
-    const apiKey = this.configValues.apiKey;
+export class ClaudeClassificationProvider extends ClassificationProvider<AnthropicPluginSettings> {
+  private readonly client: Anthropic;
 
-    if (!apiKey) {
-      throw new Error('API key is required');
-    }
-
-    return new ClaudeModel({
-      manifest,
-      client: new Anthropic({ apiKey }),
+  constructor(args: ClassificationProviderArgs<AnthropicPluginSettings>) {
+    super(args);
+    this.client = new Anthropic({
+      apiKey: args.pluginSettings.apiKey,
     });
   }
-}
 
-export interface ClaudeModelArgs {
-  manifest: AiModelManifest;
-  client: Anthropic;
-}
-
-export interface ClaudeModelConfig {
-  fieldCapture: Array<{
-    name: string;
-    instructions?: string;
-  }>;
-}
-
-export class ClaudeModel extends AiModelPlugin {
-  protected readonly client: Anthropic;
-
-  constructor(args: ClaudeModelArgs) {
-    super(args.manifest);
-    this.client = args.client;
-  }
-
-  override async classify(args: ClassifyArgs<ClaudeModelConfig>) {
+  async classify(args: ClassifyArgs<LLMFieldCaptureInputValues>) {
     const systemPrompt = `
       You are a classifier.
       You will be given an image and a list of fields to capture.
@@ -53,7 +28,7 @@ export class ClaudeModel extends AiModelPlugin {
       DO NOT wrap the JSON in a code block like \`\`\`json {} \`\`\`.
       e.g. For the field "type", with instructions "Choose the type of fruit", the response might be: {"type": "apple"}
       The fields to capture, along with their instructions, are:
-      ${args.modelConfig.fieldCapture
+      ${args.classifierInput.fieldCapture
         .map(
           (field) =>
             `- ${field.name}${
@@ -64,7 +39,7 @@ export class ClaudeModel extends AiModelPlugin {
     `;
 
     const result = await this.client.messages.create({
-      model: this.manifest.id,
+      model: this.providerId,
       max_tokens: 1024,
       system: systemPrompt,
       messages: [

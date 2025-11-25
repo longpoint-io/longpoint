@@ -1,5 +1,4 @@
 import { Classifier, ClassifierRunStatus, Prisma } from '@/database';
-import { AiModelEntity, AiProviderService } from '@/modules/ai';
 import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
 import { MediaAssetDto, MediaContainerService } from '@/modules/media';
@@ -15,22 +14,24 @@ import {
   ClassifierSummaryDto,
   UpdateClassifierDto,
 } from '../dtos';
+import { ClassificationProviderService } from '../services/classification-provider.service';
+import { ClassificationProviderEntity } from './classification-provider.entity';
 
 export interface ClassifierEntityArgs
   extends Pick<
     Classifier,
     'id' | 'name' | 'description' | 'createdAt' | 'updatedAt' | 'modelInput'
   > {
-  model: AiModelEntity;
+  classificationProvider: ClassificationProviderEntity;
   prismaService: PrismaService;
-  aiProviderService: AiProviderService;
+  classificationProviderService: ClassificationProviderService;
   mediaContainerService: MediaContainerService;
   eventPublisher: EventPublisher;
 }
 
 export class ClassifierEntity {
   private readonly prismaService: PrismaService;
-  private readonly aiProviderService: AiProviderService;
+  private readonly classificationProviderService: ClassificationProviderService;
   private readonly mediaContainerService: MediaContainerService;
   private readonly eventPublisher: EventPublisher;
   private readonly logger = new Logger(ClassifierEntity.name);
@@ -40,7 +41,7 @@ export class ClassifierEntity {
   private _description: string | null;
   private _createdAt: Date;
   private _updatedAt: Date;
-  private _model: AiModelEntity;
+  private _classificationProvider: ClassificationProviderEntity;
   private _modelInput: ConfigValues | null;
 
   constructor(args: ClassifierEntityArgs) {
@@ -49,10 +50,10 @@ export class ClassifierEntity {
     this._description = args.description;
     this._createdAt = args.createdAt;
     this._updatedAt = args.updatedAt;
-    this._model = args.model;
+    this._classificationProvider = args.classificationProvider;
     this._modelInput = args.modelInput as ConfigValues;
     this.prismaService = args.prismaService;
-    this.aiProviderService = args.aiProviderService;
+    this.classificationProviderService = args.classificationProviderService;
     this.mediaContainerService = args.mediaContainerService;
     this.eventPublisher = args.eventPublisher;
   }
@@ -78,16 +79,16 @@ export class ClassifierEntity {
       return;
     }
 
-    if (!this.model.isMimeTypeSupported(asset.mimeType)) {
+    if (!this.classificationProvider.isMimeTypeSupported(asset.mimeType)) {
       this.logger.warn(
-        `Model "${this.model.id}" does not support mime type "${asset.mimeType}" - skipping classifier run`
+        `Classification provider "${this.classificationProvider.fullyQualifiedId}" does not support mime type "${asset.mimeType}" - skipping classifier run`
       );
       return;
     }
 
-    if ((asset.size ?? 0) > this.model.maxFileSize) {
+    if ((asset.size ?? 0) > this.classificationProvider.maxFileSize) {
       this.logger.warn(
-        `Media asset "${mediaAssetId}" is too large for model "${this.model.id}" - skipping classifier run`
+        `Media asset "${mediaAssetId}" is too large for classification provider "${this.classificationProvider.fullyQualifiedId}" - skipping classifier run`
       );
       return;
     }
@@ -103,9 +104,9 @@ export class ClassifierEntity {
 
     try {
       const source = await this.getAssetSource(asset);
-      const result = await this.model.classify({
+      const result = await this.classificationProvider.classify({
         source,
-        modelConfig: this.modelInput as ConfigValues,
+        classifierInput: this.modelInput as ConfigValues,
       });
       const updatedRun = await this.prismaService.classifierRun.update({
         where: {
@@ -146,22 +147,31 @@ export class ClassifierEntity {
     const newModelInput = data.modelInput ?? undefined;
 
     let modelInputToUpdate: ConfigValues | undefined;
-    let model = this._model;
+    let classificationProvider = this._classificationProvider;
 
     if (newModelId && !newModelInput) {
-      model = await this.aiProviderService.getModelOrThrow(newModelId);
-      modelInputToUpdate = await model.processInboundClassifierInput(
-        oldModelInput
-      );
+      classificationProvider =
+        await this.classificationProviderService.getClassificationProviderByIdOrThrow(
+          newModelId
+        );
+      modelInputToUpdate =
+        await classificationProvider.processInboundClassifierInput(
+          oldModelInput
+        );
     } else if (newModelInput && !newModelId) {
-      modelInputToUpdate = await model.processInboundClassifierInput(
-        newModelInput
-      );
+      modelInputToUpdate =
+        await classificationProvider.processInboundClassifierInput(
+          newModelInput
+        );
     } else if (newModelInput && newModelId) {
-      model = await this.aiProviderService.getModelOrThrow(newModelId);
-      modelInputToUpdate = await model.processInboundClassifierInput(
-        newModelInput
-      );
+      classificationProvider =
+        await this.classificationProviderService.getClassificationProviderByIdOrThrow(
+          newModelId
+        );
+      modelInputToUpdate =
+        await classificationProvider.processInboundClassifierInput(
+          newModelInput
+        );
     }
 
     const updatedClassifier = await this.prismaService.classifier.update({
@@ -183,7 +193,7 @@ export class ClassifierEntity {
     this._modelInput = updatedClassifier.modelInput as ConfigValues;
     this._updatedAt = updatedClassifier.updatedAt;
     this._createdAt = updatedClassifier.createdAt;
-    this._model = model;
+    this._classificationProvider = classificationProvider;
   }
 
   async delete() {
@@ -208,8 +218,8 @@ export class ClassifierEntity {
       description: this.description,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      model: this.model.toSummaryDto(),
-      modelInputSchema: this.model.classifierInputSchema,
+      classificationProvider: this.classificationProvider.toSummaryDto(),
+      modelInputSchema: this.classificationProvider.classifierInputSchema,
       modelInput: this.modelInput,
     });
   }
@@ -221,7 +231,7 @@ export class ClassifierEntity {
       description: this.description,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      model: this.model.toSummaryDto(),
+      classificationProvider: this.classificationProvider.toSummaryDto(),
     });
   }
 
@@ -275,7 +285,7 @@ export class ClassifierEntity {
     return this._modelInput;
   }
 
-  get model(): AiModelEntity {
-    return this._model;
+  get classificationProvider(): ClassificationProviderEntity {
+    return this._classificationProvider;
   }
 }

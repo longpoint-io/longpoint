@@ -15,18 +15,18 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { ApiSdkTag, RequirePermission } from '../../shared/decorators';
-import { ApiClassifierNotFoundResponse } from './classifier.errors';
-import { ClassifierService } from './classifier.service';
+import { ApiSdkTag, RequirePermission } from '../../../shared/decorators';
+import { ApiClassifierNotFoundResponse } from '../classifier.errors';
+import { ClassifierService } from '../classifier.service';
 import {
   ClassifierDto,
   ClassifierSummaryDto,
   CreateClassifierDto,
   UpdateClassifierDto,
-} from './dtos';
+} from '../dtos';
 
-@Controller('ai/classifiers')
-@ApiSdkTag(SdkTag.AI)
+@Controller('analysis/classifiers')
+@ApiSdkTag(SdkTag.Analysis)
 @ApiBearerAuth()
 export class ClassifierController {
   constructor(private readonly classifierService: ClassifierService) {}

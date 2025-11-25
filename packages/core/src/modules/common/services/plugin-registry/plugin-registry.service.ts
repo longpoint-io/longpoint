@@ -1,6 +1,8 @@
 import {
   AiPluginConfig,
   AiPluginManifest,
+  ClassifierContribution,
+  LongpointPluginConfig,
   PluginConfig,
   StoragePluginConfig,
   StoragePluginManifest,
@@ -42,10 +44,24 @@ export interface PluginRegistryEntry<T extends PluginType = PluginType> {
   derivedId: string;
 }
 
+export interface ClassificationProviderRegistryEntry {
+  packageName: string;
+  packagePath: string;
+  pluginId: string;
+  classifierId: string;
+  fullyQualifiedId: string;
+  contribution: ClassifierContribution<any>;
+  pluginConfig: LongpointPluginConfig<any>;
+}
+
 @Injectable()
 export class PluginRegistryService implements OnModuleInit {
   private readonly logger = new Logger(PluginRegistryService.name);
   private readonly pluginRegistry = new Map<string, PluginRegistryEntry>();
+  private readonly classificationProviderRegistry = new Map<
+    string,
+    ClassificationProviderRegistryEntry
+  >();
 
   async onModuleInit() {
     await this.discoverAllPlugins();
@@ -71,6 +87,25 @@ export class PluginRegistryService implements OnModuleInit {
     id: string
   ): PluginRegistryEntry<T> | null {
     return this.pluginRegistry.get(id) as PluginRegistryEntry<T> | null;
+  }
+
+  /**
+   * Get all classification providers.
+   * @returns Array of classification provider registry entries
+   */
+  listClassificationProviders(): ClassificationProviderRegistryEntry[] {
+    return Array.from(this.classificationProviderRegistry.values());
+  }
+
+  /**
+   * Get a classification provider by its fully qualified ID (e.g., 'openai/gpt-5-nano-2025-08-07').
+   * @param id - The fully qualified classification provider ID
+   * @returns The classification provider registry entry or null if not found
+   */
+  getClassificationProviderById(
+    id: string
+  ): ClassificationProviderRegistryEntry | null {
+    return this.classificationProviderRegistry.get(id) || null;
   }
 
   /**
@@ -115,7 +150,9 @@ export class PluginRegistryService implements OnModuleInit {
       }
     }
 
-    this.logger.log(`${this.pluginRegistry.size} plugins loaded`);
+    this.logger.log(
+      `${this.pluginRegistry.size} plugins loaded, ${this.classificationProviderRegistry.size} classification providers loaded`
+    );
   }
 
   /**
@@ -126,11 +163,16 @@ export class PluginRegistryService implements OnModuleInit {
   private async loadPlugin(packageName: string, modulesPath: string) {
     const packagePath = join(modulesPath, packageName);
     const require = createRequire(__filename);
-    const pluginConfig: PluginConfig = require(join(
-      packagePath,
-      'dist',
-      'index.js'
-    )).default;
+    const pluginExport = require(join(packagePath, 'dist', 'index.js')).default;
+
+    // Check if it's a LongpointPluginConfig (new format)
+    if (this.isLongpointPluginConfig(pluginExport)) {
+      await this.loadLongpointPlugin(packageName, packagePath, pluginExport);
+      return;
+    }
+
+    // Otherwise, treat it as a legacy PluginConfig
+    const pluginConfig: PluginConfig = pluginExport;
 
     if (!pluginConfig.type) {
       this.logger.error(`Plugin ${packageName} has no type`);
@@ -164,6 +206,65 @@ export class PluginRegistryService implements OnModuleInit {
     });
 
     this.logger.debug(`Loaded plugin: ${derivedId} (${packageName})`);
+  }
+
+  /**
+   * Check if a plugin export is a LongpointPluginConfig.
+   */
+  private isLongpointPluginConfig(
+    pluginExport: any
+  ): pluginExport is LongpointPluginConfig<any> {
+    return (
+      pluginExport &&
+      typeof pluginExport === 'object' &&
+      'contributes' in pluginExport &&
+      !('type' in pluginExport)
+    );
+  }
+
+  /**
+   * Load a LongpointPluginConfig plugin and extract classification providers.
+   */
+  private async loadLongpointPlugin(
+    packageName: string,
+    packagePath: string,
+    pluginConfig: LongpointPluginConfig<any>
+  ) {
+    const pluginId = this.derivePluginId(packageName);
+
+    // Process icon if present
+    let processedIcon: string | undefined;
+    if (pluginConfig.icon) {
+      processedIcon = await this.processImage(pluginConfig.icon, packagePath);
+    }
+
+    const processedPluginConfig = {
+      ...pluginConfig,
+      icon: processedIcon,
+    };
+
+    // Extract classification providers
+    if (pluginConfig.contributes?.classifiers) {
+      for (const [classifierId, contribution] of Object.entries(
+        pluginConfig.contributes.classifiers
+      )) {
+        const fullyQualifiedId = `${pluginId}/${classifierId}`;
+
+        this.classificationProviderRegistry.set(fullyQualifiedId, {
+          packageName,
+          packagePath,
+          pluginId,
+          classifierId,
+          fullyQualifiedId,
+          contribution,
+          pluginConfig: processedPluginConfig,
+        });
+
+        this.logger.debug(
+          `Loaded classification provider: ${fullyQualifiedId} (${packageName})`
+        );
+      }
+    }
   }
 
   /**

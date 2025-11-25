@@ -13,9 +13,30 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./types": "./src/lib/types/index.js",
-    "./storage": "./src/lib/storage/index.js",
-    "./ai": "./src/lib/ai/index.js"
+    "./types": {
+      "@longpoint/source": "./src/lib/types/index.ts",
+      "types": "./dist/lib/types/index.d.ts",
+      "import": "./dist/lib/types/index.js",
+      "default": "./dist/lib/types/index.js"
+    },
+    "./storage": {
+      "@longpoint/source": "./src/lib/storage/index.ts",
+      "types": "./dist/lib/storage/index.d.ts",
+      "import": "./dist/lib/storage/index.js",
+      "default": "./dist/lib/storage/index.js"
+    },
+    "./ai": {
+      "@longpoint/source": "./src/lib/ai/index.ts",
+      "types": "./dist/lib/ai/index.d.ts",
+      "import": "./dist/lib/ai/index.js",
+      "default": "./dist/lib/ai/index.js"
+    },
+    "./classifier": {
+      "@longpoint/source": "./src/lib/classifier/index.ts",
+      "types": "./dist/lib/classifier/index.d.ts",
+      "import": "./dist/lib/classifier/index.js",
+      "default": "./dist/lib/classifier/index.js"
+    }
   },
   "files": [
     "dist",
