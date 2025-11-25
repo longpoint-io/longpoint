@@ -9,16 +9,14 @@ import {
 import { AnthropicPluginSettings } from './settings.js';
 
 export class ClaudeClassificationProvider extends ClassificationProvider<AnthropicPluginSettings> {
-  private readonly client: Anthropic;
-
   constructor(args: ClassificationProviderArgs<AnthropicPluginSettings>) {
     super(args);
-    this.client = new Anthropic({
-      apiKey: args.pluginSettings.apiKey,
-    });
   }
 
   async classify(args: ClassifyArgs<LLMFieldCaptureInputValues>) {
+    const client = new Anthropic({
+      apiKey: this.pluginSettings.apiKey,
+    });
     const systemPrompt = `
       You are a classifier.
       You will be given an image and a list of fields to capture.
@@ -38,7 +36,7 @@ export class ClaudeClassificationProvider extends ClassificationProvider<Anthrop
         .join('\n')}
     `;
 
-    const result = await this.client.messages.create({
+    const result = await client.messages.create({
       model: this.providerId,
       max_tokens: 1024,
       system: systemPrompt,
