@@ -24,6 +24,6 @@
     "tslib": "^2.3.0"
   },
   "nx": {
-    "name": "ai-anthropic"
+    "name": "plugin-anthropic"
   }
 }

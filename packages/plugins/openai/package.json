@@ -26,6 +26,6 @@
     "zod": "^4.1.12"
   },
   "nx": {
-    "name": "ai-openai"
+    "name": "plugin-openai"
   }
 }

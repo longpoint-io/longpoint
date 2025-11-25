@@ -40,9 +40,6 @@
       "path": "./packages/devkit"
     },
     {
-      "path": "./packages/plugins/ai-anthropic"
-    },
-    {
       "path": "./packages/plugins/storage-local"
     },
     {
@@ -55,10 +52,13 @@
       "path": "./packages/plugins/storage-gcp"
     },
     {
-      "path": "./packages/plugins/ai-openai"
+      "path": "./packages/plugins/vector-pinecone"
     },
     {
-      "path": "./packages/plugins/vector-pinecone"
+      "path": "./packages/plugins/anthropic"
+    },
+    {
+      "path": "./packages/plugins/openai"
     }
   ]
 }
