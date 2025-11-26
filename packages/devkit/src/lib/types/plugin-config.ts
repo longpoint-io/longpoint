@@ -1,9 +1,4 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import { AiPluginManifest } from '../ai/ai-manifest.js';
-import {
-  AiProviderPlugin,
-  AiProviderPluginArgs,
-} from '../ai/ai-provider-plugin.js';
 import { ClassifierContribution } from '../classifier/types.js';
 import { StorageContribution } from '../storage/index.js';
 import { VectorContribution, VectorPluginManifest } from '../vector/types.js';
@@ -12,20 +7,13 @@ import {
   VectorProviderArgs,
 } from '../vector/vector-provider.js';
 
-type PluginType = 'ai' | 'vector';
+type PluginType = 'vector';
 
 export interface BasePluginConfig {
   /**
    * The plugin type
    */
   type: PluginType;
-}
-
-export interface AiPluginConfig<T extends AiPluginManifest = AiPluginManifest>
-  extends BasePluginConfig {
-  type: 'ai';
-  manifest: T;
-  provider: new (args: AiProviderPluginArgs<T>) => AiProviderPlugin<T>;
 }
 
 export interface VectorPluginConfig<
@@ -36,7 +24,7 @@ export interface VectorPluginConfig<
   provider: new (args: VectorProviderArgs) => VectorProvider;
 }
 
-export type PluginConfig = AiPluginConfig<any> | VectorPluginConfig<any>;
+export type PluginConfig = VectorPluginConfig<any>;
 
 export interface LongpointPluginConfig<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
