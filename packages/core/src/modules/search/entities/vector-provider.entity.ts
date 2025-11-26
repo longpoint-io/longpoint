@@ -1,36 +1,36 @@
-import {
-  ConfigSchemaService,
-  PluginRegistryEntry,
-} from '@/modules/common/services';
+import { ConfigSchemaService } from '@/modules/common/services';
+import { VectorProviderRegistryEntry } from '@/modules/plugin/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import {
   EmbedAndUpsertDocument,
   SearchResult,
   VectorDocument,
-  VectorProviderPlugin,
+  VectorProvider,
 } from '@longpoint/devkit';
 import { BaseVectorProviderEntity } from './base-vector-provider.entity';
 
 export interface VectorProviderEntityArgs {
-  pluginRegistryEntry: PluginRegistryEntry<'vector'>;
-  plugin: VectorProviderPlugin;
+  registryEntry: VectorProviderRegistryEntry;
+  plugin: VectorProvider;
   configSchemaService: ConfigSchemaService;
 }
 
 export class VectorProviderEntity extends BaseVectorProviderEntity {
-  private readonly plugin: VectorProviderPlugin;
+  private readonly plugin: VectorProvider;
 
   constructor(args: VectorProviderEntityArgs) {
+    const registryEntry = args.registryEntry;
     super({
-      id: args.pluginRegistryEntry.derivedId,
-      displayName: args.pluginRegistryEntry.manifest.displayName,
-      image: args.pluginRegistryEntry.manifest.image,
-      supportsEmbedding:
-        args.pluginRegistryEntry.manifest.supportsEmbedding ?? false,
-      providerConfigSchema:
-        args.pluginRegistryEntry.manifest.providerConfigSchema,
-      providerConfigValues: args.plugin.providerConfigValues,
-      indexConfigSchema: args.pluginRegistryEntry.manifest.indexConfigSchema,
+      id: registryEntry.fullyQualifiedId,
+      displayName:
+        registryEntry.contribution.displayName ??
+        registryEntry.pluginConfig.displayName ??
+        registryEntry.vectorId,
+      image: registryEntry.pluginConfig.icon,
+      supportsEmbedding: registryEntry.contribution.supportsEmbedding ?? false,
+      providerConfigSchema: registryEntry.pluginConfig.contributes?.settings,
+      providerConfigValues: args.plugin.pluginSettings,
+      indexConfigSchema: registryEntry.contribution.indexConfigSchema,
       configSchemaService: args.configSchemaService,
     });
     this.plugin = args.plugin;

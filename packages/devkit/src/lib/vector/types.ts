@@ -1,4 +1,30 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
+import { VectorProvider, VectorProviderArgs } from './vector-provider.js';
+
+export interface VectorContribution<
+  T extends ConfigSchemaDefinition = ConfigSchemaDefinition
+> {
+  /**
+   * Vector provider implementation
+   */
+  provider: new (args: VectorProviderArgs<T>) => VectorProvider;
+  /**
+   * A display name for the vector provider.
+   */
+  displayName?: string;
+  /**
+   * A brief description of the vector provider.
+   */
+  description?: string;
+  /**
+   * Whether the provider supports native embedding.
+   */
+  supportsEmbedding?: boolean;
+  /**
+   * Schema for configuring a search index.
+   */
+  indexConfigSchema?: ConfigSchemaDefinition;
+}
 
 export interface VectorPluginManifest {
   displayName?: string;

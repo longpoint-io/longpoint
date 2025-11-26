@@ -4,12 +4,7 @@ import { InvalidInput } from '@/shared/errors';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Injectable, Logger } from '@nestjs/common';
 import { PluginNotFound } from '../plugin.errors';
-import {
-  ClassificationProviderRegistryEntry,
-  PluginRegistryEntry,
-  PluginRegistryService,
-  PluginType,
-} from './plugin-registry.service';
+import { PluginRegistryService, PluginType } from './plugin-registry.service';
 
 export interface PluginInfo {
   id: string;
@@ -43,8 +38,9 @@ export class PluginService {
   async listPlugins(): Promise<PluginInfo[]> {
     const pluginMap = new Map<string, PluginInfo>();
 
-    // Add type-specific plugins (storage, ai, vector)
-    const types: PluginType[] = ['storage', 'ai', 'vector'];
+    // Add type-specific plugins (storage, ai)
+    // Note: Vector providers now use LongpointPluginConfig format
+    const types: PluginType[] = ['storage', 'ai'];
     for (const type of types) {
       const plugins = this.pluginRegistryService.listPlugins(type);
       for (const plugin of plugins) {
@@ -63,11 +59,35 @@ export class PluginService {
     // Add LongpointPluginConfig plugins (deduplicate by pluginId)
     const classificationProviders =
       this.pluginRegistryService.listClassificationProviders();
-    const longpointPluginMap = new Map<string, ClassificationProviderRegistryEntry>();
+    const vectorProviders = this.pluginRegistryService.listVectorProviders();
+    const longpointPluginMap = new Map<
+      string,
+      {
+        pluginId: string;
+        pluginConfig: any;
+        packageName: string;
+      }
+    >();
 
+    // Add classification provider plugins
     for (const entry of classificationProviders) {
       if (!longpointPluginMap.has(entry.pluginId)) {
-        longpointPluginMap.set(entry.pluginId, entry);
+        longpointPluginMap.set(entry.pluginId, {
+          pluginId: entry.pluginId,
+          pluginConfig: entry.pluginConfig,
+          packageName: entry.packageName,
+        });
+      }
+    }
+
+    // Add vector provider plugins
+    for (const entry of vectorProviders) {
+      if (!longpointPluginMap.has(entry.pluginId)) {
+        longpointPluginMap.set(entry.pluginId, {
+          pluginId: entry.pluginId,
+          pluginConfig: entry.pluginConfig,
+          packageName: entry.packageName,
+        });
       }
     }
 
@@ -92,8 +112,9 @@ export class PluginService {
    * Get a specific plugin by ID with its current settings.
    */
   async getPluginById(pluginId: string): Promise<PluginDetailInfo> {
-    // Check type-specific plugins first
-    const types: PluginType[] = ['storage', 'ai', 'vector'];
+    // Check type-specific plugins first (storage, ai)
+    // Note: Vector providers now use LongpointPluginConfig format
+    const types: PluginType[] = ['storage', 'ai'];
     for (const type of types) {
       const plugin = this.pluginRegistryService.getPluginById(pluginId);
       if (plugin && plugin.type === type) {
@@ -109,12 +130,27 @@ export class PluginService {
       }
     }
 
-    // Check LongpointPluginConfig plugins
+    // Check LongpointPluginConfig plugins (classification providers)
     const classificationProviders =
       this.pluginRegistryService.listClassificationProviders();
-    const pluginEntry = classificationProviders.find(
+    let pluginEntry = classificationProviders.find(
       (entry) => entry.pluginId === pluginId
     );
+
+    // If not found, check vector providers
+    if (!pluginEntry) {
+      const vectorProviders = this.pluginRegistryService.listVectorProviders();
+      const vectorEntry = vectorProviders.find(
+        (entry) => entry.pluginId === pluginId
+      );
+      if (vectorEntry) {
+        pluginEntry = {
+          pluginId: vectorEntry.pluginId,
+          pluginConfig: vectorEntry.pluginConfig,
+          packageName: vectorEntry.packageName,
+        } as any;
+      }
+    }
 
     if (!pluginEntry) {
       throw new PluginNotFound(pluginId);
@@ -151,11 +187,27 @@ export class PluginService {
     pluginId: string,
     configValues: ConfigValues
   ): Promise<ConfigValues> {
+    // Check classification providers first
     const classificationProviders =
       this.pluginRegistryService.listClassificationProviders();
-    const pluginEntry = classificationProviders.find(
+    let pluginEntry = classificationProviders.find(
       (entry) => entry.pluginId === pluginId
     );
+
+    // If not found, check vector providers
+    if (!pluginEntry) {
+      const vectorProviders = this.pluginRegistryService.listVectorProviders();
+      const vectorEntry = vectorProviders.find(
+        (entry) => entry.pluginId === pluginId
+      );
+      if (vectorEntry) {
+        pluginEntry = {
+          pluginId: vectorEntry.pluginId,
+          pluginConfig: vectorEntry.pluginConfig,
+          packageName: vectorEntry.packageName,
+        } as any;
+      }
+    }
 
     if (!pluginEntry) {
       throw new PluginNotFound(pluginId);
@@ -214,4 +266,3 @@ export class PluginService {
     }
   }
 }
-

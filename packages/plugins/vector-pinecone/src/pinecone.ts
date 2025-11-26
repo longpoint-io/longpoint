@@ -4,27 +4,22 @@ import {
   SearchResult,
   VectorDocument,
   VectorMetadata,
-  VectorProviderPlugin,
-  VectorProviderPluginArgs,
+  VectorProvider,
+  VectorProviderArgs,
 } from '@longpoint/devkit';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { manifest, PineconeVectorPluginManifest } from './manifest.js';
+import { PineconePluginSettings } from './settings.js';
 
-export class PineconeVectorProvider extends VectorProviderPlugin<PineconeVectorPluginManifest> {
-  private readonly client: Pinecone;
-
-  constructor(args: VectorProviderPluginArgs<PineconeVectorPluginManifest>) {
+export class PineconeVectorProvider extends VectorProvider<PineconePluginSettings> {
+  constructor(args: VectorProviderArgs<PineconePluginSettings>) {
     super({
-      providerConfigValues: args.providerConfigValues,
-    });
-    this.client = new Pinecone({
-      apiKey: this.providerConfigValues.apiKey,
+      pluginSettings: args.pluginSettings,
     });
   }
 
   async upsert(
     documents: VectorDocument[],
-    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+    indexConfigValues: ConfigValues
   ): Promise<void> {
     await this.client.index(indexConfigValues.name).upsert(
       documents.map((d) => ({
@@ -37,7 +32,7 @@ export class PineconeVectorProvider extends VectorProviderPlugin<PineconeVectorP
 
   override async embedAndUpsert(
     documents: EmbedAndUpsertDocument[],
-    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+    indexConfigValues: ConfigValues
   ): Promise<void> {
     await this.client.index(indexConfigValues.name).upsertRecords(
       documents.map((d) => ({
@@ -50,20 +45,18 @@ export class PineconeVectorProvider extends VectorProviderPlugin<PineconeVectorP
 
   async delete(
     documentIds: string[],
-    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+    indexConfigValues: ConfigValues
   ): Promise<void> {
     await this.client.index(indexConfigValues.name).deleteMany(documentIds);
   }
 
-  async dropIndex(
-    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
-  ): Promise<void> {
+  async dropIndex(indexConfigValues: ConfigValues): Promise<void> {
     await this.client.index(indexConfigValues.name).deleteAll();
   }
 
   async search(
     queryVector: number[],
-    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+    indexConfigValues: ConfigValues
   ): Promise<SearchResult[]> {
     const limit = indexConfigValues.limit ?? 10;
     const result = await this.client.index(indexConfigValues.name).query({
@@ -79,7 +72,7 @@ export class PineconeVectorProvider extends VectorProviderPlugin<PineconeVectorP
 
   override async embedAndSearch(
     queryText: string,
-    indexConfigValues: ConfigValues<typeof manifest.indexConfigSchema>
+    indexConfigValues: ConfigValues
   ): Promise<SearchResult[]> {
     const limit = indexConfigValues.limit ?? 10;
     const result = await this.client
@@ -102,6 +95,12 @@ export class PineconeVectorProvider extends VectorProviderPlugin<PineconeVectorP
         score: _score ?? 0,
         metadata: fields as VectorMetadata,
       };
+    });
+  }
+
+  private get client(): Pinecone {
+    return new Pinecone({
+      apiKey: this.pluginSettings.apiKey,
     });
   }
 }

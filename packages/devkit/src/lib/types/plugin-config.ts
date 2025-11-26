@@ -10,11 +10,11 @@ import {
   StorageProviderPlugin,
   StorageProviderPluginArgs,
 } from '../storage/index.js';
-import { VectorPluginManifest } from '../vector/types.js';
+import { VectorContribution, VectorPluginManifest } from '../vector/types.js';
 import {
-  VectorProviderPlugin,
-  VectorProviderPluginArgs,
-} from '../vector/vector-provider-plugin.js';
+  VectorProvider,
+  VectorProviderArgs,
+} from '../vector/vector-provider.js';
 
 type PluginType = 'storage' | 'ai' | 'vector';
 
@@ -47,7 +47,7 @@ export interface VectorPluginConfig<
 > extends BasePluginConfig {
   type: 'vector';
   manifest: T;
-  provider: new (args: VectorProviderPluginArgs<T>) => VectorProviderPlugin<T>;
+  provider: new (args: VectorProviderArgs) => VectorProvider;
 }
 
 export type PluginConfig =
@@ -78,9 +78,7 @@ export interface LongpointPluginConfig<
       };
     };
     vector?: {
-      [id: string]: {
-        // provider: VectorProviderPlugin;
-      };
+      [id: string]: VectorContribution<T>;
     };
     classifiers?: {
       [id: string]: ClassifierContribution<T>;

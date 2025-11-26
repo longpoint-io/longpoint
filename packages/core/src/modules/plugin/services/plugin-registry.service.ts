@@ -6,6 +6,7 @@ import {
   PluginConfig,
   StoragePluginConfig,
   StoragePluginManifest,
+  VectorContribution,
   VectorPluginConfig,
   VectorPluginManifest,
 } from '@longpoint/devkit';
@@ -54,6 +55,16 @@ export interface ClassificationProviderRegistryEntry {
   pluginConfig: LongpointPluginConfig<any>;
 }
 
+export interface VectorProviderRegistryEntry {
+  packageName: string;
+  packagePath: string;
+  pluginId: string;
+  vectorId: string;
+  fullyQualifiedId: string;
+  contribution: VectorContribution<any>;
+  pluginConfig: LongpointPluginConfig<any>;
+}
+
 @Injectable()
 export class PluginRegistryService implements OnModuleInit {
   private readonly logger = new Logger(PluginRegistryService.name);
@@ -61,6 +72,10 @@ export class PluginRegistryService implements OnModuleInit {
   private readonly classificationProviderRegistry = new Map<
     string,
     ClassificationProviderRegistryEntry
+  >();
+  private readonly vectorProviderRegistry = new Map<
+    string,
+    VectorProviderRegistryEntry
   >();
 
   async onModuleInit() {
@@ -109,6 +124,23 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
+   * Get all vector providers.
+   * @returns Array of vector provider registry entries
+   */
+  listVectorProviders(): VectorProviderRegistryEntry[] {
+    return Array.from(this.vectorProviderRegistry.values());
+  }
+
+  /**
+   * Get a vector provider by its fully qualified ID (e.g., 'pinecone/pinecone').
+   * @param id - The fully qualified vector provider ID
+   * @returns The vector provider registry entry or null if not found
+   */
+  getVectorProviderById(id: string): VectorProviderRegistryEntry | null {
+    return this.vectorProviderRegistry.get(id) || null;
+  }
+
+  /**
    * Derive plugin ID from package name.
    * Converts 'longpoint-plugin-{name}' to '{name}'
    * @param packageName - The package name (e.g., 'longpoint-plugin-s3')
@@ -151,7 +183,7 @@ export class PluginRegistryService implements OnModuleInit {
     }
 
     this.logger.log(
-      `${this.pluginRegistry.size} plugins loaded, ${this.classificationProviderRegistry.size} classification providers loaded`
+      `${this.pluginRegistry.size} plugins loaded, ${this.classificationProviderRegistry.size} classification providers loaded, ${this.vectorProviderRegistry.size} vector providers loaded`
     );
   }
 
@@ -223,7 +255,7 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
-   * Load a LongpointPluginConfig plugin and extract classification providers.
+   * Load a LongpointPluginConfig plugin and extract classification providers and vector providers.
    */
   private async loadLongpointPlugin(
     packageName: string,
@@ -262,6 +294,29 @@ export class PluginRegistryService implements OnModuleInit {
 
         this.logger.debug(
           `Loaded classification provider: ${fullyQualifiedId} (${packageName})`
+        );
+      }
+    }
+
+    // Extract vector providers
+    if (pluginConfig.contributes?.vector) {
+      for (const [vectorId, contribution] of Object.entries(
+        pluginConfig.contributes.vector
+      )) {
+        const fullyQualifiedId = `${pluginId}/${vectorId}`;
+
+        this.vectorProviderRegistry.set(fullyQualifiedId, {
+          packageName,
+          packagePath,
+          pluginId,
+          vectorId,
+          fullyQualifiedId,
+          contribution,
+          pluginConfig: processedPluginConfig,
+        });
+
+        this.logger.debug(
+          `Loaded vector provider: ${fullyQualifiedId} (${packageName})`
         );
       }
     }
@@ -364,4 +419,3 @@ export class PluginRegistryService implements OnModuleInit {
     }
   }
 }
-
