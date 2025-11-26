@@ -1,4 +1,4 @@
-export * from './storage-provider-plugin.js';
+export * from './storage-provider.js';
 export type {
   CreateSignedUrlOptions,
   SignedUrlResponse,

@@ -1,8 +1,5 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import {
-  StorageProvider,
-  StorageProviderArgs,
-} from './storage-provider-plugin.js';
+import { StorageProvider, StorageProviderArgs } from './storage-provider.js';
 
 export interface SignedUrlResponse {
   /**
