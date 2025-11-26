@@ -3,16 +3,21 @@ import {
   ConfigService,
   PrismaService,
 } from '@/modules/common/services';
-import { PluginRegistryService } from '@/modules/plugin/services';
+import {
+  PluginRegistryService,
+  StorageProviderRegistryEntry,
+} from '@/modules/plugin/services';
 import { selectStorageUnit } from '@/shared/selectors/storage-unit.selectors';
-import { ConfigValues } from '@longpoint/config-schema';
-import { Injectable } from '@nestjs/common';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
+import { Injectable, Logger } from '@nestjs/common';
 import { StorageProviderEntity } from '../entities';
 import { BaseStorageProviderEntity } from '../entities/base-storage-provider.entity';
 import { StorageProviderNotFound } from '../storage.errors';
 
 @Injectable()
 export class StorageProviderService {
+  private readonly logger = new Logger(StorageProviderService.name);
+
   constructor(
     private readonly configService: ConfigService,
     private readonly prismaService: PrismaService,
@@ -25,14 +30,18 @@ export class StorageProviderService {
    * @returns A list of base storage provider entities.
    */
   async listProviders() {
-    const plugins = this.pluginRegistryService.listPlugins('storage');
-    return plugins.map((entry) => {
+    const registryEntries =
+      this.pluginRegistryService.listStorageProviders();
+    return registryEntries.map((entry) => {
       return new BaseStorageProviderEntity({
         configSchemaService: this.configSchemaService,
-        id: entry.derivedId,
-        displayName: entry.manifest.displayName,
-        image: entry.manifest.image,
-        configSchema: entry.manifest.configSchema,
+        id: entry.fullyQualifiedId,
+        displayName:
+          entry.contribution.displayName ??
+          entry.pluginConfig.displayName ??
+          entry.storageId,
+        image: entry.pluginConfig.icon,
+        configSchema: entry.contribution.configSchema,
       });
     });
   }
@@ -42,25 +51,31 @@ export class StorageProviderService {
     configFromDb: ConfigValues
   ): Promise<StorageProviderEntity | null> {
     const registryEntry =
-      this.pluginRegistryService.getPluginById<'storage'>(id);
+      this.pluginRegistryService.getStorageProviderById(id);
 
     if (!registryEntry) {
       return null;
     }
 
-    const StorageProviderClass = registryEntry.provider;
-    const schemaObj = registryEntry.manifest.configSchema;
-    const configForUse = await this.configSchemaService
+    const pluginSettings = await this.getPluginSettingsFromDb(
+      registryEntry.pluginId,
+      registryEntry.pluginConfig.contributes?.settings
+    );
+
+    const schemaObj = registryEntry.contribution.configSchema;
+    const providerConfig = await this.configSchemaService
       .get(schemaObj)
       .processOutboundValues(configFromDb);
 
+    const StorageProviderClass = registryEntry.contribution.provider;
+
     return new StorageProviderEntity({
       configSchemaService: this.configSchemaService,
-      pluginRegistryEntry: registryEntry,
+      registryEntry,
       pluginInstance: new StorageProviderClass({
+        pluginSettings: pluginSettings ?? {},
+        providerConfig,
         baseUrl: this.configService.get('server.origin'),
-        configValues: configForUse,
-        manifest: registryEntry.manifest,
       }),
     });
   }
@@ -78,13 +93,48 @@ export class StorageProviderService {
 
   async processConfigForDb(providerId: string, configValues: ConfigValues) {
     const registryEntry =
-      this.pluginRegistryService.getPluginById<'storage'>(providerId);
+      this.pluginRegistryService.getStorageProviderById(providerId);
     if (!registryEntry) {
       throw new StorageProviderNotFound(providerId);
     }
     return await this.configSchemaService
-      .get(registryEntry.manifest.configSchema)
+      .get(registryEntry.contribution.configSchema)
       .processInboundValues(configValues);
+  }
+
+  /**
+   * Get plugin settings from database.
+   */
+  private async getPluginSettingsFromDb(
+    pluginId: string,
+    schemaObj?: ConfigSchemaDefinition
+  ): Promise<ConfigValues> {
+    const pluginSettings = await this.prismaService.pluginSettings.findUnique({
+      where: {
+        pluginId,
+      },
+    });
+
+    if (!pluginSettings) {
+      return {};
+    }
+
+    try {
+      return await this.configSchemaService
+        .get(schemaObj)
+        .processOutboundValues(pluginSettings?.config as ConfigValues);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes('Failed to decrypt data')
+      ) {
+        this.logger.warn(
+          `Failed to decrypt config for plugin "${pluginId}", returning as is!`
+        );
+        return pluginSettings?.config as ConfigValues;
+      }
+      throw error;
+    }
   }
 
   async getProviderByStorageUnitId(

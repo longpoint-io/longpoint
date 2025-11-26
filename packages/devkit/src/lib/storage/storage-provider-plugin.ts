@@ -1,27 +1,23 @@
-import { ConfigValues } from '@longpoint/config-schema';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Readable } from 'stream';
-import { StoragePluginManifest, StorageProvider } from './types.js';
 
-export interface StorageProviderPluginArgs<
-  T extends StoragePluginManifest = StoragePluginManifest
+export interface StorageProviderArgs<
+  T extends ConfigSchemaDefinition = ConfigSchemaDefinition
 > {
-  manifest: T;
-  configValues: ConfigValues<T['configSchema']>;
+  pluginSettings: ConfigValues<T>;
+  providerConfig: ConfigValues;
   baseUrl: string;
 }
 
-export abstract class StorageProviderPlugin<
-  T extends StoragePluginManifest = StoragePluginManifest
-> implements StorageProvider
-{
-  private readonly _manifest: T;
-  protected readonly configValues: ConfigValues<T['configSchema']>;
+export abstract class StorageProvider {
+  protected readonly pluginSettings: ConfigValues;
+  protected readonly providerConfig: ConfigValues;
   protected readonly baseUrl: string;
 
-  constructor(args: StorageProviderPluginArgs<T>) {
-    this.configValues = args.configValues;
+  constructor(args: StorageProviderArgs) {
+    this.pluginSettings = args.pluginSettings;
+    this.providerConfig = args.providerConfig;
     this.baseUrl = args.baseUrl;
-    this._manifest = args.manifest;
   }
 
   abstract upload(
@@ -54,9 +50,5 @@ export abstract class StorageProviderPlugin<
     }
 
     return Buffer.from(result);
-  }
-
-  get manifest(): T {
-    return JSON.parse(JSON.stringify(this._manifest)) as T;
   }
 }

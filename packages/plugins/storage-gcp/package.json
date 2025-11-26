@@ -23,5 +23,8 @@
     "@google-cloud/storage": "^7.0.0",
     "@longpoint/devkit": "*",
     "tslib": "^2.3.0"
+  },
+  "nx": {
+    "name": "plugin-gcp"
   }
 }

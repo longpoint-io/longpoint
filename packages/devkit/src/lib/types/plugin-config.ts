@@ -5,34 +5,20 @@ import {
   AiProviderPluginArgs,
 } from '../ai/ai-provider-plugin.js';
 import { ClassifierContribution } from '../classifier/types.js';
-import {
-  StoragePluginManifest,
-  StorageProviderPlugin,
-  StorageProviderPluginArgs,
-} from '../storage/index.js';
+import { StorageContribution } from '../storage/index.js';
 import { VectorContribution, VectorPluginManifest } from '../vector/types.js';
 import {
   VectorProvider,
   VectorProviderArgs,
 } from '../vector/vector-provider.js';
 
-type PluginType = 'storage' | 'ai' | 'vector';
+type PluginType = 'ai' | 'vector';
 
 export interface BasePluginConfig {
   /**
    * The plugin type
    */
   type: PluginType;
-}
-
-export interface StoragePluginConfig<
-  T extends StoragePluginManifest = StoragePluginManifest
-> extends BasePluginConfig {
-  type: 'storage';
-  manifest: T;
-  provider: new (
-    args: StorageProviderPluginArgs<T>
-  ) => StorageProviderPlugin<T>;
 }
 
 export interface AiPluginConfig<T extends AiPluginManifest = AiPluginManifest>
@@ -50,10 +36,7 @@ export interface VectorPluginConfig<
   provider: new (args: VectorProviderArgs) => VectorProvider;
 }
 
-export type PluginConfig =
-  | StoragePluginConfig<any>
-  | AiPluginConfig<any>
-  | VectorPluginConfig<any>;
+export type PluginConfig = AiPluginConfig<any> | VectorPluginConfig<any>;
 
 export interface LongpointPluginConfig<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
@@ -73,9 +56,7 @@ export interface LongpointPluginConfig<
   contributes?: {
     settings?: T;
     storage?: {
-      [id: string]: {
-        // provider: StorageProviderPlugin;
-      };
+      [id: string]: StorageContribution<T>;
     };
     vector?: {
       [id: string]: VectorContribution<T>;

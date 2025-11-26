@@ -7,26 +7,22 @@ import {
   PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3';
-import {
-  StorageProviderPlugin,
-  StorageProviderPluginArgs,
-} from '@longpoint/devkit';
+import { StorageProvider, StorageProviderArgs } from '@longpoint/devkit';
 import { Readable } from 'stream';
-import { S3StoragePluginManifest } from './manifest.js';
 
-export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginManifest> {
+export class S3StorageProvider extends StorageProvider {
   private s3Client: S3Client;
 
-  constructor(args: StorageProviderPluginArgs<S3StoragePluginManifest>) {
+  constructor(args: StorageProviderArgs) {
     super(args);
     this.s3Client = new S3Client({
-      region: this.configValues.region,
+      region: this.providerConfig.region,
       credentials: {
-        accessKeyId: this.configValues.accessKeyId,
-        secretAccessKey: this.configValues.secretAccessKey,
+        accessKeyId: this.providerConfig.accessKeyId,
+        secretAccessKey: this.providerConfig.secretAccessKey,
       },
-      endpoint: this.configValues.endpoint,
-      forcePathStyle: this.configValues.forcePathStyle ?? false,
+      endpoint: this.providerConfig.endpoint,
+      forcePathStyle: this.providerConfig.forcePathStyle ?? false,
     });
   }
 
@@ -37,7 +33,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     const key = this.normalizeS3Key(path);
 
     const commandParams: PutObjectCommandInput = {
-      Bucket: this.configValues.bucket,
+      Bucket: this.providerConfig.bucket,
       Key: key,
       Body: body,
     };
@@ -61,7 +57,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
 
     const response = await this.s3Client.send(
       new GetObjectCommand({
-        Bucket: this.configValues.bucket,
+        Bucket: this.providerConfig.bucket,
         Key: key,
       })
     );
@@ -79,7 +75,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     try {
       await this.s3Client.send(
         new HeadObjectCommand({
-          Bucket: this.configValues.bucket,
+          Bucket: this.providerConfig.bucket,
           Key: key,
         })
       );
@@ -114,7 +110,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
     do {
       const listResponse = await this.s3Client.send(
         new ListObjectsV2Command({
-          Bucket: this.configValues.bucket,
+          Bucket: this.providerConfig.bucket,
           Prefix: directoryPrefix,
           ContinuationToken: continuationToken,
         })
@@ -141,7 +137,7 @@ export class S3StorageProvider extends StorageProviderPlugin<S3StoragePluginMani
       const batch = objectsToDelete.slice(i, i + batchSize);
       await this.s3Client.send(
         new DeleteObjectsCommand({
-          Bucket: this.configValues.bucket,
+          Bucket: this.providerConfig.bucket,
           Delete: {
             Objects: batch,
           },

@@ -24,6 +24,6 @@
     "tslib": "^2.3.0"
   },
   "nx": {
-    "name": "storage-s3"
+    "name": "plugin-s3"
   }
 }

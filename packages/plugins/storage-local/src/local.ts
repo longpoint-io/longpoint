@@ -1,10 +1,9 @@
-import { StorageProviderPlugin } from '@longpoint/devkit';
+import { StorageProvider } from '@longpoint/devkit';
 import fs from 'fs';
 import { dirname, join } from 'path';
 import { Readable } from 'stream';
-import { LocalStoragePluginManifest } from './manifest.js';
 
-export class LocalStorageProvider extends StorageProviderPlugin<LocalStoragePluginManifest> {
+export class LocalStorageProvider extends StorageProvider {
   async upload(
     path: string,
     body: Readable | Buffer | string

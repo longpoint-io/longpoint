@@ -1,34 +1,30 @@
 import { Storage } from '@google-cloud/storage';
-import {
-  StorageProviderPlugin,
-  StorageProviderPluginArgs,
-} from '@longpoint/devkit';
+import { StorageProvider, StorageProviderArgs } from '@longpoint/devkit';
 import { Readable, pipeline } from 'stream';
 import { promisify } from 'util';
-import { GCPStoragePluginManifest } from './manifest.js';
 
 const pipelineAsync = promisify(pipeline);
 
-export class GCPStorageProvider extends StorageProviderPlugin<GCPStoragePluginManifest> {
+export class GCPStorageProvider extends StorageProvider {
   private storage: Storage;
   private bucketName: string;
 
-  constructor(args: StorageProviderPluginArgs<GCPStoragePluginManifest>) {
+  constructor(args: StorageProviderArgs) {
     super(args);
-    this.bucketName = this.configValues.bucket;
+    this.bucketName = this.providerConfig.bucket;
 
     const storageOptions: {
       projectId?: string;
       credentials?: object;
     } = {};
 
-    if (this.configValues.projectId) {
-      storageOptions.projectId = this.configValues.projectId;
+    if (this.providerConfig.projectId) {
+      storageOptions.projectId = this.providerConfig.projectId;
     }
 
     try {
       storageOptions.credentials = JSON.parse(
-        this.configValues.serviceAccountKey
+        this.providerConfig.serviceAccountKey
       );
       if (!storageOptions.projectId && storageOptions.credentials) {
         const creds = storageOptions.credentials as { project_id?: string };

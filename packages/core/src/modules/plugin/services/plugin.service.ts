@@ -38,9 +38,9 @@ export class PluginService {
   async listPlugins(): Promise<PluginInfo[]> {
     const pluginMap = new Map<string, PluginInfo>();
 
-    // Add type-specific plugins (storage, ai)
-    // Note: Vector providers now use LongpointPluginConfig format
-    const types: PluginType[] = ['storage', 'ai'];
+    // Add type-specific plugins (ai)
+    // Note: Storage and vector providers now use LongpointPluginConfig format
+    const types: PluginType[] = ['ai'];
     for (const type of types) {
       const plugins = this.pluginRegistryService.listPlugins(type);
       for (const plugin of plugins) {
@@ -60,6 +60,7 @@ export class PluginService {
     const classificationProviders =
       this.pluginRegistryService.listClassificationProviders();
     const vectorProviders = this.pluginRegistryService.listVectorProviders();
+    const storageProviders = this.pluginRegistryService.listStorageProviders();
     const longpointPluginMap = new Map<
       string,
       {
@@ -91,6 +92,17 @@ export class PluginService {
       }
     }
 
+    // Add storage provider plugins
+    for (const entry of storageProviders) {
+      if (!longpointPluginMap.has(entry.pluginId)) {
+        longpointPluginMap.set(entry.pluginId, {
+          pluginId: entry.pluginId,
+          pluginConfig: entry.pluginConfig,
+          packageName: entry.packageName,
+        });
+      }
+    }
+
     for (const entry of longpointPluginMap.values()) {
       const pluginConfig = entry.pluginConfig;
       const hasSettings = !!pluginConfig.contributes?.settings;
@@ -112,9 +124,9 @@ export class PluginService {
    * Get a specific plugin by ID with its current settings.
    */
   async getPluginById(pluginId: string): Promise<PluginDetailInfo> {
-    // Check type-specific plugins first (storage, ai)
-    // Note: Vector providers now use LongpointPluginConfig format
-    const types: PluginType[] = ['storage', 'ai'];
+    // Check type-specific plugins first (ai)
+    // Note: Storage and vector providers now use LongpointPluginConfig format
+    const types: PluginType[] = ['ai'];
     for (const type of types) {
       const plugin = this.pluginRegistryService.getPluginById(pluginId);
       if (plugin && plugin.type === type) {
@@ -148,6 +160,21 @@ export class PluginService {
           pluginId: vectorEntry.pluginId,
           pluginConfig: vectorEntry.pluginConfig,
           packageName: vectorEntry.packageName,
+        } as any;
+      }
+    }
+
+    // If not found, check storage providers
+    if (!pluginEntry) {
+      const storageProviders = this.pluginRegistryService.listStorageProviders();
+      const storageEntry = storageProviders.find(
+        (entry) => entry.pluginId === pluginId
+      );
+      if (storageEntry) {
+        pluginEntry = {
+          pluginId: storageEntry.pluginId,
+          pluginConfig: storageEntry.pluginConfig,
+          packageName: storageEntry.packageName,
         } as any;
       }
     }
@@ -205,6 +232,21 @@ export class PluginService {
           pluginId: vectorEntry.pluginId,
           pluginConfig: vectorEntry.pluginConfig,
           packageName: vectorEntry.packageName,
+        } as any;
+      }
+    }
+
+    // If not found, check storage providers
+    if (!pluginEntry) {
+      const storageProviders = this.pluginRegistryService.listStorageProviders();
+      const storageEntry = storageProviders.find(
+        (entry) => entry.pluginId === pluginId
+      );
+      if (storageEntry) {
+        pluginEntry = {
+          pluginId: storageEntry.pluginId,
+          pluginConfig: storageEntry.pluginConfig,
+          packageName: storageEntry.packageName,
         } as any;
       }
     }

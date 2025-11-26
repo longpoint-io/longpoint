@@ -1,9 +1,16 @@
-import { PluginConfig } from '@longpoint/devkit';
+import { LongpointPluginConfig } from '@longpoint/devkit';
 import { LocalStorageProvider } from './local.js';
 import { manifest } from './manifest.js';
 
 export default {
-  type: 'storage',
-  provider: LocalStorageProvider,
-  manifest,
-} satisfies PluginConfig;
+  displayName: 'Local Storage',
+  contributes: {
+    storage: {
+      local: {
+        provider: LocalStorageProvider,
+        displayName: manifest.displayName,
+        configSchema: manifest.configSchema,
+      },
+    },
+  },
+} satisfies LongpointPluginConfig;

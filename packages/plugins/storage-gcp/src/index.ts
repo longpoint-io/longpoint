@@ -1,9 +1,17 @@
-import { PluginConfig } from '@longpoint/devkit';
+import { LongpointPluginConfig } from '@longpoint/devkit';
 import { GCPStorageProvider } from './gcp.js';
 import { manifest } from './manifest.js';
 
 export default {
-  type: 'storage',
-  provider: GCPStorageProvider,
-  manifest,
-} satisfies PluginConfig;
+  displayName: 'Google Cloud Storage',
+  icon: manifest.image,
+  contributes: {
+    storage: {
+      gcp: {
+        provider: GCPStorageProvider,
+        displayName: manifest.displayName,
+        configSchema: manifest.configSchema,
+      },
+    },
+  },
+} satisfies LongpointPluginConfig;

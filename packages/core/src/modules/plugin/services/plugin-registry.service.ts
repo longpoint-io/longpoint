@@ -4,8 +4,7 @@ import {
   ClassifierContribution,
   LongpointPluginConfig,
   PluginConfig,
-  StoragePluginConfig,
-  StoragePluginManifest,
+  StorageContribution,
   VectorContribution,
   VectorPluginConfig,
   VectorPluginManifest,
@@ -18,19 +17,15 @@ import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { extname, join } from 'path';
 
-export type PluginType = 'storage' | 'ai' | 'vector';
+export type PluginType = 'ai' | 'vector';
 
-export type ManifestForType<T extends PluginType> = T extends 'storage'
-  ? StoragePluginManifest
-  : T extends 'ai'
+export type ManifestForType<T extends PluginType> = T extends 'ai'
   ? AiPluginManifest
   : T extends 'vector'
   ? VectorPluginManifest
   : never;
 
-export type ConfigForType<T extends PluginType> = T extends 'storage'
-  ? StoragePluginConfig
-  : T extends 'ai'
+export type ConfigForType<T extends PluginType> = T extends 'ai'
   ? AiPluginConfig
   : T extends 'vector'
   ? VectorPluginConfig
@@ -65,6 +60,16 @@ export interface VectorProviderRegistryEntry {
   pluginConfig: LongpointPluginConfig<any>;
 }
 
+export interface StorageProviderRegistryEntry {
+  packageName: string;
+  packagePath: string;
+  pluginId: string;
+  storageId: string;
+  fullyQualifiedId: string;
+  contribution: StorageContribution<any>;
+  pluginConfig: LongpointPluginConfig<any>;
+}
+
 @Injectable()
 export class PluginRegistryService implements OnModuleInit {
   private readonly logger = new Logger(PluginRegistryService.name);
@@ -77,6 +82,10 @@ export class PluginRegistryService implements OnModuleInit {
     string,
     VectorProviderRegistryEntry
   >();
+  private readonly storageProviderRegistry = new Map<
+    string,
+    StorageProviderRegistryEntry
+  >();
 
   async onModuleInit() {
     await this.discoverAllPlugins();
@@ -84,7 +93,7 @@ export class PluginRegistryService implements OnModuleInit {
 
   /**
    * Get all plugins of a specific type.
-   * @param type - The plugin type (storage, ai, vector)
+   * @param type - The plugin type (ai, vector)
    * @returns Array of plugin registry entries with strongly typed manifests
    */
   listPlugins<T extends PluginType>(type: T): PluginRegistryEntry<T>[] {
@@ -141,6 +150,23 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
+   * Get all storage providers.
+   * @returns Array of storage provider registry entries
+   */
+  listStorageProviders(): StorageProviderRegistryEntry[] {
+    return Array.from(this.storageProviderRegistry.values());
+  }
+
+  /**
+   * Get a storage provider by its fully qualified ID (e.g., 's3/s3').
+   * @param id - The fully qualified storage provider ID
+   * @returns The storage provider registry entry or null if not found
+   */
+  getStorageProviderById(id: string): StorageProviderRegistryEntry | null {
+    return this.storageProviderRegistry.get(id) || null;
+  }
+
+  /**
    * Derive plugin ID from package name.
    * Converts 'longpoint-plugin-{name}' to '{name}'
    * @param packageName - The package name (e.g., 'longpoint-plugin-s3')
@@ -183,7 +209,7 @@ export class PluginRegistryService implements OnModuleInit {
     }
 
     this.logger.log(
-      `${this.pluginRegistry.size} plugins loaded, ${this.classificationProviderRegistry.size} classification providers loaded, ${this.vectorProviderRegistry.size} vector providers loaded`
+      `${this.pluginRegistry.size} plugins loaded, ${this.classificationProviderRegistry.size} classification providers loaded, ${this.vectorProviderRegistry.size} vector providers loaded, ${this.storageProviderRegistry.size} storage providers loaded`
     );
   }
 
@@ -255,7 +281,7 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
-   * Load a LongpointPluginConfig plugin and extract classification providers and vector providers.
+   * Load a LongpointPluginConfig plugin and extract classification providers, vector providers, and storage providers.
    */
   private async loadLongpointPlugin(
     packageName: string,
@@ -317,6 +343,29 @@ export class PluginRegistryService implements OnModuleInit {
 
         this.logger.debug(
           `Loaded vector provider: ${fullyQualifiedId} (${packageName})`
+        );
+      }
+    }
+
+    // Extract storage providers
+    if (pluginConfig.contributes?.storage) {
+      for (const [storageId, contribution] of Object.entries(
+        pluginConfig.contributes.storage
+      )) {
+        const fullyQualifiedId = `${pluginId}/${storageId}`;
+
+        this.storageProviderRegistry.set(fullyQualifiedId, {
+          packageName,
+          packagePath,
+          pluginId,
+          storageId,
+          fullyQualifiedId,
+          contribution,
+          pluginConfig: processedPluginConfig,
+        });
+
+        this.logger.debug(
+          `Loaded storage provider: ${fullyQualifiedId} (${packageName})`
         );
       }
     }
