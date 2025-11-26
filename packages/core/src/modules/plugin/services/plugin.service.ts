@@ -38,24 +38,6 @@ export class PluginService {
   async listPlugins(): Promise<PluginInfo[]> {
     const pluginMap = new Map<string, PluginInfo>();
 
-    // Add type-specific plugins (ai)
-    // Note: Storage and vector providers now use LongpointPluginConfig format
-    const types: PluginType[] = ['ai'];
-    for (const type of types) {
-      const plugins = this.pluginRegistryService.listPlugins(type);
-      for (const plugin of plugins) {
-        pluginMap.set(plugin.derivedId, {
-          id: plugin.derivedId,
-          displayName: plugin.manifest.displayName,
-          description: plugin.manifest.description,
-          icon: plugin.manifest.image,
-          type: plugin.type,
-          hasSettings: false, // Type-specific plugins don't have settings
-          packageName: plugin.packageName,
-        });
-      }
-    }
-
     // Add LongpointPluginConfig plugins (deduplicate by pluginId)
     const classificationProviders =
       this.pluginRegistryService.listClassificationProviders();
@@ -124,24 +106,6 @@ export class PluginService {
    * Get a specific plugin by ID with its current settings.
    */
   async getPluginById(pluginId: string): Promise<PluginDetailInfo> {
-    // Check type-specific plugins first (ai)
-    // Note: Storage and vector providers now use LongpointPluginConfig format
-    const types: PluginType[] = ['ai'];
-    for (const type of types) {
-      const plugin = this.pluginRegistryService.getPluginById(pluginId);
-      if (plugin && plugin.type === type) {
-        return {
-          id: plugin.derivedId,
-          displayName: plugin.manifest.displayName,
-          description: plugin.manifest.description,
-          icon: plugin.manifest.image,
-          type: plugin.type,
-          hasSettings: false,
-          packageName: plugin.packageName,
-        };
-      }
-    }
-
     // Check LongpointPluginConfig plugins (classification providers)
     const classificationProviders =
       this.pluginRegistryService.listClassificationProviders();
@@ -166,7 +130,8 @@ export class PluginService {
 
     // If not found, check storage providers
     if (!pluginEntry) {
-      const storageProviders = this.pluginRegistryService.listStorageProviders();
+      const storageProviders =
+        this.pluginRegistryService.listStorageProviders();
       const storageEntry = storageProviders.find(
         (entry) => entry.pluginId === pluginId
       );
@@ -238,7 +203,8 @@ export class PluginService {
 
     // If not found, check storage providers
     if (!pluginEntry) {
-      const storageProviders = this.pluginRegistryService.listStorageProviders();
+      const storageProviders =
+        this.pluginRegistryService.listStorageProviders();
       const storageEntry = storageProviders.find(
         (entry) => entry.pluginId === pluginId
       );

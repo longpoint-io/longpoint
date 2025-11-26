@@ -4,75 +4,6 @@
  */
 
 export interface paths {
-    "/ai/models": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List installed models */
-        get: operations["listModels"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/models/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a model */
-        get: operations["getModel"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/providers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List installed AI providers */
-        get: operations["listAiProviders"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/providers/{providerId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an AI provider */
-        get: operations["getAiProvider"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update the config for an AI provider */
-        patch: operations["updateAiProviderConfig"];
-        trace?: never;
-    };
     "/analysis/classification-providers": {
         parameters: {
             query?: never;
@@ -486,152 +417,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        AiModel: {
-            /** @description The schema for classifier input, if the model supports classification */
-            classifierInputSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            };
-            /**
-             * @description A brief description of the model
-             * @example Claude Haiku 4.5 is a small, fast, and powerful model for text generation
-             */
-            description: string | null;
-            /**
-             * @description The fully qualified ID of the model
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            fullyQualifiedId: string;
-            /**
-             * @description The ID of the model
-             * @example claude-haiku-4-5-20251001
-             */
-            id: string;
-            /**
-             * @description The display name of the model
-             * @example Claude Haiku 4.5
-             */
-            name: string;
-            /** @description The provider of the model */
-            provider: components["schemas"]["AiProviderSummary"];
-        };
-        AiModelShort: {
-            /**
-             * @description A brief description of the model
-             * @example Claude Haiku 4.5 is a small, fast, and powerful model for text generation
-             */
-            description: string | null;
-            /**
-             * @description The fully qualified ID of the model
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            fullyQualifiedId: string;
-            /**
-             * @description The ID of the model
-             * @example claude-haiku-4-5-20251001
-             */
-            id: string;
-            /**
-             * @description The display name of the model
-             * @example Claude Haiku 4.5
-             */
-            name: string;
-        };
-        AiModelSummary: {
-            /**
-             * @description The fully qualified ID of the model
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            fullyQualifiedId: string;
-            /**
-             * @description The ID of the model
-             * @example claude-haiku-4-5-20251001
-             */
-            id: string;
-            /**
-             * @description The display name of the model
-             * @example Claude Haiku 4.5
-             */
-            name: string;
-            /** @description The provider of the model */
-            provider: components["schemas"]["AiProviderSummary"];
-        };
-        AiProvider: {
-            /**
-             * @description The config values for the provider
-             * @example {
-             *       "apiKey": "sk-1234567890"
-             *     }
-             */
-            config: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * @description The schema for the provider config
-             * @example {
-             *       "apiKey": {
-             *         "label": "API Key",
-             *         "type": "secret",
-             *         "required": true
-             *       }
-             *     }
-             */
-            configSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            } | null;
-            /**
-             * @description The ID of the AI provider
-             * @example anthropic
-             */
-            id: string;
-            /**
-             * @description An icon image of the AI provider
-             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
-             */
-            image: string;
-            /**
-             * @description The models supported by the provider
-             * @example [
-             *       {
-             *         "id": "claude-haiku-4-5-20251001",
-             *         "name": "Claude Haiku 4.5",
-             *         "fullyQualifiedId": "anthropic/claude-haiku-4-5-20251001"
-             *       }
-             *     ]
-             */
-            models: components["schemas"]["AiModelShort"][];
-            /**
-             * @description The name of the AI provider
-             * @example Anthropic
-             */
-            name: string;
-            /**
-             * @description Whether the provider needs additional configuration
-             * @example false
-             */
-            needsConfig: boolean;
-        };
-        AiProviderSummary: {
-            /**
-             * @description The ID of the AI provider
-             * @example anthropic
-             */
-            id: string;
-            /**
-             * @description An icon image of the AI provider
-             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
-             */
-            image: string | null;
-            /**
-             * @description The name of the AI provider
-             * @example Anthropic
-             */
-            name: string;
-            /**
-             * @description Whether the provider needs additional configuration
-             * @example false
-             */
-            needsConfig: boolean;
-        };
         ClassificationProvider: {
             /** @description The schema for classifier input */
             classifierInputSchema: {
@@ -1171,7 +956,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-25T22:01:35.688Z
+             * @example 2025-11-26T18:22:25.168Z
              */
             createdAt: string;
             /**
@@ -1223,7 +1008,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-25T22:01:35.688Z
+             * @example 2025-11-26T18:22:25.168Z
              */
             createdAt: string;
             /**
@@ -1252,7 +1037,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-25T22:01:35.688Z
+             * @example 2025-11-26T18:22:25.168Z
              */
             createdAt: string;
             /**
@@ -1416,21 +1201,6 @@ export interface components {
             config: {
                 [key: string]: unknown;
             } | null;
-            /**
-             * @description The model used by the index to generate vector embeddings
-             * @example {
-             *       "id": "text-embedding-3-small",
-             *       "name": "Text Embedding 3 Small",
-             *       "fullyQualifiedId": "openai/text-embedding-3-small",
-             *       "provider": {
-             *         "id": "openai",
-             *         "name": "OpenAI",
-             *         "image": null,
-             *         "needsConfig": false
-             *       }
-             *     }
-             */
-            embeddingModel: components["schemas"]["AiModelSummary"] | null;
             /**
              * @description The ID of the index
              * @example o1jnduht9zboa0w1dcjfzqi5
@@ -1671,15 +1441,6 @@ export interface components {
              */
             totalContainers: number;
         };
-        UpdateAiProviderConfig: {
-            /**
-             * @description The configuration values for the AI provider
-             * @example {
-             *       "apiKey": "1234567890"
-             *     }
-             */
-            config: Record<string, never>;
-        };
         UpdateClassifier: {
             /**
              * @description A brief description of the classifier
@@ -1836,129 +1597,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    listModels: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiModel"][];
-                };
-            };
-        };
-    };
-    getModel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiModel"];
-                };
-            };
-        };
-    };
-    listAiProviders: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"][];
-                };
-            };
-        };
-    };
-    getAiProvider: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"];
-                };
-            };
-            /** @description AI provider not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "AI provider with id r2qwyd76nvd98cu6ewg8ync2 not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    updateAiProviderConfig: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateAiProviderConfig"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"];
-                };
-            };
-        };
-    };
     listClassificationProviders: {
         parameters: {
             query?: never;

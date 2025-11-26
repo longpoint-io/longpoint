@@ -10,7 +10,6 @@ export interface ClientConfig {
 export class Longpoint {
   private httpClient: AxiosInstance;
   system: SystemClient;
-  ai: AiClient;
   analysis: AnalysisClient;
   media: MediaClient;
   storage: StorageClient;
@@ -26,7 +25,6 @@ export class Longpoint {
       }
     });
     this.system = new SystemClient(this.httpClient);
-    this.ai = new AiClient(this.httpClient);
     this.analysis = new AnalysisClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
@@ -78,55 +76,6 @@ class SystemClient {
    */
     async getSystemStatus(): Promise<components['schemas']['SystemStatus']> {
         const url = `system/status`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-}
-
-class AiClient {
-  constructor(private httpClient: AxiosInstance) {}
-
-    /**
-   * Get a model
-   */
-    async getModel(id: string): Promise<components['schemas']['AiModel']> {
-        const url = `ai/models/${encodeURIComponent(String(id))}`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * List installed models
-   */
-    async listModels(): Promise<components['schemas']['AiModel'][]> {
-        const url = `ai/models`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * Get an AI provider
-   */
-    async getAiProvider(providerId: string): Promise<components['schemas']['AiProvider']> {
-        const url = `ai/providers/${encodeURIComponent(String(providerId))}`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * Update the config for an AI provider
-   */
-    async updateAiProviderConfig(providerId: string, data: components['schemas']['UpdateAiProviderConfig']): Promise<components['schemas']['AiProvider']> {
-        const url = `ai/providers/${encodeURIComponent(String(providerId))}`;
-        const response = await this.httpClient.patch(url, data);
-        return response.data;
-  }
-
-    /**
-   * List installed AI providers
-   */
-    async listAiProviders(): Promise<components['schemas']['AiProvider'][]> {
-        const url = `ai/providers`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
