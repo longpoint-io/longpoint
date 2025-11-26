@@ -1,4 +1,3 @@
-export { AiModule } from './ai';
 export { AuthModule } from './auth';
 export { ClassifierModule } from './classifier';
 export { CommonModule } from './common';

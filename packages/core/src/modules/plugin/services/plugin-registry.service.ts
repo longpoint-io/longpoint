@@ -1,13 +1,9 @@
 import {
-  AiPluginConfig,
-  AiPluginManifest,
   ClassifierContribution,
   LongpointPluginConfig,
   PluginConfig,
   StorageContribution,
   VectorContribution,
-  VectorPluginConfig,
-  VectorPluginManifest,
 } from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
 import { toBase64DataUri } from '@longpoint/utils/string';
@@ -17,28 +13,7 @@ import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { extname, join } from 'path';
 
-export type PluginType = 'ai' | 'vector';
-
-export type ManifestForType<T extends PluginType> = T extends 'ai'
-  ? AiPluginManifest
-  : T extends 'vector'
-  ? VectorPluginManifest
-  : never;
-
-export type ConfigForType<T extends PluginType> = T extends 'ai'
-  ? AiPluginConfig
-  : T extends 'vector'
-  ? VectorPluginConfig
-  : never;
-
-export interface PluginRegistryEntry<T extends PluginType = PluginType> {
-  packageName: string;
-  packagePath: string;
-  manifest: ManifestForType<T>;
-  type: T;
-  provider: ConfigForType<T>['provider'];
-  derivedId: string;
-}
+export type PluginType = 'vector';
 
 export interface ClassificationProviderRegistryEntry {
   packageName: string;
@@ -73,7 +48,6 @@ export interface StorageProviderRegistryEntry {
 @Injectable()
 export class PluginRegistryService implements OnModuleInit {
   private readonly logger = new Logger(PluginRegistryService.name);
-  private readonly pluginRegistry = new Map<string, PluginRegistryEntry>();
   private readonly classificationProviderRegistry = new Map<
     string,
     ClassificationProviderRegistryEntry
@@ -96,22 +70,22 @@ export class PluginRegistryService implements OnModuleInit {
    * @param type - The plugin type (ai, vector)
    * @returns Array of plugin registry entries with strongly typed manifests
    */
-  listPlugins<T extends PluginType>(type: T): PluginRegistryEntry<T>[] {
-    return Array.from(this.pluginRegistry.values())
-      .filter((entry) => entry.type === type)
-      .map((entry) => entry as PluginRegistryEntry<T>);
-  }
+  // listPlugins<T extends PluginType>(type: T): PluginRegistryEntry<T>[] {
+  //   return Array.from(this.pluginRegistry.values())
+  //     .filter((entry) => entry.type === type)
+  //     .map((entry) => entry as PluginRegistryEntry<T>);
+  // }
 
   /**
    * Get a specific plugin by its derived ID.
    * @param id - The derived plugin ID (e.g., 's3', 'openai', 'pinecone')
    * @returns The plugin registry entry or null if not found
    */
-  getPluginById<T extends PluginType>(
-    id: string
-  ): PluginRegistryEntry<T> | null {
-    return this.pluginRegistry.get(id) as PluginRegistryEntry<T> | null;
-  }
+  // getPluginById<T extends PluginType>(
+  //   id: string
+  // ): PluginRegistryEntry<T> | null {
+  //   return this.pluginRegistry.get(id) as PluginRegistryEntry<T> | null;
+  // }
 
   /**
    * Get all classification providers.
@@ -209,7 +183,7 @@ export class PluginRegistryService implements OnModuleInit {
     }
 
     this.logger.log(
-      `${this.pluginRegistry.size} plugins loaded, ${this.classificationProviderRegistry.size} classification providers loaded, ${this.vectorProviderRegistry.size} vector providers loaded, ${this.storageProviderRegistry.size} storage providers loaded`
+      `${this.classificationProviderRegistry.size} classification providers loaded, ${this.vectorProviderRegistry.size} vector providers loaded, ${this.storageProviderRegistry.size} storage providers loaded`
     );
   }
 
@@ -248,20 +222,6 @@ export class PluginRegistryService implements OnModuleInit {
     }
 
     const derivedId = this.derivePluginId(packageName);
-
-    const processedManifest = await this.processManifest(
-      pluginConfig.manifest,
-      packagePath
-    );
-
-    this.pluginRegistry.set(derivedId, {
-      packageName,
-      packagePath,
-      manifest: processedManifest,
-      type: pluginConfig.type,
-      provider: pluginConfig.provider,
-      derivedId,
-    });
 
     this.logger.debug(`Loaded plugin: ${derivedId} (${packageName})`);
   }
@@ -378,25 +338,25 @@ export class PluginRegistryService implements OnModuleInit {
    * @param packagePath - The path to the plugin package
    * @returns The processed manifest
    */
-  private async processManifest(
-    manifest: any,
-    packagePath: string
-  ): Promise<any> {
-    if (manifest.image) {
-      const processedImage = await this.processImage(
-        manifest.image,
-        packagePath
-      );
-      if (processedImage) {
-        return {
-          ...manifest,
-          image: processedImage,
-        };
-      }
-    }
+  // private async processManifest(
+  //   manifest: any,
+  //   packagePath: string
+  // ): Promise<any> {
+  //   if (manifest.image) {
+  //     const processedImage = await this.processImage(
+  //       manifest.image,
+  //       packagePath
+  //     );
+  //     if (processedImage) {
+  //       return {
+  //         ...manifest,
+  //         image: processedImage,
+  //       };
+  //     }
+  //   }
 
-    return manifest;
-  }
+  //   return manifest;
+  // }
 
   /**
    * Process an image value from the manifest.

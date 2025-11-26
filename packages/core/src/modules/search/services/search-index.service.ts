@@ -1,5 +1,4 @@
 import { Prisma } from '@/database';
-import { AiProviderService } from '@/modules/ai';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { ConfigValues } from '@longpoint/config-schema';
@@ -21,7 +20,6 @@ export class SearchIndexService {
     private readonly prismaService: PrismaService,
     private readonly vectorProviderService: VectorProviderService,
     private readonly mediaContainerService: MediaContainerService,
-    private readonly aiProviderService: AiProviderService,
     private readonly configSchemaService: ConfigSchemaService
   ) {}
 
@@ -69,9 +67,7 @@ export class SearchIndexService {
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
       vectorProvider,
-      embeddingModel: index.embeddingModelId
-        ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
-        : null,
+      embeddingModel: null,
       mediaContainerService: this.mediaContainerService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,
@@ -92,9 +88,6 @@ export class SearchIndexService {
         await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
           index.id
         );
-      const embeddingModel = index.embeddingModelId
-        ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
-        : null;
       indexEntities.push(
         new SearchIndexEntity({
           id: index.id,
@@ -104,7 +97,7 @@ export class SearchIndexService {
           lastIndexedAt: index.lastIndexedAt,
           mediaIndexed: index.mediaIndexed,
           vectorProvider,
-          embeddingModel,
+          embeddingModel: null,
           mediaContainerService: this.mediaContainerService,
           prismaService: this.prismaService,
           configFromDb: index.config as ConfigValues,
@@ -130,9 +123,6 @@ export class SearchIndexService {
       await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
         index.id
       );
-    const embeddingModel = index.embeddingModelId
-      ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
-      : null;
 
     return new SearchIndexEntity({
       id: index.id,
@@ -142,7 +132,7 @@ export class SearchIndexService {
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
       vectorProvider,
-      embeddingModel,
+      embeddingModel: null,
       mediaContainerService: this.mediaContainerService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,
@@ -174,9 +164,6 @@ export class SearchIndexService {
       await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
         index.id
       );
-    const embeddingModel = index.embeddingModelId
-      ? await this.aiProviderService.getModelOrThrow(index.embeddingModelId)
-      : null;
 
     return new SearchIndexEntity({
       id: index.id,
@@ -186,7 +173,7 @@ export class SearchIndexService {
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
       vectorProvider,
-      embeddingModel,
+      embeddingModel: null,
       mediaContainerService: this.mediaContainerService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,

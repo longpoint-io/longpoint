@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AiModule } from '../ai';
 import { EventModule } from '../event';
 import { MediaModule } from '../media';
 import {
@@ -12,7 +11,7 @@ import { SearchIndexService } from './services/search-index.service';
 import { VectorProviderService } from './services/vector-provider.service';
 
 @Module({
-  imports: [MediaModule, AiModule, EventModule],
+  imports: [MediaModule, EventModule],
   controllers: [
     SearchController,
     SearchIndexController,
