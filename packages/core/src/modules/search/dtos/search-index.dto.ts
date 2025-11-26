@@ -1,4 +1,3 @@
-import { AiModelSummaryDto } from '@/modules/ai';
 import { ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
@@ -9,7 +8,6 @@ export interface SearchIndexParams {
   name: string;
   active: boolean;
   indexing: boolean;
-  embeddingModel: AiModelSummaryDto | null;
   vectorProvider: VectorProviderShortDto;
   mediaIndexed: number;
   lastIndexedAt: Date | null;
@@ -44,24 +42,6 @@ export class SearchIndexDto {
     example: false,
   })
   indexing: boolean;
-
-  @ApiProperty({
-    description: 'The model used by the index to generate vector embeddings',
-    type: () => AiModelSummaryDto,
-    nullable: true,
-    example: {
-      id: 'text-embedding-3-small',
-      name: 'Text Embedding 3 Small',
-      fullyQualifiedId: 'openai/text-embedding-3-small',
-      provider: {
-        id: 'openai',
-        name: 'OpenAI',
-        image: null,
-        needsConfig: false,
-      },
-    },
-  })
-  embeddingModel: AiModelSummaryDto | null;
 
   @ApiProperty({
     description: 'The vector database provider used by the index',
@@ -100,7 +80,6 @@ export class SearchIndexDto {
     this.name = data.name;
     this.active = data.active;
     this.indexing = data.indexing;
-    this.embeddingModel = data.embeddingModel;
     this.vectorProvider = data.vectorProvider;
     this.mediaIndexed = data.mediaIndexed;
     this.lastIndexedAt = data.lastIndexedAt;
