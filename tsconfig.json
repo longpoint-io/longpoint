@@ -46,9 +46,6 @@
       "path": "./packages/config-schema"
     },
     {
-      "path": "./packages/plugins/vector-pinecone"
-    },
-    {
       "path": "./packages/plugins/anthropic"
     },
     {
@@ -59,6 +56,9 @@
     },
     {
       "path": "./packages/plugins/aws"
+    },
+    {
+      "path": "./packages/plugins/pinecone"
     }
   ]
 }

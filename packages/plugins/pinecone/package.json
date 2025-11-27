@@ -26,6 +26,6 @@
     "tslib": "^2.3.0"
   },
   "nx": {
-    "name": "vector-pinecone"
+    "name": "plugin-pinecone"
   }
 }

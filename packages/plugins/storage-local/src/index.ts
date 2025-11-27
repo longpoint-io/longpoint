@@ -1,6 +1,5 @@
 import { LongpointPluginConfig } from '@longpoint/devkit';
-import { LocalStorageProvider } from './local.js';
-import { manifest } from './manifest.js';
+import { LocalStorageProvider } from './local-storage-provider.js';
 
 export default {
   displayName: 'Local Storage',
@@ -8,8 +7,7 @@ export default {
     storage: {
       local: {
         provider: LocalStorageProvider,
-        displayName: manifest.displayName,
-        configSchema: manifest.configSchema,
+        displayName: 'Local Storage',
       },
     },
   },
