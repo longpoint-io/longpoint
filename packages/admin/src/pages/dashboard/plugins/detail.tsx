@@ -35,7 +35,7 @@ export function PluginDetail() {
     error,
   } = useQuery({
     queryKey: ['plugin', pluginId],
-    queryFn: () => client.system.getPlugin(pluginId!),
+    queryFn: () => client.plugins.getPlugin(pluginId!),
     enabled: !!pluginId,
   });
 
@@ -61,7 +61,7 @@ export function PluginDetail() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: { config: Record<string, any> }) => {
-      return client.system.updatePluginSettings(pluginId!, data);
+      return client.plugins.updatePluginSettings(pluginId!, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['plugin', pluginId] });
@@ -182,12 +182,6 @@ export function PluginDetail() {
                   {plugin.packageName}
                 </p>
               </Field>
-              {plugin.type && (
-                <Field>
-                  <FieldLabel>Type</FieldLabel>
-                  <p className="text-sm capitalize">{plugin.type}</p>
-                </Field>
-              )}
               {plugin.hasSettings && (
                 <Field>
                   <FieldLabel>Settings</FieldLabel>

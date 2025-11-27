@@ -1,9 +1,7 @@
 import { PluginCard } from '@/components/plugin-card';
 import { useClient } from '@/hooks/common/use-client';
-import { Button } from '@longpoint/ui/components/button';
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -18,7 +16,7 @@ export function Plugins() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['plugins'],
-    queryFn: () => client.system.listPlugins(),
+    queryFn: () => client.plugins.listPlugins(),
   });
 
   if (isLoading) {
@@ -86,9 +84,7 @@ export function Plugins() {
               <EmptyMedia variant="icon">
                 <PlugIcon className="h-12 w-12" />
               </EmptyMedia>
-              <EmptyTitle className="text-2xl">
-                No plugins installed
-              </EmptyTitle>
+              <EmptyTitle className="text-2xl">No plugins installed</EmptyTitle>
               <EmptyDescription className="text-base">
                 Plugins will appear here once installed
               </EmptyDescription>
@@ -105,4 +101,3 @@ export function Plugins() {
     </div>
   );
 }
-

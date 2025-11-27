@@ -7,7 +7,7 @@ import { ApiPluginNotFoundResponse } from './plugin.errors';
 import { PluginService } from './services';
 
 @Controller('plugins')
-@ApiSdkTag(SdkTag.System)
+@ApiSdkTag(SdkTag.Plugins)
 @ApiBearerAuth()
 export class PluginController {
   constructor(private readonly pluginService: PluginService) {}

@@ -956,7 +956,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-27T06:24:49.804Z
+             * @example 2025-11-27T06:38:12.333Z
              */
             createdAt: string;
             /**
@@ -1008,7 +1008,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-27T06:24:49.804Z
+             * @example 2025-11-27T06:38:12.333Z
              */
             createdAt: string;
             /**
@@ -1037,7 +1037,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-27T06:24:49.804Z
+             * @example 2025-11-27T06:38:12.333Z
              */
             createdAt: string;
             /**
