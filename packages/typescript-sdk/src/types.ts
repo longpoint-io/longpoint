@@ -956,7 +956,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-26T18:22:25.168Z
+             * @example 2025-11-27T06:24:49.804Z
              */
             createdAt: string;
             /**
@@ -1008,7 +1008,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-26T18:22:25.168Z
+             * @example 2025-11-27T06:24:49.804Z
              */
             createdAt: string;
             /**
@@ -1037,7 +1037,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-26T18:22:25.168Z
+             * @example 2025-11-27T06:24:49.804Z
              */
             createdAt: string;
             /**
@@ -1158,11 +1158,6 @@ export interface components {
             settingsValues: {
                 [key: string]: unknown;
             } | null;
-            /**
-             * @description The type of the plugin
-             * @enum {string|null}
-             */
-            type: "storage" | "ai" | "vector" | null;
         };
         PluginSummary: {
             /** @description A brief description of the plugin */
@@ -1184,11 +1179,6 @@ export interface components {
              * @example openai
              */
             id: string;
-            /**
-             * @description The type of the plugin
-             * @enum {string|null}
-             */
-            type: "storage" | "ai" | "vector" | null;
         };
         SearchIndex: {
             /**

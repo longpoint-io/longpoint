@@ -1,7 +1,6 @@
 import {
   ClassifierContribution,
   LongpointPluginConfig,
-  PluginConfig,
   StorageContribution,
   VectorContribution,
 } from '@longpoint/devkit';
@@ -13,35 +12,35 @@ import { readdir, readFile } from 'fs/promises';
 import { createRequire } from 'module';
 import { extname, join } from 'path';
 
-export type PluginType = 'vector';
-
-export interface ClassificationProviderRegistryEntry {
+interface BaseContributionRegistryEntry {
   packageName: string;
   packagePath: string;
   pluginId: string;
+  fullyQualifiedId: string;
+  pluginConfig: LongpointPluginConfig<any>;
+}
+export interface ClassificationProviderRegistryEntry
+  extends BaseContributionRegistryEntry {
   classifierId: string;
-  fullyQualifiedId: string;
   contribution: ClassifierContribution<any>;
-  pluginConfig: LongpointPluginConfig<any>;
 }
 
-export interface VectorProviderRegistryEntry {
-  packageName: string;
-  packagePath: string;
-  pluginId: string;
+export interface VectorProviderRegistryEntry
+  extends BaseContributionRegistryEntry {
   vectorId: string;
-  fullyQualifiedId: string;
   contribution: VectorContribution<any>;
-  pluginConfig: LongpointPluginConfig<any>;
 }
 
-export interface StorageProviderRegistryEntry {
+export interface StorageProviderRegistryEntry
+  extends BaseContributionRegistryEntry {
+  storageId: string;
+  contribution: StorageContribution<any>;
+}
+
+export interface PluginRegistryEntry {
+  pluginId: string;
   packageName: string;
   packagePath: string;
-  pluginId: string;
-  storageId: string;
-  fullyQualifiedId: string;
-  contribution: StorageContribution<any>;
   pluginConfig: LongpointPluginConfig<any>;
 }
 
@@ -64,28 +63,6 @@ export class PluginRegistryService implements OnModuleInit {
   async onModuleInit() {
     await this.discoverAllPlugins();
   }
-
-  /**
-   * Get all plugins of a specific type.
-   * @param type - The plugin type (ai, vector)
-   * @returns Array of plugin registry entries with strongly typed manifests
-   */
-  // listPlugins<T extends PluginType>(type: T): PluginRegistryEntry<T>[] {
-  //   return Array.from(this.pluginRegistry.values())
-  //     .filter((entry) => entry.type === type)
-  //     .map((entry) => entry as PluginRegistryEntry<T>);
-  // }
-
-  /**
-   * Get a specific plugin by its derived ID.
-   * @param id - The derived plugin ID (e.g., 's3', 'openai', 'pinecone')
-   * @returns The plugin registry entry or null if not found
-   */
-  // getPluginById<T extends PluginType>(
-  //   id: string
-  // ): PluginRegistryEntry<T> | null {
-  //   return this.pluginRegistry.get(id) as PluginRegistryEntry<T> | null;
-  // }
 
   /**
    * Get all classification providers.
@@ -138,6 +115,99 @@ export class PluginRegistryService implements OnModuleInit {
    */
   getStorageProviderById(id: string): StorageProviderRegistryEntry | null {
     return this.storageProviderRegistry.get(id) || null;
+  }
+
+  /**
+   * Get a plugin by its plugin ID (e.g., 'openai', 's3').
+   * Aggregates from all provider registries and returns the first matching plugin.
+   * @param pluginId - The plugin ID
+   * @returns The plugin registry entry or null if not found
+   */
+  getPluginById(pluginId: string): PluginRegistryEntry | null {
+    // Check classification providers
+    for (const entry of this.classificationProviderRegistry.values()) {
+      if (entry.pluginId === pluginId) {
+        return {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        };
+      }
+    }
+
+    // Check vector providers
+    for (const entry of this.vectorProviderRegistry.values()) {
+      if (entry.pluginId === pluginId) {
+        return {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        };
+      }
+    }
+
+    // Check storage providers
+    for (const entry of this.storageProviderRegistry.values()) {
+      if (entry.pluginId === pluginId) {
+        return {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * List all installed plugins, deduplicated by pluginId.
+   * Aggregates from all provider registries.
+   * @returns Array of plugin registry entries
+   */
+  listPlugins(): PluginRegistryEntry[] {
+    const pluginMap = new Map<string, PluginRegistryEntry>();
+
+    // Add classification provider plugins
+    for (const entry of this.classificationProviderRegistry.values()) {
+      if (!pluginMap.has(entry.pluginId)) {
+        pluginMap.set(entry.pluginId, {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        });
+      }
+    }
+
+    // Add vector provider plugins
+    for (const entry of this.vectorProviderRegistry.values()) {
+      if (!pluginMap.has(entry.pluginId)) {
+        pluginMap.set(entry.pluginId, {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        });
+      }
+    }
+
+    // Add storage provider plugins
+    for (const entry of this.storageProviderRegistry.values()) {
+      if (!pluginMap.has(entry.pluginId)) {
+        pluginMap.set(entry.pluginId, {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        });
+      }
+    }
+
+    return Array.from(pluginMap.values());
   }
 
   /**
@@ -197,33 +267,14 @@ export class PluginRegistryService implements OnModuleInit {
     const require = createRequire(__filename);
     const pluginExport = require(join(packagePath, 'dist', 'index.js')).default;
 
-    // Check if it's a LongpointPluginConfig (new format)
     if (this.isLongpointPluginConfig(pluginExport)) {
       await this.loadLongpointPlugin(packageName, packagePath, pluginExport);
       return;
     }
 
-    // Otherwise, treat it as a legacy PluginConfig
-    const pluginConfig: PluginConfig = pluginExport;
-
-    if (!pluginConfig.type) {
-      this.logger.error(`Plugin ${packageName} has no type`);
-      return;
-    }
-
-    if (!pluginConfig.provider) {
-      this.logger.error(`Plugin ${packageName} has an invalid provider class`);
-      return;
-    }
-
-    if (!pluginConfig.manifest) {
-      this.logger.error(`Plugin ${packageName} has an invalid manifest`);
-      return;
-    }
-
-    const derivedId = this.derivePluginId(packageName);
-
-    this.logger.debug(`Loaded plugin: ${derivedId} (${packageName})`);
+    this.logger.error(
+      `Plugin ${packageName} does not export a valid LongpointPluginConfig`
+    );
   }
 
   /**
@@ -250,7 +301,6 @@ export class PluginRegistryService implements OnModuleInit {
   ) {
     const pluginId = this.derivePluginId(packageName);
 
-    // Process icon if present
     let processedIcon: string | undefined;
     if (pluginConfig.icon) {
       processedIcon = await this.processImage(pluginConfig.icon, packagePath);
@@ -332,33 +382,6 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
-   * Process a manifest, handling image conversion for AI and Vector plugins.
-   * @param manifest - The manifest to process
-   * @param type - The plugin type
-   * @param packagePath - The path to the plugin package
-   * @returns The processed manifest
-   */
-  // private async processManifest(
-  //   manifest: any,
-  //   packagePath: string
-  // ): Promise<any> {
-  //   if (manifest.image) {
-  //     const processedImage = await this.processImage(
-  //       manifest.image,
-  //       packagePath
-  //     );
-  //     if (processedImage) {
-  //       return {
-  //         ...manifest,
-  //         image: processedImage,
-  //       };
-  //     }
-  //   }
-
-  //   return manifest;
-  // }
-
-  /**
    * Process an image value from the manifest.
    * If it's a URL (starts with http:// or https://), return it as is.
    * If it's a local file path, read it and convert to a base64 data URI.
@@ -370,12 +393,10 @@ export class PluginRegistryService implements OnModuleInit {
     imageValue: string,
     packagePath: string
   ): Promise<string | undefined> {
-    // If it's already a URL, return it as is
     if (imageValue.startsWith('http://') || imageValue.startsWith('https://')) {
       return imageValue;
     }
 
-    // Try to find the image file in the package
     // Check common locations: assets/, dist/assets/, or root
     const possiblePaths = [
       join(packagePath, 'assets', imageValue),
@@ -399,10 +420,8 @@ export class PluginRegistryService implements OnModuleInit {
     }
 
     try {
-      // Read the image file
       const imageBuffer = await readFile(imagePath);
 
-      // Determine MIME type from file extension
       const ext = extname(imagePath).toLowerCase();
       const mimeTypes: Record<string, string> = {
         '.png': 'image/png',
@@ -414,8 +433,6 @@ export class PluginRegistryService implements OnModuleInit {
       };
 
       const mimeType = mimeTypes[ext] || 'image/png';
-
-      // Convert to base64 data URI
       const base64 = imageBuffer.toString('base64');
       return toBase64DataUri(mimeType, base64);
     } catch (error) {

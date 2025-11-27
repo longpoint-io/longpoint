@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { PluginController } from './controllers/plugin.controller';
+import { PluginController } from './plugin.controller';
 import { PluginRegistryService, PluginService } from './services';
 
 @Global()
@@ -9,4 +9,3 @@ import { PluginRegistryService, PluginService } from './services';
   exports: [PluginRegistryService, PluginService],
 })
 export class PluginModule {}
-

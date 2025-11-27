@@ -8,73 +8,16 @@ import type {
   ConfigValues,
 } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
-import { IsObject } from 'class-validator';
-import { PluginType } from '../services/plugin-registry.service';
 
-export interface PluginSummaryParams {
+export interface PluginParams {
   id: string;
   displayName: string;
-  description?: string;
-  icon?: string;
-  type?: PluginType;
+  description?: string | null;
+  icon?: string | null;
   hasSettings: boolean;
-}
-
-export interface PluginParams extends PluginSummaryParams {
   packageName: string;
   settingsSchema?: ConfigSchemaDefinition;
   settingsValues?: ConfigValues;
-}
-
-@ApiSchema({ name: 'PluginSummary' })
-export class PluginSummaryDto {
-  @ApiProperty({
-    description: 'The ID of the plugin',
-    example: 'openai',
-  })
-  id: string;
-
-  @ApiProperty({
-    description: 'The display name of the plugin',
-    example: 'OpenAI',
-  })
-  displayName: string;
-
-  @ApiProperty({
-    description: 'A brief description of the plugin',
-    type: 'string',
-    nullable: true,
-  })
-  description: string | null;
-
-  @ApiProperty({
-    description: 'An icon image of the plugin (URL or base64 data URI)',
-    type: 'string',
-    nullable: true,
-  })
-  icon: string | null;
-
-  @ApiProperty({
-    description: 'The type of the plugin',
-    enum: ['storage', 'ai', 'vector'],
-    nullable: true,
-  })
-  type: PluginType | null;
-
-  @ApiProperty({
-    description: 'Whether the plugin has configurable settings',
-    example: true,
-  })
-  hasSettings: boolean;
-
-  constructor(data: PluginSummaryParams) {
-    this.id = data.id;
-    this.displayName = data.displayName;
-    this.description = data.description ?? null;
-    this.icon = data.icon ?? null;
-    this.type = data.type ?? null;
-    this.hasSettings = data.hasSettings;
-  }
 }
 
 @ApiSchema({ name: 'Plugin' })
@@ -104,13 +47,6 @@ export class PluginDto {
     nullable: true,
   })
   icon: string | null;
-
-  @ApiProperty({
-    description: 'The type of the plugin',
-    enum: ['storage', 'ai', 'vector'],
-    nullable: true,
-  })
-  type: PluginType | null;
 
   @ApiProperty({
     description: 'Whether the plugin has configurable settings',
@@ -147,7 +83,6 @@ export class PluginDto {
     this.displayName = data.displayName;
     this.description = data.description ?? null;
     this.icon = data.icon ?? null;
-    this.type = data.type ?? null;
     this.hasSettings = data.hasSettings;
     this.packageName = data.packageName;
     this.settingsSchema = data.settingsSchema
@@ -155,18 +90,4 @@ export class PluginDto {
       : null;
     this.settingsValues = data.settingsValues ?? null;
   }
-}
-
-@ApiSchema({ name: 'UpdatePluginSettings' })
-export class UpdatePluginSettingsDto {
-  @IsObject()
-  @ApiProperty({
-    description: 'The configuration values to update',
-    type: 'object',
-    additionalProperties: true,
-    example: {
-      apiKey: 'sk-1234567890',
-    },
-  })
-  config!: ConfigValues;
 }

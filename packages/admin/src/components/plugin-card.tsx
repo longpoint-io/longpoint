@@ -47,12 +47,6 @@ export function PluginCard({ plugin }: PluginCardProps) {
             {plugin.description}
           </p>
         )}
-        {plugin.type && (
-          <div className="text-sm">
-            <span className="text-muted-foreground">Type: </span>
-            <span className="font-medium capitalize">{plugin.type}</span>
-          </div>
-        )}
         {plugin.hasSettings && (
           <div className="text-xs text-muted-foreground">
             Configurable settings available
