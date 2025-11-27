@@ -5,7 +5,7 @@ import { promisify } from 'util';
 
 const pipelineAsync = promisify(pipeline);
 
-export class GCPStorageProvider extends StorageProvider {
+export class GoogleCloudStorageProvider extends StorageProvider {
   private storage: Storage;
   private bucketName: string;
 
