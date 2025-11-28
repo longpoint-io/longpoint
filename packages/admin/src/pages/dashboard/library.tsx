@@ -85,51 +85,53 @@ export function Library() {
         </div>
       )}
 
-      {isEmpty ? (
-        <div className="py-12">
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <UploadIcon className="h-12 w-12" />
-              </EmptyMedia>
-              <EmptyTitle className="text-2xl">
-                No media in your library
-              </EmptyTitle>
-              <EmptyDescription className="text-base">
-                Get started by uploading your first media files to organize and
-                manage your content.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button onClick={handleUpload} size="lg">
-                <UploadIcon className="h-5 w-5" />
-                Upload Media
-              </Button>
-            </EmptyContent>
-          </Empty>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold">
-                {currentPath === '/'
-                  ? 'All Items'
-                  : `Items in ${currentPath.split('/').pop()}`}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {items.length} {items.length === 1 ? 'item' : 'items'}
-              </p>
-            </div>
+      {!error ? (
+        isEmpty ? (
+          <div className="py-12">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <UploadIcon className="h-12 w-12" />
+                </EmptyMedia>
+                <EmptyTitle className="text-2xl">
+                  No media in your library
+                </EmptyTitle>
+                <EmptyDescription className="text-base">
+                  Get started by uploading your first media files to organize
+                  and manage your content.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={handleUpload} size="lg">
+                  <UploadIcon className="h-5 w-5" />
+                  Upload Media
+                </Button>
+              </EmptyContent>
+            </Empty>
           </div>
-          <MediaGrid
-            items={items}
-            links={data?.links || {}}
-            isLoading={isLoading}
-            onFolderClick={handleFolderClick}
-          />
-        </div>
-      )}
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h2 className="text-xl font-semibold">
+                  {currentPath === '/'
+                    ? 'All Items'
+                    : `Items in ${currentPath.split('/').pop()}`}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {items.length} {items.length === 1 ? 'item' : 'items'}
+                </p>
+              </div>
+            </div>
+            <MediaGrid
+              items={items}
+              links={data?.links || {}}
+              isLoading={isLoading}
+              onFolderClick={handleFolderClick}
+            />
+          </div>
+        )
+      ) : null}
     </div>
   );
 }
