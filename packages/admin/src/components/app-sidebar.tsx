@@ -16,7 +16,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -44,8 +43,8 @@ const sidebarItems = [
     icon: HomeIcon,
   },
   {
-    label: 'Library',
-    url: '/library',
+    label: 'Browser',
+    url: '/browser',
     icon: ImagePlayIcon,
   },
   {
@@ -111,7 +110,7 @@ export function AppSidebar() {
       {/* <SidebarSeparator /> */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+          {/* <SidebarGroupLabel>Dashboard</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
               {sidebarItems.map((item) => (
@@ -128,7 +127,6 @@ export function AppSidebar() {
                         <SidebarMenuSubItem key={subItem.label}>
                           <SidebarMenuSubButton asChild>
                             <Link to={subItem.url}>
-                              {subItem.icon && <subItem.icon />}
                               <span>{subItem.label}</span>
                             </Link>
                           </SidebarMenuSubButton>

@@ -1,11 +1,14 @@
 import { useClient } from '@/hooks/common/use-client';
 import { useUpload, type UploadFile } from '@longpoint/react';
 import { SupportedMimeType } from '@longpoint/types';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -41,6 +44,8 @@ export function UploadProvider({ children }: UploadProviderProps) {
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const client = useClient();
   const uploadHook = useUpload();
+  const queryClient = useQueryClient();
+  const hasInvalidatedRef = useRef(false);
 
   const openDialog = useCallback((files?: File[]) => {
     setIsOpen(true);
@@ -137,6 +142,7 @@ export function UploadProvider({ children }: UploadProviderProps) {
   const reset = useCallback(() => {
     uploadHook.reset();
     setPendingFiles([]);
+    hasInvalidatedRef.current = false;
   }, [uploadHook]);
 
   const allFiles = [
@@ -148,6 +154,30 @@ export function UploadProvider({ children }: UploadProviderProps) {
     })),
     ...uploadHook.files,
   ];
+
+  // Invalidate queries when uploads complete
+  useEffect(() => {
+    if (allFiles.length === 0) {
+      hasInvalidatedRef.current = false;
+      return;
+    }
+
+    // Check if all uploads are complete (success or error, not pending or uploading)
+    const allComplete = allFiles.every(
+      (file) => file.status === 'success' || file.status === 'error'
+    );
+
+    // Check if there are any successful uploads
+    const hasSuccessfulUploads = allFiles.some(
+      (file) => file.status === 'success'
+    );
+
+    if (allComplete && hasSuccessfulUploads && !hasInvalidatedRef.current) {
+      // Invalidate library tree queries to refresh the media list
+      queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      hasInvalidatedRef.current = true;
+    }
+  }, [allFiles, queryClient]);
 
   const value: UploadContextType = {
     isOpen,

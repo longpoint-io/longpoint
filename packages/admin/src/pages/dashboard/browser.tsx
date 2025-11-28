@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { UploadIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
-export function Library() {
+export function Browser() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { openDialog } = useUploadContext();
   const client = useClient();
@@ -51,17 +51,8 @@ export function Library() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">Library</h1>
-          <p className="text-lg text-muted-foreground">
-            Manage your media files and content library
-          </p>
-        </div>
-        <Button onClick={handleUpload} size="lg" className="shrink-0">
-          <UploadIcon className="h-5 w-5" />
-          Upload Media
-        </Button>
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tight">Browser</h1>
       </div>
 
       {currentPath !== '/' && (
@@ -104,7 +95,7 @@ export function Library() {
               <EmptyContent>
                 <Button onClick={handleUpload} size="lg">
                   <UploadIcon className="h-5 w-5" />
-                  Upload Media
+                  Upload
                 </Button>
               </EmptyContent>
             </Empty>

@@ -2,14 +2,14 @@ import { Route, Routes } from 'react-router-dom';
 import { AuthLayout } from '../layouts/auth-layout';
 import { DashboardLayout } from '../layouts/dashboard-layout';
 import { SignIn } from '../pages/auth/sign-in';
+import { Browser } from '../pages/dashboard/browser';
 import { Classifiers } from '../pages/dashboard/classifiers';
 import { CreateClassifier } from '../pages/dashboard/classifiers/create';
 import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
 import { DashboardHome } from '../pages/dashboard/home';
-import { Library } from '../pages/dashboard/library';
 import { MediaDetail } from '../pages/dashboard/media-detail';
-import { Plugins } from '../pages/dashboard/plugins/index';
 import { PluginDetail } from '../pages/dashboard/plugins/detail';
+import { Plugins } from '../pages/dashboard/plugins/index';
 import { SearchResults } from '../pages/dashboard/search-results';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
@@ -59,12 +59,12 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/library"
+        path="/browser"
         element={
           <SetupGuard>
             <AuthGuard>
               <DashboardLayout>
-                <Library />
+                <Browser />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

@@ -9,6 +9,7 @@ export class DeleteMediaContainerDto {
     description: 'Whether to permanently delete the media container',
     example: false,
     default: false,
+    type: Boolean,
   })
   permanently = false;
 }

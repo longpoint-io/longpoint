@@ -30,7 +30,7 @@ export function Classifiers() {
           <div>
             <h2 className="text-3xl font-bold">Classifiers</h2>
             <p className="text-muted-foreground mt-2">
-              Automatically categorize and analyze your media
+              Automatically analyze your media
             </p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export function Classifiers() {
           <div>
             <h2 className="text-3xl font-bold">Classifiers</h2>
             <p className="text-muted-foreground mt-2">
-              Automatically categorize and analyze your media
+              Automatically analyze your media
             </p>
           </div>
         </div>
@@ -76,11 +76,11 @@ export function Classifiers() {
         <div>
           <h2 className="text-3xl font-bold">Classifiers</h2>
           <p className="text-muted-foreground mt-2">
-            Automatically categorize and analyze your media
+            Automatically analyze your media
           </p>
         </div>
         <Button onClick={() => navigate('/classifiers/create')}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4" />
           Create Classifier
         </Button>
       </div>

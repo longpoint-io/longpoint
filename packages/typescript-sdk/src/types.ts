@@ -855,7 +855,7 @@ export interface components {
              * @default false
              * @example false
              */
-            permanently: Record<string, never>;
+            permanently: boolean;
         };
         DirectoryTreeItem: {
             /**
@@ -882,10 +882,27 @@ export interface components {
              */
             containerId: string;
             /**
+             * @description The output format of the transformed image
+             * @example webp
+             * @enum {string}
+             */
+            f?: "webp" | "jpeg" | "jpg" | "png";
+            /**
+             * @description How the image should be resized to fit the dimensions
+             * @example cover
+             * @enum {string}
+             */
+            fit?: "contain" | "cover" | "fill" | "inside" | "outside";
+            /**
              * @description The height of the transformed image in pixels
              * @example 600
              */
             h?: number;
+            /**
+             * @description The quality of the transformed image (1-100). Applies to JPEG and WebP formats only.
+             * @example 80
+             */
+            q?: number;
             /**
              * @description The width of the transformed image in pixels
              * @example 800
@@ -971,7 +988,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-28T04:31:20.458Z
+             * @example 2025-11-28T06:05:39.257Z
              */
             createdAt: string;
             /**
@@ -1023,7 +1040,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-28T04:31:20.458Z
+             * @example 2025-11-28T06:05:39.257Z
              */
             createdAt: string;
             /**
@@ -1052,7 +1069,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-28T04:31:20.458Z
+             * @example 2025-11-28T06:05:39.257Z
              */
             createdAt: string;
             /**

@@ -54,7 +54,7 @@ export function MediaDetail() {
       queryClient.invalidateQueries({ queryKey: ['library-tree'] });
       setDeleteDialogOpen(false);
       setPermanentlyDelete(false);
-      navigate('/library');
+      navigate('/browser');
     },
     onError: (error) => {
       toast.error('Failed to delete media', {
@@ -195,9 +195,6 @@ export function MediaDetail() {
         {/* Preview Section */}
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-            </CardHeader>
             <CardContent>
               {primaryAsset?.url && primaryAsset.status === 'READY' ? (
                 <div className="relative w-full bg-muted rounded-lg overflow-hidden">

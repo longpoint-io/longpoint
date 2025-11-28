@@ -29,7 +29,6 @@ import {
 } from '@longpoint/ui/components/select';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -119,16 +118,7 @@ export function CreateClassifier() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/classifiers')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <div>
-          <h2 className="text-3xl font-bold">Create Classifier</h2>
-          <p className="text-muted-foreground mt-2">
-            Set up a new AI classifier for your media
-          </p>
-        </div>
+        <h2 className="text-3xl font-bold">Create Classifier</h2>
       </div>
 
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -193,9 +183,9 @@ export function CreateClassifier() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Model Selection</CardTitle>
+              <CardTitle>Provider</CardTitle>
               <CardDescription>
-                Choose the AI model to use for this classifier
+                Choose the classification provider to use
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -229,9 +219,6 @@ export function CreateClassifier() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FieldDescription>
-                    Select the classification provider to use
-                  </FieldDescription>
                 </Field>
               )}
             </CardContent>

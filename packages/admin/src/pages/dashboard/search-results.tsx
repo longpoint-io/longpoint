@@ -44,7 +44,6 @@ export function SearchResults() {
     path: result.path,
     status: result.status,
     createdAt: result.createdAt,
-    thumbnails: result.thumbnails,
   }));
 
   return (
@@ -53,7 +52,8 @@ export function SearchResults() {
         <h1 className="text-4xl font-bold tracking-tight">Search Results</h1>
         {query && (
           <p className="text-lg text-muted-foreground">
-            Results for &quot;{query}&quot;
+            {results.length} {results.length === 1 ? 'result' : 'results'} for
+            &quot;{query}&quot;
           </p>
         )}
       </div>
@@ -102,14 +102,6 @@ export function SearchResults() {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold">Search Results</h2>
-              <p className="text-sm text-muted-foreground">
-                {results.length} {results.length === 1 ? 'result' : 'results'}
-              </p>
-            </div>
-          </div>
           <MediaGrid
             items={items}
             isLoading={isLoading}
