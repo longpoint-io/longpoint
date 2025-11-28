@@ -122,6 +122,10 @@ export class ClassifierEntity {
         ClassifierEvents.CLASSIFIER_RUN_COMPLETE,
         {
           mediaContainerId: containerId,
+          mediaAssetId,
+          classifierId: this.id,
+          classifierName: this.name,
+          result,
         }
       );
       return updatedRun;

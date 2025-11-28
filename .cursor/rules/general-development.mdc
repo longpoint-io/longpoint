@@ -11,3 +11,7 @@ alwaysApply: true
 ## Fullstack considerations
 * When creating/updating API endpoints, run `npx nx build @longpoint/sdk` to regenerate the typescript client. You may then use the regenerated client when building Admin UI.
 * If changing database schema, you may need to push the schema and regenerate types. Ask for confirmation to run `npx nx db:push core`
+
+## Conventions
+* Avoid repetitive copy when possible (Heading: "Details", Subheading: "Details about the asset")
+* Avoid overly verbose comments. Try to comment when code is less self-documenting

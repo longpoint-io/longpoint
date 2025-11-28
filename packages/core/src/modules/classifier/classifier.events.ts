@@ -1,3 +1,4 @@
+import { JsonObject } from '@/shared/types/object.types';
 import { EventPayload } from '../event/event.types';
 
 export const ClassifierEvents = {
@@ -9,6 +10,10 @@ export type ClassifierEvents =
 
 export interface ClassifierRunCompleteEventPayload extends EventPayload {
   mediaContainerId: string;
+  mediaAssetId: string;
+  classifierId: string;
+  classifierName: string;
+  result: JsonObject | null;
 }
 
 export interface ClassifierEventPayloads {

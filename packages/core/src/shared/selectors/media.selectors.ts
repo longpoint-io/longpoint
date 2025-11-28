@@ -42,6 +42,7 @@ export const selectMediaAsset = () => {
     height: true,
     size: true,
     aspectRatio: true,
+    metadata: true,
     classifierRuns: {
       select: selectClassifierRun(),
     },

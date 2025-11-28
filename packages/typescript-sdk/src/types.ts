@@ -921,6 +921,21 @@ export interface components {
              */
             id: string;
             /**
+             * @description Freeform metadata that can be populated by classifiers or manually edited
+             * @example {
+             *       "my-classifier": {
+             *         "tags": [
+             *           "person",
+             *           "car",
+             *           "tree"
+             *         ]
+             *       }
+             *     }
+             */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
+            /**
              * @description The MIME type of the media asset
              * @example image/jpeg
              * @enum {string}
@@ -956,7 +971,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-27T06:38:12.333Z
+             * @example 2025-11-28T04:31:20.458Z
              */
             createdAt: string;
             /**
@@ -1008,7 +1023,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-27T06:38:12.333Z
+             * @example 2025-11-28T04:31:20.458Z
              */
             createdAt: string;
             /**
@@ -1037,7 +1052,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-27T06:38:12.333Z
+             * @example 2025-11-28T04:31:20.458Z
              */
             createdAt: string;
             /**

@@ -6,6 +6,7 @@ import { StorageModule } from '../storage';
 import { MediaContainerController } from './controllers/media-container.controller';
 import { MediaLinkGeneratorController } from './controllers/media-link-generator.controller';
 import { MediaTreeController } from './controllers/media-tree.controller';
+import { MediaMetadataListeners } from './listeners/media-metadata.listeners';
 import { MediaContainerService } from './services/media-container.service';
 import { MediaLinkGeneratorService } from './services/media-link-generator.service';
 import { MediaTreeService } from './services/media-tree.service';
@@ -22,6 +23,7 @@ import { MediaTreeService } from './services/media-tree.service';
     MediaProbeService,
     MediaTreeService,
     MediaLinkGeneratorService,
+    MediaMetadataListeners,
   ],
   exports: [MediaContainerService],
 })
