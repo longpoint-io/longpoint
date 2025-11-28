@@ -1,7 +1,7 @@
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { MediaContainerNotFound } from '@/modules/media';
 import { StorageUnitService } from '@/modules/storage';
-import type { StorageProvider } from '@longpoint/devkit';
+import { StorageProviderEntity } from '@/modules/storage/entities';
 import {
   getContentType,
   getMediaContainerPath,
@@ -11,8 +11,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import crypto from 'crypto';
 import type { Request, Response } from 'express';
 import { SignedUrlParamsDto } from '../dtos';
-import type { TransformParams } from '../dtos/transform-params.dto';
 import { FileNotFound, InvalidFilePath } from '../file-delivery.errors';
+import { TransformParams } from '../file-delivery.types';
 import { ImageTransformService } from './image-transform.service';
 import { UrlSigningService } from './url-signing.service';
 
@@ -41,12 +41,7 @@ export class FileDeliveryService {
     const filename = pathParts[1];
 
     const pathForSignature = `${containerId}/${filename}`;
-    this.urlSigningService.verifySignature(pathForSignature, {
-      sig: query.sig,
-      expires: query.expires,
-      w: query.w,
-      h: query.h,
-    });
+    this.urlSigningService.verifySignature(pathForSignature, query);
 
     const container = await this.prismaService.mediaContainer.findUnique({
       where: {
@@ -73,7 +68,12 @@ export class FileDeliveryService {
       suffix: filename,
     });
 
-    const hasTransformParams = query.w !== undefined || query.h !== undefined;
+    const hasTransformParams =
+      query.w !== undefined ||
+      query.h !== undefined ||
+      query.q !== undefined ||
+      query.f !== undefined ||
+      query.fit !== undefined;
 
     if (!hasTransformParams) {
       try {
@@ -90,11 +90,23 @@ export class FileDeliveryService {
     }
 
     try {
-      const recipeHash = this.generateCacheHash(filename, {
+      const transformParams: TransformParams = {
         w: query.w,
         h: query.h,
-      });
-      const outputExt = 'webp';
+        q: query.q,
+        f: query.f,
+        fit: query.fit,
+      };
+
+      const recipeHash = this.generateCacheHash(filename, transformParams);
+
+      // Determine output format: normalize jpg to jpeg, default to webp
+      const outputFormat = query.f
+        ? query.f.toLowerCase() === 'jpg'
+          ? 'jpeg'
+          : query.f.toLowerCase()
+        : 'webp';
+      const outputExt = outputFormat;
 
       const cachePath = await this.getCachePath(
         containerId,
@@ -119,6 +131,9 @@ export class FileDeliveryService {
         {
           width: query.w,
           height: query.h,
+          quality: query.q,
+          format: query.f,
+          fit: query.fit,
         }
       );
 
@@ -147,11 +162,20 @@ export class FileDeliveryService {
   private normalizeTransformParams(params: TransformParams) {
     const entries: string[] = [];
 
-    if (params.w !== undefined) {
-      entries.push(`w:${params.w}`);
+    if (params.f !== undefined) {
+      entries.push(`f:${params.f}`);
+    }
+    if (params.fit !== undefined) {
+      entries.push(`fit:${params.fit}`);
     }
     if (params.h !== undefined) {
       entries.push(`h:${params.h}`);
+    }
+    if (params.q !== undefined) {
+      entries.push(`q:${params.q}`);
+    }
+    if (params.w !== undefined) {
+      entries.push(`w:${params.w}`);
     }
 
     entries.sort();
@@ -181,12 +205,12 @@ export class FileDeliveryService {
     });
   }
 
-  private checkCacheExists(provider: StorageProvider, cachePath: string) {
+  private checkCacheExists(provider: StorageProviderEntity, cachePath: string) {
     return provider.exists(cachePath);
   }
 
   private writeCache(
-    provider: StorageProvider,
+    provider: StorageProviderEntity,
     cachePath: string,
     buffer: Buffer
   ) {

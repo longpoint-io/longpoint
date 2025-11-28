@@ -2,18 +2,15 @@ import { ConfigService } from '@/modules/common/services';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { InvalidSignature } from '../file-delivery.errors';
+import { TransformParams } from '../file-delivery.types';
 
-export interface GenerateSignedUrlOptions {
-  w?: number;
-  h?: number;
+export interface GenerateSignedUrlOptions extends TransformParams {
   expiresInSeconds?: number;
 }
 
-export interface VerifySignatureQuery {
+export interface VerifySignatureQuery extends TransformParams {
   sig?: string;
   expires?: number;
-  w?: number;
-  h?: number;
 }
 
 @Injectable()
@@ -34,16 +31,32 @@ export class UrlSigningService {
     filename: string,
     options: GenerateSignedUrlOptions = {}
   ): string {
-    const { w, h, expiresInSeconds = this.defaultExpirationSeconds } = options;
+    const {
+      w,
+      h,
+      q,
+      f,
+      fit,
+      expiresInSeconds = this.defaultExpirationSeconds,
+    } = options;
     const expires = Math.floor(Date.now() / 1000) + expiresInSeconds;
 
-    // Build the string to sign: {containerId}/{filename}?w={w}&h={h}&expires={timestamp}
+    // Build the string to sign with parameters in alphabetical order
     const queryParams: string[] = [];
-    if (w !== undefined) {
-      queryParams.push(`w=${w}`);
+    if (f !== undefined) {
+      queryParams.push(`f=${f}`);
+    }
+    if (fit !== undefined) {
+      queryParams.push(`fit=${fit}`);
     }
     if (h !== undefined) {
       queryParams.push(`h=${h}`);
+    }
+    if (q !== undefined) {
+      queryParams.push(`q=${q}`);
+    }
+    if (w !== undefined) {
+      queryParams.push(`w=${w}`);
     }
     queryParams.push(`expires=${expires}`);
 
@@ -66,6 +79,15 @@ export class UrlSigningService {
     if (h !== undefined) {
       urlParams.set('h', h.toString());
     }
+    if (q !== undefined) {
+      urlParams.set('q', q.toString());
+    }
+    if (f !== undefined) {
+      urlParams.set('f', f);
+    }
+    if (fit !== undefined) {
+      urlParams.set('fit', fit);
+    }
 
     const finalPath = `/m/${containerId}/${filename}?${urlParams.toString()}`;
     const url = new URL(finalPath, this.configService.get('server.baseUrl'))
@@ -80,7 +102,7 @@ export class UrlSigningService {
    * @throws UnauthorizedException if signature is invalid or URL has expired
    */
   verifySignature(path: string, query: VerifySignatureQuery): void {
-    const { sig, expires, w, h } = query;
+    const { sig, expires, w, h, q, f, fit } = query;
 
     if (!sig || !expires) {
       throw new InvalidSignature();
@@ -91,13 +113,22 @@ export class UrlSigningService {
       throw new InvalidSignature();
     }
 
-    // Rebuild the string that should have been signed
+    // Rebuild the string that should have been signed with parameters in alphabetical order
     const queryParams: string[] = [];
-    if (w !== undefined) {
-      queryParams.push(`w=${w}`);
+    if (f !== undefined) {
+      queryParams.push(`f=${f}`);
+    }
+    if (fit !== undefined) {
+      queryParams.push(`fit=${fit}`);
     }
     if (h !== undefined) {
       queryParams.push(`h=${h}`);
+    }
+    if (q !== undefined) {
+      queryParams.push(`q=${q}`);
+    }
+    if (w !== undefined) {
+      queryParams.push(`w=${w}`);
     }
     queryParams.push(`expires=${expires}`);
 
