@@ -46,6 +46,8 @@ model MediaAsset {
   height      Int?
   size        Int?
   aspectRatio Float?
+  /// Freeform metadata that can be populated by classifiers or manually edited
+  metadata    Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

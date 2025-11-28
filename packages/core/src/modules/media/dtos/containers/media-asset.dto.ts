@@ -1,6 +1,7 @@
 import { MediaAssetStatus } from '@/database';
 import { ClassifierRunDto } from '@/modules/classifier/dtos';
 import { type SelectedMediaAsset } from '@/shared/selectors/media.selectors';
+import { JsonObject } from '@/shared/types/object.types';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
@@ -63,6 +64,20 @@ export class MediaAssetDto {
   aspectRatio: number | null;
 
   @ApiProperty({
+    description:
+      'Freeform metadata that can be populated by classifiers or manually edited',
+    example: {
+      'my-classifier': {
+        tags: ['person', 'car', 'tree'],
+      },
+    },
+    type: 'object',
+    additionalProperties: true,
+    nullable: true,
+  })
+  metadata: JsonObject | null;
+
+  @ApiProperty({
     description: 'The URL of the media asset',
     type: 'string',
     example:
@@ -85,6 +100,7 @@ export class MediaAssetDto {
     this.height = data.height;
     this.size = data.size;
     this.aspectRatio = data.aspectRatio;
+    this.metadata = (data.metadata as JsonObject | null) ?? null;
     this.url = data.url ?? null;
     this.classifierRuns = data.classifierRuns.map(
       (classifierRun) => new ClassifierRunDto(classifierRun)
