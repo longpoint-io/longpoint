@@ -21,12 +21,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from '@longpoint/ui/components/sidebar';
 import {
   ChevronDown,
   HomeIcon,
   ImagePlayIcon,
   LogOutIcon,
+  PlugIcon,
   ScanSearchIcon,
   Settings2Icon,
   SettingsIcon,
@@ -50,9 +54,29 @@ const sidebarItems = [
     icon: ScanSearchIcon,
   },
   {
+    label: 'Plugins',
+    url: '/plugins',
+    icon: PlugIcon,
+  },
+  {
     label: 'Settings',
     url: '/settings',
     icon: Settings2Icon,
+    subItems: [
+      {
+        label: 'General',
+        url: '/settings/general',
+      },
+      {
+        label: 'Storage',
+        url: '/settings/storage',
+      },
+      {
+        label: 'Search',
+        url: '/settings/search',
+        // icon: SearchIcon,
+      },
+    ],
   },
 ];
 
@@ -65,7 +89,11 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="hover:bg-transparent active:bg-transparent"
+            >
               <div className="flex items-center gap-2">
                 <Avatar className="rounded-full">
                   <AvatarFallback className="rounded-full border">
@@ -94,6 +122,20 @@ export function AppSidebar() {
                       <span>{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
+                  {item.subItems && (
+                    <SidebarMenuSub>
+                      {item.subItems.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.label}>
+                          <SidebarMenuSubButton asChild>
+                            <Link to={subItem.url}>
+                              {subItem.icon && <subItem.icon />}
+                              <span>{subItem.label}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

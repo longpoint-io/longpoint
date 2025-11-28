@@ -40,25 +40,25 @@
       "path": "./packages/devkit"
     },
     {
-      "path": "./packages/plugins/ai-anthropic"
-    },
-    {
       "path": "./packages/plugins/storage-local"
     },
     {
       "path": "./packages/config-schema"
     },
     {
-      "path": "./packages/plugins/storage-s3"
+      "path": "./packages/plugins/anthropic"
     },
     {
-      "path": "./packages/plugins/storage-gcp"
+      "path": "./packages/plugins/openai"
     },
     {
-      "path": "./packages/plugins/ai-openai"
+      "path": "./packages/plugins/gcp"
     },
     {
-      "path": "./packages/plugins/vector-pinecone"
+      "path": "./packages/plugins/aws"
+    },
+    {
+      "path": "./packages/plugins/pinecone"
     }
   ]
 }

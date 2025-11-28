@@ -1,7 +1,7 @@
 import { Prisma } from '@/database';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
-import LocalStorageConfig from 'longpoint-storage-local';
+import LocalStorageConfig from 'longpoint-plugin-local';
 import type { SelectedStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { ConfigService, PrismaService } from '../../common/services';

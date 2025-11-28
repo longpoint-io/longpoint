@@ -1,4 +1,3 @@
-import { AiModelSummaryDto } from '@/modules/ai/dtos';
 import {
   ConfigSchemaItemsDto,
   ConfigSchemaValueDto,
@@ -14,9 +13,10 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { IsObject, IsOptional, IsString } from 'class-validator';
+import { ClassificationProviderSummaryDto } from './classification-provider-summary.dto';
 
 export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
-  model: AiModelSummaryDto;
+  provider: ClassificationProviderSummaryDto;
   modelInputSchema: ConfigSchemaDefinition;
 }
 
@@ -72,10 +72,10 @@ export class ClassifierDto {
   modelInputSchema: ConfigSchemaForDto;
 
   @ApiProperty({
-    description: 'The model used by the classifier',
-    type: AiModelSummaryDto,
+    description: 'The classification provider used by the classifier',
+    type: ClassificationProviderSummaryDto,
   })
-  model: AiModelSummaryDto;
+  provider: ClassificationProviderSummaryDto;
 
   @ApiProperty({
     description: 'When the classifier was created',
@@ -96,7 +96,7 @@ export class ClassifierDto {
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
     this.modelInput = data.modelInput as ConfigValues | null;
-    this.model = data.model;
+    this.provider = data.provider;
     this.modelInputSchema = Object.entries(data.modelInputSchema).reduce(
       (acc, [key, value]) => {
         acc[key] = new ConfigSchemaValueDto(value);

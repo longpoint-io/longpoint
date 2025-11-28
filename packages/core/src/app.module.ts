@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import {
-  AiModule,
   AuthModule,
   ClassifierModule,
   CommonModule,
   FileDeliveryModule,
   LoggerModule,
   MediaModule,
+  PluginModule,
   SearchModule,
   StorageModule,
   SystemModule,
@@ -23,8 +23,8 @@ import { EventModule } from './modules/event';
     CommonModule,
     LoggerModule,
     EventModule,
+    PluginModule, // Must be before modules that depend on PluginRegistryService
     // Feature modules
-    AiModule,
     AuthModule,
     ClassifierModule,
     FileDeliveryModule,

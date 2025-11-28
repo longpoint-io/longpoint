@@ -8,6 +8,8 @@ import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
 import { DashboardHome } from '../pages/dashboard/home';
 import { Library } from '../pages/dashboard/library';
 import { MediaDetail } from '../pages/dashboard/media-detail';
+import { Plugins } from '../pages/dashboard/plugins/index';
+import { PluginDetail } from '../pages/dashboard/plugins/detail';
 import { SearchResults } from '../pages/dashboard/search-results';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
@@ -147,6 +149,30 @@ export function AppRoutes() {
             <AuthGuard>
               <DashboardLayout>
                 <ClassifierDetail />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/plugins"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <Plugins />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/plugins/:pluginId"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <PluginDetail />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

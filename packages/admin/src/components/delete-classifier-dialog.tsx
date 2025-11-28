@@ -32,7 +32,7 @@ export function DeleteClassifierDialog({
   const navigate = useNavigate();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.ai.deleteClassifier(classifierId),
+    mutationFn: () => client.analysis.deleteClassifier(classifierId),
     onSuccess: () => {
       toast.success('Classifier deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['classifiers'] });

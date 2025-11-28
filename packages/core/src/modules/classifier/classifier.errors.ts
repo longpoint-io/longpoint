@@ -17,3 +17,9 @@ export const ApiClassifierNotFoundResponse = () =>
       ...classifierNotFoundDoc,
     })
   );
+
+export class ClassificationProviderNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('ClassificationProvider', id);
+  }
+}

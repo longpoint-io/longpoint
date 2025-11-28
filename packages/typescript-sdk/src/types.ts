@@ -4,7 +4,24 @@
  */
 
 export interface paths {
-    "/ai/classifiers": {
+    "/analysis/classification-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List classification providers */
+        get: operations["listClassificationProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analysis/classifiers": {
         parameters: {
             query?: never;
             header?: never;
@@ -22,7 +39,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ai/classifiers/{classifierId}": {
+    "/analysis/classifiers/{classifierId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -39,75 +56,6 @@ export interface paths {
         head?: never;
         /** Update a classifier */
         patch: operations["updateClassifier"];
-        trace?: never;
-    };
-    "/ai/models": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List installed models */
-        get: operations["listModels"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/models/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a model */
-        get: operations["getModel"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/providers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List installed AI providers */
-        get: operations["listAiProviders"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/providers/{providerId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get an AI provider */
-        get: operations["getAiProvider"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update the config for an AI provider */
-        patch: operations["updateAiProviderConfig"];
         trace?: never;
     };
     "/media/containers": {
@@ -201,6 +149,57 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/plugins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all installed plugins */
+        get: operations["listPlugins"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plugins/{pluginId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a plugin by ID */
+        get: operations["getPlugin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plugins/{pluginId}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update plugin settings */
+        patch: operations["updatePluginSettings"];
         trace?: never;
     };
     "/search": {
@@ -418,151 +417,70 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        AiModel: {
-            /** @description The schema for classifier input, if the model supports classification */
+        ClassificationProvider: {
+            /** @description The schema for classifier input */
             classifierInputSchema: {
                 [key: string]: components["schemas"]["ConfigSchemaValue"];
             };
-            /**
-             * @description A brief description of the model
-             * @example Claude Haiku 4.5 is a small, fast, and powerful model for text generation
-             */
+            /** @description A brief description of the classification provider */
             description: string | null;
             /**
-             * @description The fully qualified ID of the model
-             * @example anthropic/claude-haiku-4-5-20251001
+             * @description The display name of the classification provider
+             * @example GPT-5 Nano
+             */
+            displayName: string;
+            /**
+             * @description The fully qualified ID of the classification provider
+             * @example openai/gpt-5-nano-2025-08-07
              */
             fullyQualifiedId: string;
             /**
-             * @description The ID of the model
-             * @example claude-haiku-4-5-20251001
+             * @description The ID of the classification provider
+             * @example gpt-5-nano-2025-08-07
              */
             id: string;
             /**
-             * @description The display name of the model
-             * @example Claude Haiku 4.5
+             * @description Maximum file size in bytes
+             * @example 52428800
              */
-            name: string;
-            /** @description The provider of the model */
-            provider: components["schemas"]["AiProviderSummary"];
-        };
-        AiModelShort: {
+            maxFileSize: number;
             /**
-             * @description A brief description of the model
-             * @example Claude Haiku 4.5 is a small, fast, and powerful model for text generation
+             * @description The plugin ID that provides this classification provider
+             * @example openai
              */
-            description: string | null;
+            pluginId: string;
             /**
-             * @description The fully qualified ID of the model
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            fullyQualifiedId: string;
-            /**
-             * @description The ID of the model
-             * @example claude-haiku-4-5-20251001
-             */
-            id: string;
-            /**
-             * @description The display name of the model
-             * @example Claude Haiku 4.5
-             */
-            name: string;
-        };
-        AiModelSummary: {
-            /**
-             * @description The fully qualified ID of the model
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            fullyQualifiedId: string;
-            /**
-             * @description The ID of the model
-             * @example claude-haiku-4-5-20251001
-             */
-            id: string;
-            /**
-             * @description The display name of the model
-             * @example Claude Haiku 4.5
-             */
-            name: string;
-            /** @description The provider of the model */
-            provider: components["schemas"]["AiProviderSummary"];
-        };
-        AiProvider: {
-            /**
-             * @description The config values for the provider
-             * @example {
-             *       "apiKey": "sk-1234567890"
-             *     }
-             */
-            config: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * @description The schema for the provider config
-             * @example {
-             *       "apiKey": {
-             *         "label": "API Key",
-             *         "type": "secret",
-             *         "required": true
-             *       }
-             *     }
-             */
-            configSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            } | null;
-            /**
-             * @description The ID of the AI provider
-             * @example anthropic
-             */
-            id: string;
-            /**
-             * @description An icon image of the AI provider
-             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
-             */
-            image: string;
-            /**
-             * @description The models supported by the provider
+             * @description Supported MIME types
              * @example [
-             *       {
-             *         "id": "claude-haiku-4-5-20251001",
-             *         "name": "Claude Haiku 4.5",
-             *         "fullyQualifiedId": "anthropic/claude-haiku-4-5-20251001"
-             *       }
+             *       "image/jpeg",
+             *       "image/png"
              *     ]
              */
-            models: components["schemas"]["AiModelShort"][];
-            /**
-             * @description The name of the AI provider
-             * @example Anthropic
-             */
-            name: string;
-            /**
-             * @description Whether the provider needs additional configuration
-             * @example false
-             */
-            needsConfig: boolean;
+            supportedMimeTypes: string[];
         };
-        AiProviderSummary: {
+        ClassificationProviderSummary: {
+            /** @description A brief description of the classification provider */
+            description: string | null;
             /**
-             * @description The ID of the AI provider
-             * @example anthropic
+             * @description The display name of the classification provider
+             * @example GPT-5 Nano
+             */
+            displayName: string;
+            /**
+             * @description The fully qualified ID of the classification provider
+             * @example openai/gpt-5-nano-2025-08-07
+             */
+            fullyQualifiedId: string;
+            /**
+             * @description The ID of the classification provider
+             * @example gpt-5-nano-2025-08-07
              */
             id: string;
             /**
-             * @description An icon image of the AI provider
-             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-anthropic-v2.png
+             * @description The plugin ID that provides this classification provider
+             * @example openai
              */
-            image: string | null;
-            /**
-             * @description The name of the AI provider
-             * @example Anthropic
-             */
-            name: string;
-            /**
-             * @description Whether the provider needs additional configuration
-             * @example false
-             */
-            needsConfig: boolean;
+            pluginId: string;
         };
         Classifier: {
             /**
@@ -581,8 +499,6 @@ export interface components {
              * @example sajl1kih6emtwozh8y0zenkj
              */
             id: string;
-            /** @description The model used by the classifier */
-            model: components["schemas"]["AiModelSummary"];
             /**
              * @description The input values to use for the model
              * @example {
@@ -608,6 +524,8 @@ export interface components {
              * @example general-tagging
              */
             name: string;
+            /** @description The classification provider used by the classifier */
+            provider: components["schemas"]["ClassificationProviderSummary"];
             /**
              * Format: date-time
              * @description When the classifier was last updated
@@ -698,13 +616,13 @@ export interface components {
              * @example sajl1kih6emtwozh8y0zenkj
              */
             id: string;
-            /** @description The model used by the classifier */
-            model: components["schemas"]["AiModelSummary"];
             /**
              * @description The name of the classifier
              * @example general-tagging
              */
             name: string;
+            /** @description The classification provider used by the classifier */
+            provider: components["schemas"]["ClassificationProviderSummary"];
             /**
              * Format: date-time
              * @description When the classifier was last updated
@@ -1038,7 +956,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-22T01:21:04.921Z
+             * @example 2025-11-27T06:38:12.333Z
              */
             createdAt: string;
             /**
@@ -1062,8 +980,6 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /** @description Thumbnails for the media container */
-            thumbnails: components["schemas"]["MediaAsset"][];
             /**
              * @description The primary media type.
              * @example IMAGE
@@ -1092,7 +1008,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-22T01:21:04.921Z
+             * @example 2025-11-27T06:38:12.333Z
              */
             createdAt: string;
             /**
@@ -1116,14 +1032,12 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /** @description Thumbnails for the media container */
-            thumbnails: components["schemas"]["MediaAsset"][];
         };
         MediaContainerTreeItem: {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-22T01:21:04.921Z
+             * @example 2025-11-27T06:38:12.333Z
              */
             createdAt: string;
             /**
@@ -1147,8 +1061,6 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /** @description Thumbnails for the media container */
-            thumbnails: components["schemas"]["MediaAsset"][];
             /**
              * @description The type of the tree item
              * @example MEDIA
@@ -1213,6 +1125,61 @@ export interface components {
              */
             pageSize: number;
         };
+        Plugin: {
+            /** @description A brief description of the plugin */
+            description: string | null;
+            /**
+             * @description The display name of the plugin
+             * @example OpenAI
+             */
+            displayName: string;
+            /**
+             * @description Whether the plugin has configurable settings
+             * @example true
+             */
+            hasSettings: boolean;
+            /** @description An icon image of the plugin (URL or base64 data URI) */
+            icon: string | null;
+            /**
+             * @description The ID of the plugin
+             * @example openai
+             */
+            id: string;
+            /**
+             * @description The package name of the plugin
+             * @example longpoint-plugin-openai
+             */
+            packageName: string;
+            /** @description The schema for plugin settings */
+            settingsSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            } | null;
+            /** @description The current settings values for the plugin */
+            settingsValues: {
+                [key: string]: unknown;
+            } | null;
+        };
+        PluginSummary: {
+            /** @description A brief description of the plugin */
+            description: string | null;
+            /**
+             * @description The display name of the plugin
+             * @example OpenAI
+             */
+            displayName: string;
+            /**
+             * @description Whether the plugin has configurable settings
+             * @example true
+             */
+            hasSettings: boolean;
+            /** @description An icon image of the plugin (URL or base64 data URI) */
+            icon: string | null;
+            /**
+             * @description The ID of the plugin
+             * @example openai
+             */
+            id: string;
+        };
         SearchIndex: {
             /**
              * @description Whether the index is active
@@ -1224,21 +1191,6 @@ export interface components {
             config: {
                 [key: string]: unknown;
             } | null;
-            /**
-             * @description The model used by the index to generate vector embeddings
-             * @example {
-             *       "id": "text-embedding-3-small",
-             *       "name": "Text Embedding 3 Small",
-             *       "fullyQualifiedId": "openai/text-embedding-3-small",
-             *       "provider": {
-             *         "id": "openai",
-             *         "name": "OpenAI",
-             *         "image": null,
-             *         "needsConfig": false
-             *       }
-             *     }
-             */
-            embeddingModel: components["schemas"]["AiModelSummary"] | null;
             /**
              * @description The ID of the index
              * @example o1jnduht9zboa0w1dcjfzqi5
@@ -1479,15 +1431,6 @@ export interface components {
              */
             totalContainers: number;
         };
-        UpdateAiProviderConfig: {
-            /**
-             * @description The configuration values for the AI provider
-             * @example {
-             *       "apiKey": "1234567890"
-             *     }
-             */
-            config: Record<string, never>;
-        };
         UpdateClassifier: {
             /**
              * @description A brief description of the classifier
@@ -1523,6 +1466,17 @@ export interface components {
              * @example /
              */
             path?: string;
+        };
+        UpdatePluginSettings: {
+            /**
+             * @description The configuration values to update
+             * @example {
+             *       "apiKey": "sk-1234567890"
+             *     }
+             */
+            config: {
+                [key: string]: unknown;
+            };
         };
         UpdateStorageConfig: {
             /**
@@ -1633,6 +1587,25 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listClassificationProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassificationProvider"][];
+                };
+            };
+        };
+    };
     listClassifiers: {
         parameters: {
             query?: never;
@@ -1791,129 +1764,6 @@ export interface operations {
                         errorCode?: string;
                         messages?: string[];
                     };
-                };
-            };
-        };
-    };
-    listModels: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiModel"][];
-                };
-            };
-        };
-    };
-    getModel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiModel"];
-                };
-            };
-        };
-    };
-    listAiProviders: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"][];
-                };
-            };
-        };
-    };
-    getAiProvider: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"];
-                };
-            };
-            /** @description AI provider not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "AI provider with id r2qwyd76nvd98cu6ewg8ync2 not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    updateAiProviderConfig: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                providerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateAiProviderConfig"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiProvider"];
                 };
             };
         };
@@ -2152,6 +2002,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MediaTree"];
+                };
+            };
+        };
+    };
+    listPlugins: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PluginSummary"][];
+                };
+            };
+        };
+    };
+    getPlugin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pluginId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Plugin"];
+                };
+            };
+            /** @description Plugin not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Plugin with id example-plugin-id not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updatePluginSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pluginId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePluginSettings"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Plugin"];
+                };
+            };
+            /** @description Plugin not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Plugin with id example-plugin-id not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
                 };
             };
         };

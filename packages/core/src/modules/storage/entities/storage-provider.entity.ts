@@ -1,30 +1,28 @@
-import {
-  ConfigSchemaService,
-  PluginRegistryEntry,
-} from '@/modules/common/services';
-import { StorageProvider, StorageProviderPlugin } from '@longpoint/devkit';
+import { ConfigSchemaService } from '@/modules/common/services';
+import { StorageProviderRegistryEntry } from '@/modules/plugin/services';
+import { StorageProvider } from '@longpoint/devkit';
 import { Readable } from 'stream';
 import { BaseStorageProviderEntity } from './base-storage-provider.entity';
 
 export interface StorageProviderEntityArgs {
-  pluginInstance: StorageProviderPlugin;
-  pluginRegistryEntry: PluginRegistryEntry<'storage'>;
+  pluginInstance: StorageProvider;
+  registryEntry: StorageProviderRegistryEntry;
   configSchemaService: ConfigSchemaService;
 }
 
-export class StorageProviderEntity
-  extends BaseStorageProviderEntity
-  implements StorageProvider
-{
-  private readonly pluginInstance: StorageProviderPlugin;
+export class StorageProviderEntity extends BaseStorageProviderEntity {
+  private readonly pluginInstance: StorageProvider;
 
   constructor(args: StorageProviderEntityArgs) {
-    const { derivedId, manifest } = args.pluginRegistryEntry;
+    const { registryEntry } = args;
     super({
-      id: derivedId,
-      displayName: manifest.displayName,
-      image: manifest.image,
-      configSchema: manifest.configSchema,
+      id: registryEntry.fullyQualifiedId,
+      displayName:
+        registryEntry.contribution.displayName ??
+        registryEntry.pluginConfig.displayName ??
+        registryEntry.storageId,
+      image: registryEntry.pluginConfig.icon,
+      configSchema: registryEntry.contribution.configSchema,
       configSchemaService: args.configSchemaService,
     });
     this.pluginInstance = args.pluginInstance;

@@ -41,16 +41,14 @@ export function CreateClassifier() {
   const navigate = useNavigate();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
-  const { data: models, isLoading: modelsLoading } = useQuery({
-    queryKey: ['models'],
-    queryFn: () => client.ai.listModels(),
+  const { data: providers, isLoading: providersLoading } = useQuery({
+    queryKey: ['classification-providers'],
+    queryFn: () => client.analysis.listClassificationProviders(),
   });
 
-  const { data: selectedModel, isLoading: selectedModelLoading } = useQuery({
-    queryKey: ['model', selectedModelId],
-    enabled: !!selectedModelId,
-    queryFn: () => client.ai.getModel(selectedModelId as string),
-  });
+  const selectedProvider = providers?.find(
+    (p) => p.fullyQualifiedId === selectedModelId
+  );
 
   const formSchema = z.object({
     name: z
@@ -84,7 +82,7 @@ export function CreateClassifier() {
 
     // Validate model input (including nested objects/arrays)
     const schema: Record<string, any> | undefined =
-      selectedModel?.classifierInputSchema;
+      selectedProvider?.classifierInputSchema;
     const values = form.getValues() as any;
     const isValid = validateConfigSchemaForm(
       schema,
@@ -104,7 +102,7 @@ export function CreateClassifier() {
       if (values?.modelInput) {
         payload.modelInput = values.modelInput;
       }
-      const result = await client.ai.createClassifier(payload);
+      const result = await client.analysis.createClassifier(payload);
 
       toast.success('Classifier created successfully');
       navigate(`/classifiers/${result.id}`);
@@ -201,38 +199,38 @@ export function CreateClassifier() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {modelsLoading ? (
+              {providersLoading ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
                 <Field>
-                  <FieldLabel htmlFor="classifier-model">Model</FieldLabel>
+                  <FieldLabel htmlFor="classifier-model">
+                    Classification Provider
+                  </FieldLabel>
                   <Select
                     value={selectedModelId || undefined}
                     onValueChange={setSelectedModelId}
                   >
                     <SelectTrigger id="classifier-model" className="w-full">
-                      <SelectValue placeholder="Select a model" />
+                      <SelectValue placeholder="Select a classification provider" />
                     </SelectTrigger>
                     <SelectContent>
-                      {models
-                        ?.filter((model) => !model.provider.needsConfig)
-                        .map((model) => (
-                          <SelectItem
-                            key={model.id}
-                            value={model.fullyQualifiedId}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>{model.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                ({model.provider.name})
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
+                      {providers?.map((provider) => (
+                        <SelectItem
+                          key={provider.id}
+                          value={provider.fullyQualifiedId}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span>{provider.displayName}</span>
+                            <span className="text-xs text-muted-foreground">
+                              ({provider.pluginId})
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FieldDescription>
-                    Select the AI model to use for classification
+                    Select the classification provider to use
                   </FieldDescription>
                 </Field>
               )}
@@ -248,7 +246,7 @@ export function CreateClassifier() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {selectedModelLoading ? (
+                {!selectedProvider ? (
                   <div className="space-y-3">
                     <Skeleton className="h-6 w-48" />
                     <Skeleton className="h-10 w-full" />
@@ -256,10 +254,10 @@ export function CreateClassifier() {
                     <Skeleton className="h-10 w-full" />
                   </div>
                 ) : (
-                  selectedModel &&
-                  selectedModel.classifierInputSchema && (
+                  selectedProvider &&
+                  selectedProvider.classifierInputSchema && (
                     <ConfigSchemaForm
-                      schema={selectedModel.classifierInputSchema as any}
+                      schema={selectedProvider.classifierInputSchema as any}
                       control={form.control}
                       namePrefix="modelInput"
                       setError={form.setError}

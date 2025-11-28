@@ -1,21 +1,15 @@
 import { ConfigSchemaService } from '@/modules/common/services';
-import { ConfigValues } from '@longpoint/config-schema';
-import { VectorPluginManifest } from '@longpoint/devkit';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { VectorProviderDto, VectorProviderShortDto } from '../dtos';
 
-export interface BaseVectorProviderEntityArgs
-  extends Pick<
-    VectorPluginManifest,
-    | 'displayName'
-    | 'image'
-    | 'supportsEmbedding'
-    | 'providerConfigSchema'
-    | 'indexConfigSchema'
-  > {
+export interface BaseVectorProviderEntityArgs {
   id: string;
-  providerConfigValues: ConfigValues<
-    VectorPluginManifest['providerConfigSchema']
-  >;
+  displayName?: string;
+  image?: string;
+  supportsEmbedding?: boolean;
+  providerConfigSchema?: ConfigSchemaDefinition;
+  providerConfigValues: ConfigValues;
+  indexConfigSchema?: ConfigSchemaDefinition;
   configSchemaService: ConfigSchemaService;
 }
 
@@ -24,11 +18,9 @@ export class BaseVectorProviderEntity {
   readonly displayName: string;
   readonly image?: string;
   readonly supportsEmbedding: boolean;
-  readonly indexConfigSchema: VectorPluginManifest['indexConfigSchema'];
-  private readonly providerConfigValues: ConfigValues<
-    VectorPluginManifest['providerConfigSchema']
-  >;
-  private readonly providerConfigSchema: VectorPluginManifest['providerConfigSchema'];
+  readonly indexConfigSchema?: ConfigSchemaDefinition;
+  private readonly providerConfigValues: ConfigValues;
+  private readonly providerConfigSchema?: ConfigSchemaDefinition;
   private readonly configSchemaService: ConfigSchemaService;
 
   constructor(args: BaseVectorProviderEntityArgs) {
@@ -43,12 +35,18 @@ export class BaseVectorProviderEntity {
   }
 
   processConfigFromDb(configValues: ConfigValues): Promise<ConfigValues> {
+    if (!this.providerConfigSchema) {
+      return Promise.resolve(configValues);
+    }
     return this.configSchemaService
       .get(this.providerConfigSchema)
       .processOutboundValues(configValues);
   }
 
   processIndexConfigFromDb(configValues: ConfigValues): Promise<ConfigValues> {
+    if (!this.indexConfigSchema) {
+      return Promise.resolve(configValues);
+    }
     return this.configSchemaService
       .get(this.indexConfigSchema)
       .processOutboundValues(configValues);

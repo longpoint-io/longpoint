@@ -39,7 +39,7 @@ export function ClassifierCard({ classifier }: ClassifierCardProps) {
         </div>
         <div className="text-sm">
           <span className="text-muted-foreground">Model: </span>
-          <span className="font-medium">{classifier.model.name}</span>
+          <span className="font-medium">{classifier.provider.displayName}</span>
         </div>
       </CardContent>
       <CardFooter className="pt-0">

@@ -1,16 +1,5 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import { Readable } from 'stream';
-
-export interface StorageProvider {
-  upload(path: string, body: Readable | Buffer | string): Promise<boolean>;
-  getFileStream(path: string): Promise<Readable>;
-  getFileContents(path: string): Promise<Buffer>;
-  exists(path: string): Promise<boolean>;
-  // deleteFile(path: string): Promise<void>;
-  // deleteDirectory(path: string): Promise<void>;
-  deleteDirectory(path: string): Promise<void>;
-  // testConnection(): Promise<StorageProviderTestConnectionResult>;
-}
+import { StorageProvider, StorageProviderArgs } from './storage-provider.js';
 
 export interface SignedUrlResponse {
   /**
@@ -42,4 +31,25 @@ export interface StoragePluginManifest {
   displayName?: string;
   configSchema?: ConfigSchemaDefinition;
   image?: string;
+}
+
+export interface StorageContribution<
+  T extends ConfigSchemaDefinition = ConfigSchemaDefinition
+> {
+  /**
+   * Storage provider implementation
+   */
+  provider: new (args: StorageProviderArgs<T>) => StorageProvider;
+  /**
+   * A display name for the storage provider.
+   */
+  displayName?: string;
+  /**
+   * A brief description of the storage provider.
+   */
+  description?: string;
+  /**
+   * Schema for configuring the storage provider.
+   */
+  configSchema?: ConfigSchemaDefinition;
 }

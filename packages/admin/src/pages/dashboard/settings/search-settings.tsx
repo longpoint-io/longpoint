@@ -1,33 +1,22 @@
-import {
-  ConfigSchemaForm,
-  getDefaultValueForType,
-  validateConfigSchemaForm,
-} from '@/components/config-schema';
 import { CreateSearchIndexDialog } from '@/components/create-search-index-dialog';
 import { DeleteSearchIndexDialog } from '@/components/delete-search-index-dialog';
 import { useClient } from '@/hooks/common';
-import { components } from '@longpoint/sdk';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@longpoint/ui/components/card';
 import { Progress } from '@longpoint/ui/components/progress';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { Spinner } from '@longpoint/ui/components/spinner';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 export function SearchSettings() {
   const client = useClient();
-  const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [indexToDelete, setIndexToDelete] = useState<{
@@ -78,7 +67,7 @@ export function SearchSettings() {
     setDeleteDialogOpen(true);
   };
 
-  if (providersLoading || indexesLoading || systemStatusLoading) {
+  if (indexesLoading || systemStatusLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-12 w-64" />
@@ -99,28 +88,15 @@ export function SearchSettings() {
     );
   }
 
-  if (providersError || indexesError || systemStatusError) {
+  if (indexesError || systemStatusError) {
     return (
       <Card>
         <CardContent className="pt-6">
           <p className="text-destructive">
             Failed to load search settings:{' '}
-            {(providersError || indexesError || systemStatusError) instanceof
-            Error
-              ? (providersError || indexesError || systemStatusError)?.message
+            {(indexesError || systemStatusError) instanceof Error
+              ? (indexesError || systemStatusError)?.message
               : 'Unknown error'}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!providers || providers.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">
-            No vector providers installed.
           </p>
         </CardContent>
       </Card>
@@ -132,7 +108,7 @@ export function SearchSettings() {
       {/* Search Indexes List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-semibold">Search Indexes</h3>
+          <h3 className="text-2xl font-semibold">Indexes</h3>
           <Button
             onClick={() => setCreateDialogOpen(true)}
             disabled={!providers || providers.length === 0}
@@ -234,19 +210,6 @@ export function SearchSettings() {
         )}
       </div>
 
-      {/* Vector Provider Configuration */}
-      <div className="space-y-4">
-        <h3 className="text-2xl font-semibold">Vector Providers</h3>
-        {providers.map((provider) => (
-          <VectorProviderCard
-            key={provider.id}
-            provider={provider}
-            client={client}
-            queryClient={queryClient}
-          />
-        ))}
-      </div>
-
       {/* Create Dialog */}
       {providers && (
         <CreateSearchIndexDialog
@@ -272,145 +235,5 @@ export function SearchSettings() {
         />
       )}
     </div>
-  );
-}
-
-interface VectorProviderCardProps {
-  provider: components['schemas']['VectorProvider'];
-  client: ReturnType<typeof useClient>;
-  queryClient: ReturnType<typeof useQueryClient>;
-}
-
-function VectorProviderCard({
-  provider,
-  client,
-  queryClient,
-}: VectorProviderCardProps) {
-  const defaultValues = useMemo(() => {
-    let configValues: Record<string, any> = {};
-
-    if (provider.config) {
-      configValues = provider.config;
-    } else if (provider.configSchema) {
-      Object.entries(provider.configSchema).forEach(
-        ([key, value]: [string, any]) => {
-          configValues[key] = getDefaultValueForType(value);
-        }
-      );
-    }
-
-    return { config: configValues };
-  }, [provider.config, provider.configSchema]);
-
-  const form = useForm({
-    defaultValues,
-  });
-
-  useEffect(() => {
-    form.reset(defaultValues);
-  }, [defaultValues, form]);
-
-  const saveMutation = useMutation({
-    mutationFn: async (config: Record<string, any>) => {
-      return client.search.updateVectorProviderConfig(provider.id, {
-        config: config as Record<string, never>,
-      });
-    },
-    onSuccess: () => {
-      toast.success(`Configuration saved for ${provider.name}`);
-      queryClient.invalidateQueries({ queryKey: ['vector-providers'] });
-    },
-    onError: (error) => {
-      toast.error('Failed to save configuration', {
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
-      });
-    },
-  });
-
-  const handleSubmit = form.handleSubmit(async (data) => {
-    const configValues = data.config || data;
-
-    if (provider.configSchema) {
-      const isValid = validateConfigSchemaForm(
-        provider.configSchema as any,
-        configValues,
-        'config',
-        form.setError
-      );
-      if (!isValid) {
-        return;
-      }
-    }
-
-    saveMutation.mutate(configValues);
-  });
-
-  const hasConfigSchema =
-    provider.configSchema !== null &&
-    Object.keys(provider.configSchema).length > 0;
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-4">
-          {provider.image && (
-            <img
-              src={provider.image}
-              alt={provider.name}
-              className="h-10 w-10 rounded"
-            />
-          )}
-          <div>
-            <CardTitle>{provider.name}</CardTitle>
-            <CardDescription>
-              {provider.supportsEmbedding
-                ? 'Supports native embedding'
-                : 'Requires external embedding model'}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {hasConfigSchema && (
-          <div className="space-y-4 border-t pt-6">
-            <h3 className="text-sm font-semibold">Configuration</h3>
-            <form
-              id={`vector-provider-config-${provider.id}`}
-              onSubmit={handleSubmit}
-            >
-              <ConfigSchemaForm
-                schema={provider.configSchema as any}
-                control={form.control}
-                namePrefix="config"
-                setError={form.setError}
-              />
-            </form>
-          </div>
-        )}
-
-        {!hasConfigSchema && (
-          <div className="border-t pt-6">
-            <p className="text-sm text-muted-foreground">
-              This provider does not require configuration.
-            </p>
-          </div>
-        )}
-      </CardContent>
-      {hasConfigSchema && (
-        <CardFooter>
-          <Button
-            type="submit"
-            form={`vector-provider-config-${provider.id}`}
-            isLoading={saveMutation.isPending}
-            disabled={saveMutation.isPending}
-          >
-            Save Configuration
-          </Button>
-        </CardFooter>
-      )}
-    </Card>
   );
 }

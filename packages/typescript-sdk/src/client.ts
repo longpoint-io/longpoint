@@ -9,7 +9,8 @@ export interface ClientConfig {
 
 export class Longpoint {
   private httpClient: AxiosInstance;
-  ai: AiClient;
+  plugins: PluginsClient;
+  analysis: AnalysisClient;
   media: MediaClient;
   storage: StorageClient;
   search: SearchClient;
@@ -24,7 +25,8 @@ export class Longpoint {
         ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` })
       }
     });
-    this.ai = new AiClient(this.httpClient);
+    this.plugins = new PluginsClient(this.httpClient);
+    this.analysis = new AnalysisClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
@@ -32,59 +34,45 @@ export class Longpoint {
   }
 }
 
-class AiClient {
+class PluginsClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * Get a model
+   * List all installed plugins
    */
-    async getModel(id: string): Promise<components['schemas']['AiModel']> {
-        const url = `ai/models/${encodeURIComponent(String(id))}`;
+    async listPlugins(): Promise<components['schemas']['PluginSummary'][]> {
+        const url = `plugins`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * List installed models
+   * Get a plugin by ID
    */
-    async listModels(): Promise<components['schemas']['AiModel'][]> {
-        const url = `ai/models`;
+    async getPlugin(pluginId: string): Promise<components['schemas']['Plugin']> {
+        const url = `plugins/${encodeURIComponent(String(pluginId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Get an AI provider
+   * Update plugin settings
    */
-    async getAiProvider(providerId: string): Promise<components['schemas']['AiProvider']> {
-        const url = `ai/providers/${encodeURIComponent(String(providerId))}`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * Update the config for an AI provider
-   */
-    async updateAiProviderConfig(providerId: string, data: components['schemas']['UpdateAiProviderConfig']): Promise<components['schemas']['AiProvider']> {
-        const url = `ai/providers/${encodeURIComponent(String(providerId))}`;
+    async updatePluginSettings(pluginId: string, data: components['schemas']['UpdatePluginSettings']): Promise<components['schemas']['Plugin']> {
+        const url = `plugins/${encodeURIComponent(String(pluginId))}/settings`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
+}
 
-    /**
-   * List installed AI providers
-   */
-    async listAiProviders(): Promise<components['schemas']['AiProvider'][]> {
-        const url = `ai/providers`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
+class AnalysisClient {
+  constructor(private httpClient: AxiosInstance) {}
 
     /**
    * Create a classifier
    */
     async createClassifier(data: components['schemas']['CreateClassifier']): Promise<components['schemas']['Classifier']> {
-        const url = `ai/classifiers`;
+        const url = `analysis/classifiers`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
@@ -93,7 +81,7 @@ class AiClient {
    * List classifiers
    */
     async listClassifiers(): Promise<components['schemas']['ClassifierSummary'][]> {
-        const url = `ai/classifiers`;
+        const url = `analysis/classifiers`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -102,7 +90,7 @@ class AiClient {
    * Get a classifier
    */
     async getClassifier(classifierId: string): Promise<components['schemas']['Classifier']> {
-        const url = `ai/classifiers/${encodeURIComponent(String(classifierId))}`;
+        const url = `analysis/classifiers/${encodeURIComponent(String(classifierId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -111,7 +99,7 @@ class AiClient {
    * Update a classifier
    */
     async updateClassifier(classifierId: string, data: components['schemas']['UpdateClassifier']): Promise<components['schemas']['Classifier']> {
-        const url = `ai/classifiers/${encodeURIComponent(String(classifierId))}`;
+        const url = `analysis/classifiers/${encodeURIComponent(String(classifierId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
@@ -120,8 +108,17 @@ class AiClient {
    * Delete a classifier
    */
     async deleteClassifier(classifierId: string): Promise<void> {
-        const url = `ai/classifiers/${encodeURIComponent(String(classifierId))}`;
+        const url = `analysis/classifiers/${encodeURIComponent(String(classifierId))}`;
         const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * List classification providers
+   */
+    async listClassificationProviders(): Promise<components['schemas']['ClassificationProvider'][]> {
+        const url = `analysis/classification-providers`;
+        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

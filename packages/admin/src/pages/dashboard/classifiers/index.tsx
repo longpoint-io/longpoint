@@ -20,7 +20,7 @@ export function Classifiers() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['classifiers'],
-    queryFn: () => client.ai.listClassifiers(),
+    queryFn: () => client.analysis.listClassifiers(),
   });
 
   if (isLoading) {
@@ -30,7 +30,7 @@ export function Classifiers() {
           <div>
             <h2 className="text-3xl font-bold">Classifiers</h2>
             <p className="text-muted-foreground mt-2">
-              AI classifiers for categorizing and analyzing your media
+              Automatically categorize and analyze your media
             </p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export function Classifiers() {
           <div>
             <h2 className="text-3xl font-bold">Classifiers</h2>
             <p className="text-muted-foreground mt-2">
-              AI classifiers for categorizing and analyzing your media
+              Automatically categorize and analyze your media
             </p>
           </div>
         </div>
@@ -76,7 +76,7 @@ export function Classifiers() {
         <div>
           <h2 className="text-3xl font-bold">Classifiers</h2>
           <p className="text-muted-foreground mt-2">
-            AI classifiers for categorizing and analyzing your media
+            Automatically categorize and analyze your media
           </p>
         </div>
         <Button onClick={() => navigate('/classifiers/create')}>
@@ -96,14 +96,13 @@ export function Classifiers() {
                 No classifiers created yet
               </EmptyTitle>
               <EmptyDescription className="text-base">
-                Get started by creating your first AI classifier to
-                automatically categorize and analyze your media.
+                Get started by creating your first classifier
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button onClick={() => navigate('/classifiers/create')} size="lg">
-                <Plus className="h-5 w-5 mr-2" />
-                Create Your First Classifier
+                <Plus className="h-5 w-5" />
+                Create
               </Button>
             </EmptyContent>
           </Empty>

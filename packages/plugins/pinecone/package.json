@@ -1,0 +1,31 @@
+{
+  "name": "longpoint-plugin-pinecone",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@longpoint/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "assets",
+    "!**/*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@pinecone-database/pinecone": "^6.1.3",
+    "@longpoint/devkit": "*",
+    "@longpoint/config-schema": "*",
+    "tslib": "^2.3.0"
+  },
+  "nx": {
+    "name": "plugin-pinecone"
+  }
+}

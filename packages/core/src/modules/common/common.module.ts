@@ -2,7 +2,6 @@ import { Global, Module } from '@nestjs/common';
 import {
   ConfigSchemaService,
   MediaProbeService,
-  PluginRegistryService,
 } from './services';
 import { ConfigService } from './services/config/config.service';
 import { EncryptionService } from './services/encryption/encryption.service';
@@ -14,7 +13,6 @@ const EXPORTS = [
   EncryptionService,
   PrismaService,
   MediaProbeService,
-  PluginRegistryService,
 ];
 
 @Global()
