@@ -172,21 +172,16 @@ export function MediaDetail() {
           </p>
           <h2 className="text-3xl font-bold">{media.name}</h2>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="icon"
             onClick={handleDownload}
             disabled={!primaryAsset?.url || primaryAsset.status !== 'READY'}
           >
-            <Download className="h-4 w-4" />
-            Download
+            <Download />
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
+          <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
+            <Trash2 className="text-destructive" />
           </Button>
         </div>
       </div>
@@ -381,8 +376,7 @@ export function MediaDetail() {
             <DialogTitle>Delete Media</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete the media{' '}
-              <span className="font-semibold">{media.name}</span>? This action
-              cannot be undone.
+              <span className="font-semibold">{media.name}</span>?
             </DialogDescription>
           </DialogHeader>
           <div>
