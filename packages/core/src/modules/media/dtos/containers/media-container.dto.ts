@@ -60,6 +60,12 @@ export class MediaContainerDto {
   createdAt: Date;
 
   @ApiProperty({
+    description: 'When the media container was last updated',
+    example: '2025-11-28T06:05:39.257Z',
+  })
+  updatedAt: Date;
+
+  @ApiProperty({
     description: 'The accessible media assets in the container',
     type: MediaAssetVariantsDto,
     example: {
@@ -85,6 +91,7 @@ export class MediaContainerDto {
     this.type = data.type;
     this.status = data.status;
     this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
     this.variants = data.variants;
   }
 }

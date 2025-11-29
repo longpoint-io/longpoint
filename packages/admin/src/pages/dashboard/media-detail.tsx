@@ -1,3 +1,4 @@
+import { MediaType } from '@/components/media-type';
 import { useClient } from '@/hooks/common';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
@@ -242,10 +243,7 @@ export function MediaDetail() {
                 <Field>
                   <FieldLabel>Type</FieldLabel>
                   <div className="flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm capitalize">
-                      {media.type.toLowerCase()}
-                    </p>
+                    <MediaType type={media.type} />
                   </div>
                 </Field>
                 <Field>

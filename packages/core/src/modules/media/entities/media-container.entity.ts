@@ -47,6 +47,7 @@ export class MediaContainerEntity {
   private _type: MediaType;
   private _status: MediaContainerStatus;
   private _createdAt: Date;
+  private _updatedAt: Date;
   private readonly storageUnit: StorageUnitEntity;
   private readonly prismaService: PrismaService;
   private readonly pathPrefix: string;
@@ -61,6 +62,7 @@ export class MediaContainerEntity {
     this._type = args.type;
     this._status = args.status;
     this._createdAt = args.createdAt;
+    this._updatedAt = args.updatedAt;
     this.storageUnit = args.storageUnit;
     this.prismaService = args.prismaService;
     this.pathPrefix = args.pathPrefix;
@@ -171,8 +173,8 @@ export class MediaContainerEntity {
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
       variants: await this.getVariants(),
-      thumbnails: await this.getThumbnailAssets(),
     });
   }
 
@@ -181,9 +183,10 @@ export class MediaContainerEntity {
       id: this.id,
       name: this.name,
       path: this.path,
+      type: this.type,
       status: this.status,
       createdAt: this.createdAt,
-      thumbnails: await this.getThumbnailAssets(),
+      updatedAt: this.updatedAt,
     });
   }
 
@@ -315,5 +318,9 @@ export class MediaContainerEntity {
 
   get createdAt() {
     return this._createdAt;
+  }
+
+  get updatedAt() {
+    return this._updatedAt;
   }
 }

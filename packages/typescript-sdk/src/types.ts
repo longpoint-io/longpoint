@@ -988,7 +988,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-28T06:05:39.257Z
+             * @example 2025-11-29T05:39:52.998Z
              */
             createdAt: string;
             /**
@@ -1019,6 +1019,12 @@ export interface components {
              */
             type: "IMAGE";
             /**
+             * Format: date-time
+             * @description When the media container was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
+            /**
              * @description The accessible media assets in the container
              * @example {
              *       "primary": {
@@ -1040,7 +1046,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-28T06:05:39.257Z
+             * @example 2025-11-29T05:39:52.998Z
              */
             createdAt: string;
             /**
@@ -1064,12 +1070,24 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /**
+             * @description The primary media type.
+             * @example IMAGE
+             * @enum {string}
+             */
+            type: "IMAGE";
+            /**
+             * Format: date-time
+             * @description When the media container was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
         };
         MediaContainerTreeItem: {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-28T06:05:39.257Z
+             * @example 2025-11-29T05:39:52.998Z
              */
             createdAt: string;
             /**
@@ -1099,6 +1117,18 @@ export interface components {
              * @enum {string}
              */
             treeItemType: "MEDIA";
+            /**
+             * @description The primary media type.
+             * @example IMAGE
+             * @enum {string}
+             */
+            type: "IMAGE";
+            /**
+             * Format: date-time
+             * @description When the media container was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
         };
         MediaTree: {
             /**
