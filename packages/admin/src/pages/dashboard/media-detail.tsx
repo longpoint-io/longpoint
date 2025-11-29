@@ -27,6 +27,11 @@ import {
 } from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@longpoint/ui/components/tooltip';
 import { formatBytes } from '@longpoint/utils/format';
 import { enumToTitleCase } from '@longpoint/utils/string';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -228,19 +233,34 @@ export function MediaDetail() {
           <h2 className="text-3xl font-bold">{media.name}</h2>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="icon" onClick={() => setRenameDialogOpen(true)}>
-            <EditIcon />
-          </Button>
-          <Button
-            variant="icon"
-            onClick={handleDownload}
-            disabled={!primaryAsset?.url || primaryAsset.status !== 'READY'}
-          >
-            <Download />
-          </Button>
-          <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="text-destructive" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="icon" onClick={() => setRenameDialogOpen(true)}>
+                <EditIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Rename</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="icon"
+                onClick={handleDownload}
+                disabled={!primaryAsset?.url || primaryAsset.status !== 'READY'}
+              >
+                <Download />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Download</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
+                <Trash2 className="text-destructive" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Delete</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
