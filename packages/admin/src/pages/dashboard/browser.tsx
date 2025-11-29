@@ -1,5 +1,6 @@
 import { LibraryBreadcrumb } from '@/components/library-breadcrumb';
 import { MediaGrid } from '@/components/media-grid';
+import { MediaTable } from '@/components/media-table';
 import { useUploadContext } from '@/contexts/upload-context';
 import { useClient } from '@/hooks/common/use-client';
 import { Button } from '@longpoint/ui/components/button';
@@ -11,16 +12,30 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@longpoint/ui/components/empty';
+import { cn } from '@longpoint/ui/utils';
 import { useQuery } from '@tanstack/react-query';
-import { UploadIcon } from 'lucide-react';
+import { LayoutGrid, Table, UploadIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
+const VIEW_TYPE_STORAGE_KEY = 'browser-view-type';
 
 export function Browser() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { openDialog } = useUploadContext();
   const client = useClient();
+  const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
+    const saved = localStorage.getItem(VIEW_TYPE_STORAGE_KEY);
+    return (saved === 'grid' || saved === 'table' ? saved : 'grid') as
+      | 'grid'
+      | 'table';
+  });
 
   const currentPath = searchParams.get('path') || '/';
+
+  useEffect(() => {
+    localStorage.setItem(VIEW_TYPE_STORAGE_KEY, viewType);
+  }, [viewType]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['library-tree', currentPath],
@@ -113,13 +128,62 @@ export function Browser() {
                   {items.length} {items.length === 1 ? 'item' : 'items'}
                 </p>
               </div>
+              <div
+                role="radiogroup"
+                aria-label="View type"
+                className="flex flex-row gap-0.5 border rounded-md p-0.5 bg-muted/30"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={viewType === 'grid'}
+                  aria-label="Grid view"
+                  onClick={() => setViewType('grid')}
+                  className={cn(
+                    'size-8 flex items-center justify-center rounded transition-colors',
+                    'hover:bg-muted/50',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    viewType === 'grid'
+                      ? 'bg-background shadow-sm'
+                      : 'bg-transparent'
+                  )}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={viewType === 'table'}
+                  aria-label="Table view"
+                  onClick={() => setViewType('table')}
+                  className={cn(
+                    'size-8 flex items-center justify-center rounded transition-colors',
+                    'hover:bg-muted/50',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    viewType === 'table'
+                      ? 'bg-background shadow-sm'
+                      : 'bg-transparent'
+                  )}
+                >
+                  <Table className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <MediaGrid
-              items={items}
-              links={data?.links || {}}
-              isLoading={isLoading}
-              onFolderClick={handleFolderClick}
-            />
+            {viewType === 'grid' ? (
+              <MediaGrid
+                items={items}
+                links={data?.links || {}}
+                isLoading={isLoading}
+                onFolderClick={handleFolderClick}
+              />
+            ) : (
+              <MediaTable
+                items={items}
+                links={data?.links || {}}
+                isLoading={isLoading}
+                onFolderClick={handleFolderClick}
+              />
+            )}
           </div>
         )
       ) : null}

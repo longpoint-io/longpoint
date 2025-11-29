@@ -9,6 +9,7 @@ export const selectMediaContainerSummary = () => {
     status: true,
     path: true,
     createdAt: true,
+    updatedAt: true,
     assets: {
       select: selectMediaAsset(),
     },

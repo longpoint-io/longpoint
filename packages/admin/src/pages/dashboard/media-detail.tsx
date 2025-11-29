@@ -1,10 +1,11 @@
+import { MediaType } from '@/components/media-type';
 import { useClient } from '@/hooks/common';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@longpoint/ui/components/card';
@@ -18,15 +19,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@longpoint/ui/components/dialog';
-import { Field, FieldGroup, FieldLabel } from '@longpoint/ui/components/field';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@longpoint/ui/components/field';
+import { Input } from '@longpoint/ui/components/input';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@longpoint/ui/components/tooltip';
 import { formatBytes } from '@longpoint/utils/format';
 import { enumToTitleCase } from '@longpoint/utils/string';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Calendar, Download, ImageIcon, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, Download, EditIcon, ImageIcon, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import * as z from 'zod';
 
 export function MediaDetail() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +49,20 @@ export function MediaDetail() {
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [permanentlyDelete, setPermanentlyDelete] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+
+  const renameFormSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+  });
+
+  type RenameFormData = z.infer<typeof renameFormSchema>;
+
+  const renameForm = useForm<RenameFormData>({
+    resolver: zodResolver(renameFormSchema),
+    defaultValues: {
+      name: '',
+    },
+  });
 
   const {
     data: media,
@@ -45,6 +73,15 @@ export function MediaDetail() {
     queryFn: () => client.media.getMedia(id!),
     enabled: !!id,
   });
+
+  // Reset form when media loads or dialog opens
+  useEffect(() => {
+    if (media && renameDialogOpen) {
+      renameForm.reset({
+        name: media.name,
+      });
+    }
+  }, [media, renameDialogOpen, renameForm]);
 
   const deleteMutation = useMutation({
     mutationFn: () =>
@@ -65,6 +102,29 @@ export function MediaDetail() {
       });
     },
   });
+
+  const renameMutation = useMutation({
+    mutationFn: (data: RenameFormData) =>
+      client.media.updateMedia(id!, { name: data.name }),
+    onSuccess: () => {
+      toast.success('Media renamed successfully');
+      queryClient.invalidateQueries({ queryKey: ['media', id] });
+      queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      setRenameDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error('Failed to rename media', {
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      });
+    },
+  });
+
+  const handleRename = (data: RenameFormData) => {
+    renameMutation.mutate(data);
+  };
 
   const handleDownload = async () => {
     const primaryAsset = media?.variants?.primary;
@@ -172,28 +232,41 @@ export function MediaDetail() {
           </p>
           <h2 className="text-3xl font-bold">{media.name}</h2>
         </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handleDownload}
-            disabled={!primaryAsset?.url || primaryAsset.status !== 'READY'}
-          >
-            <Download className="h-4 w-4" />
-            Download
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
+        <div className="flex items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="icon" onClick={() => setRenameDialogOpen(true)}>
+                <EditIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Rename</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="icon"
+                onClick={handleDownload}
+                disabled={!primaryAsset?.url || primaryAsset.status !== 'READY'}
+              >
+                <Download />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Download</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
+                <Trash2 className="text-destructive" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Delete</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Preview Section */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 lg:sticky lg:top-6 lg:self-start">
           <Card>
             <CardContent>
               {primaryAsset?.url && primaryAsset.status === 'READY' ? (
@@ -225,10 +298,10 @@ export function MediaDetail() {
         {/* Details Section */}
         <div className="lg:col-span-3 space-y-6">
           <Card>
-            <CardHeader>
+            {/* <CardHeader>
               <CardTitle>Media Information</CardTitle>
               <CardDescription>Basic details about this media</CardDescription>
-            </CardHeader>
+            </CardHeader> */}
             <CardContent>
               <FieldGroup>
                 <Field>
@@ -247,10 +320,7 @@ export function MediaDetail() {
                 <Field>
                   <FieldLabel>Type</FieldLabel>
                   <div className="flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm capitalize">
-                      {media.type.toLowerCase()}
-                    </p>
+                    <MediaType type={media.type} />
                   </div>
                 </Field>
                 <Field>
@@ -279,9 +349,6 @@ export function MediaDetail() {
             <Card>
               <CardHeader>
                 <CardTitle>Primary Asset</CardTitle>
-                <CardDescription>
-                  Information about the primary asset
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <FieldGroup>
@@ -367,6 +434,57 @@ export function MediaDetail() {
         </div>
       </div>
 
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={renameForm.handleSubmit(handleRename)}>
+            <FieldGroup>
+              <Controller
+                name="name"
+                control={renameForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="media-name" className="sr-only">
+                      Name
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="media-name"
+                      placeholder="Enter media name"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+            <DialogFooter className="mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRenameDialogOpen(false)}
+                disabled={renameMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  renameMutation.isPending || !renameForm.formState.isDirty
+                }
+                isLoading={renameMutation.isPending}
+              >
+                Rename
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog
         open={deleteDialogOpen}
         onOpenChange={(open) => {
@@ -381,8 +499,7 @@ export function MediaDetail() {
             <DialogTitle>Delete Media</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete the media{' '}
-              <span className="font-semibold">{media.name}</span>? This action
-              cannot be undone.
+              <span className="font-semibold">{media.name}</span>?
             </DialogDescription>
           </DialogHeader>
           <div>

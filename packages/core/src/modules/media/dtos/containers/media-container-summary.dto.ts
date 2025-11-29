@@ -3,25 +3,27 @@ import { MediaContainerDto, MediaContainerParams } from './media-container.dto';
 
 export type MediaContainerSummaryParams = Pick<
   MediaContainerParams,
-  'id' | 'name' | 'path' | 'status' | 'createdAt' | 'thumbnails'
+  'id' | 'name' | 'type' | 'path' | 'status' | 'createdAt' | 'updatedAt'
 >;
 
 @ApiSchema({ name: 'MediaContainerSummary' })
 export class MediaContainerSummaryDto extends PickType(MediaContainerDto, [
   'id',
   'name',
+  'type',
   'path',
   'status',
   'createdAt',
-  'thumbnails',
+  'updatedAt',
 ] as const) {
   constructor(data: MediaContainerSummaryParams) {
     super();
     this.id = data.id;
     this.name = data.name;
+    this.type = data.type;
     this.path = data.path;
     this.status = data.status;
     this.createdAt = data.createdAt;
-    this.thumbnails = data.thumbnails;
+    this.updatedAt = data.updatedAt;
   }
 }
