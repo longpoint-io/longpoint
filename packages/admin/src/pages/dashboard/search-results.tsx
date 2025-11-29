@@ -1,4 +1,5 @@
 import { MediaGrid, MediaGridProps } from '@/components/media-grid';
+import { MediaTable } from '@/components/media-table';
 import { useClient } from '@/hooks/common/use-client';
 import {
   Empty,
@@ -7,14 +8,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@longpoint/ui/components/empty';
+import { cn } from '@longpoint/ui/utils';
 import { useQuery } from '@tanstack/react-query';
-import { SearchIcon } from 'lucide-react';
+import { LayoutGrid, SearchIcon, Table } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
+const VIEW_TYPE_STORAGE_KEY = 'browser-view-type';
 
 export function SearchResults() {
   const [searchParams] = useSearchParams();
   const client = useClient();
   const query = searchParams.get('q') || '';
+  const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
+    const saved = localStorage.getItem(VIEW_TYPE_STORAGE_KEY);
+    return (saved === 'grid' || saved === 'table' ? saved : 'grid') as
+      | 'grid'
+      | 'table';
+  });
+
+  useEffect(() => {
+    localStorage.setItem(VIEW_TYPE_STORAGE_KEY, viewType);
+  }, [viewType]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['search', query],
@@ -41,9 +56,11 @@ export function SearchResults() {
     treeItemType: 'MEDIA' as const,
     id: result.id,
     name: result.name,
+    type: result.type,
     path: result.path,
     status: result.status,
     createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
   }));
 
   return (
@@ -102,11 +119,61 @@ export function SearchResults() {
         </div>
       ) : (
         <div className="space-y-6">
-          <MediaGrid
-            items={items}
-            isLoading={isLoading}
-            links={data?.links || {}}
-          />
+          <div className="flex items-center justify-end">
+            <div
+              role="radiogroup"
+              aria-label="View type"
+              className="flex flex-row gap-0.5 border rounded-md p-0.5 bg-muted/30"
+            >
+              <button
+                type="button"
+                role="radio"
+                aria-checked={viewType === 'grid'}
+                aria-label="Grid view"
+                onClick={() => setViewType('grid')}
+                className={cn(
+                  'size-8 flex items-center justify-center rounded transition-colors',
+                  'hover:bg-muted/50',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  viewType === 'grid'
+                    ? 'bg-background shadow-sm'
+                    : 'bg-transparent'
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={viewType === 'table'}
+                aria-label="Table view"
+                onClick={() => setViewType('table')}
+                className={cn(
+                  'size-8 flex items-center justify-center rounded transition-colors',
+                  'hover:bg-muted/50',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  viewType === 'table'
+                    ? 'bg-background shadow-sm'
+                    : 'bg-transparent'
+                )}
+              >
+                <Table className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          {viewType === 'grid' ? (
+            <MediaGrid
+              items={items}
+              isLoading={isLoading}
+              links={data?.links || {}}
+            />
+          ) : (
+            <MediaTable
+              items={items}
+              isLoading={isLoading}
+              links={data?.links || {}}
+            />
+          )}
         </div>
       )}
     </div>

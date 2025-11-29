@@ -1,5 +1,4 @@
 import { SearchIndexItemStatus } from '@/database';
-import { AiModelEntity } from '@/modules/ai';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { MediaContainerService } from '@/modules/media';
 import { MediaContainerSummaryDto } from '@/modules/media/dtos/containers/media-container-summary.dto';
@@ -17,7 +16,6 @@ export interface SearchIndexEntityArgs {
   configFromDb: ConfigValues;
   lastIndexedAt: Date | null;
   vectorProvider: VectorProviderEntity;
-  embeddingModel: AiModelEntity | null;
   mediaContainerService: MediaContainerService;
   prismaService: PrismaService;
   configSchemaService: ConfigSchemaService;
@@ -32,7 +30,6 @@ export class SearchIndexEntity {
   private _lastIndexedAt: Date | null;
   private _configFromDb: ConfigValues;
   private readonly vectorProvider: VectorProviderEntity;
-  private readonly embeddingModel: AiModelEntity | null;
   private readonly mediaContainerService: MediaContainerService;
   private readonly prismaService: PrismaService;
   private readonly logger = new Logger(SearchIndexEntity.name);
@@ -46,7 +43,6 @@ export class SearchIndexEntity {
     this._configFromDb = args.configFromDb;
     this._lastIndexedAt = args.lastIndexedAt;
     this.vectorProvider = args.vectorProvider;
-    this.embeddingModel = args.embeddingModel;
     this.mediaContainerService = args.mediaContainerService;
     this.prismaService = args.prismaService;
   }
@@ -398,12 +394,12 @@ export class SearchIndexEntity {
         };
       });
 
-      if (!this.embeddingModel) {
-        const indexConfigValues = await this.getIndexConfigValues();
-        await this.vectorProvider.embedAndUpsert(documents, indexConfigValues);
-      } else {
-        // TODO: Handle after embedding model is implemented
-      }
+      // if (!this.embeddingModel) {
+      const indexConfigValues = await this.getIndexConfigValues();
+      await this.vectorProvider.embedAndUpsert(documents, indexConfigValues);
+      // } else {
+      // TODO: Handle after embedding model is implemented
+      // }
 
       // Only update items for containers that were actually found
       await this.prismaService.searchIndexItem.updateMany({
@@ -458,7 +454,6 @@ export class SearchIndexEntity {
       config: this._configFromDb
         ? await this.vectorProvider.processIndexConfigFromDb(this._configFromDb)
         : null,
-      embeddingModel: this.embeddingModel?.toSummaryDto() ?? null,
       vectorProvider: this.vectorProvider.toShortDto(),
       mediaIndexed: this._mediaIndexed,
       lastIndexedAt: this._lastIndexedAt,
