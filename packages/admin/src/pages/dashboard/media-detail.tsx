@@ -188,7 +188,7 @@ export function MediaDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Preview Section */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 lg:sticky lg:top-6 lg:self-start">
           <Card>
             <CardContent>
               {primaryAsset?.url && primaryAsset.status === 'READY' ? (
