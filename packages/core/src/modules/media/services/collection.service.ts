@@ -1,11 +1,10 @@
 import { selectCollection } from '@/shared/selectors/collection.selectors';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
 import { CreateCollectionDto, ListCollectionsQueryDto } from '../dtos';
 import { CollectionEntity } from '../entities/collection.entity';
 import { CollectionAlreadyExists, CollectionNotFound } from '../media.errors';
-import { MediaContainerService } from './media-container.service';
 
 /**
  * Service for managing collections and their relationships with media containers.
@@ -15,8 +14,6 @@ import { MediaContainerService } from './media-container.service';
 export class CollectionService {
   constructor(
     private readonly prismaService: PrismaService,
-    @Inject(forwardRef(() => MediaContainerService))
-    private readonly mediaContainerService: MediaContainerService,
     private readonly eventPublisher: EventPublisher
   ) {}
 
@@ -130,58 +127,5 @@ export class CollectionService {
           eventPublisher: this.eventPublisher,
         })
     );
-  }
-
-  /**
-   * Lists all collections that contain a specific container.
-   *
-   * @param containerId - The ID of the container
-   *
-   * @returns An array of CollectionEntity instances
-   */
-  async listCollectionsByContainerId(
-    containerId: string
-  ): Promise<CollectionEntity[]> {
-    const associations =
-      await this.prismaService.mediaContainerCollection.findMany({
-        where: { containerId },
-        select: {
-          collection: {
-            select: selectCollection(),
-          },
-        },
-      });
-
-    return associations.map(
-      (assoc) =>
-        new CollectionEntity({
-          ...assoc.collection,
-          prismaService: this.prismaService,
-          eventPublisher: this.eventPublisher,
-        })
-    );
-  }
-
-  /**
-   * Lists all containers in a specific collection.
-   *
-   * @param collectionId - The ID of the collection
-   *
-   * @returns An array of MediaContainerEntity instances
-   */
-  async listContainersByCollectionId(collectionId: string) {
-    const associations =
-      await this.prismaService.mediaContainerCollection.findMany({
-        where: { collectionId },
-        select: { containerId: true },
-      });
-
-    const containerIds = associations.map((assoc) => assoc.containerId);
-
-    if (containerIds.length === 0) {
-      return [];
-    }
-
-    return this.mediaContainerService.listContainersByIds(containerIds);
   }
 }

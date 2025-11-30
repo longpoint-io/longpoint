@@ -325,14 +325,6 @@ export class MediaContainerEntity {
     });
   }
 
-  /**
-   * Gets all collections this container belongs to.
-   * @returns An array of CollectionEntity instances
-   */
-  async getCollections() {
-    return this.collectionService.listCollectionsByContainerId(this.id);
-  }
-
   get name() {
     return this._name;
   }
