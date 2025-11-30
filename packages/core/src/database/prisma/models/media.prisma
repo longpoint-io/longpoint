@@ -1,8 +1,35 @@
+model Collection {
+  id          String  @id @default(cuid(2))
+  name        String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // parentId    String?
+  // parent     Collection?                @relation("CollectionHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  // children   Collection[]               @relation("CollectionHierarchy")
+  containers MediaContainerCollection[]
+
+  // @@index([parentId])
+}
+
+model MediaContainerCollection {
+  containerId  String
+  container    MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  collectionId String
+  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+
+  @@unique([containerId, collectionId])
+  @@index([collectionId])
+  @@index([containerId])
+}
+
 model MediaContainer {
   id        String               @id @default(cuid(2))
   name      String
   status    MediaContainerStatus
-  path      String               @default("/")
   /// The primary media type hosted by the container
   type      MediaType
   createdAt DateTime             @default(now())
@@ -14,9 +41,8 @@ model MediaContainer {
 
   assets           MediaAsset[]
   searchIndexItems SearchIndexItem[]
+  collections      MediaContainerCollection[]
 
-  @@unique([path, name])
-  @@index([path])
   @@index([status])
   @@index([storageUnitId])
 }

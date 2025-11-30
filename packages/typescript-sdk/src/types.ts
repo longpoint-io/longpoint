@@ -58,6 +58,49 @@ export interface paths {
         patch: operations["updateClassifier"];
         trace?: never;
     };
+    "/media/collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List collections */
+        get: operations["listCollections"];
+        put?: never;
+        /**
+         * Create a collection
+         * @description Creates a new collection for organizing media containers.
+         */
+        post: operations["createCollection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/collections/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a collection */
+        get: operations["getCollection"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a collection
+         * @description Soft deletes a collection by default. Pass permanently=true in body to permanently delete.
+         */
+        delete: operations["deleteCollection"];
+        options?: never;
+        head?: never;
+        /** Update a collection */
+        patch: operations["updateCollection"];
+        trace?: never;
+    };
     "/media/containers": {
         parameters: {
             query?: never;
@@ -65,7 +108,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List media containers */
+        get: operations["listMediaContainers"];
         put?: never;
         /**
          * Create a media container
@@ -128,23 +172,6 @@ export interface paths {
         put?: never;
         /** Generate links for media containers */
         post: operations["generateLinks"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/media/tree": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the contents of a media tree */
-        get: operations["getTree"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -630,6 +657,47 @@ export interface components {
              */
             updatedAt: string;
         };
+        Collection: {
+            /**
+             * Format: date-time
+             * @description When the collection was created
+             * @example 2025-11-30T04:25:50.489Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the collection
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description The number of media containers in the collection
+             * @example 42
+             */
+            mediaContainerCount: number;
+            /**
+             * @description The name of the collection
+             * @example 2025 Highlights
+             */
+            name: string;
+            /**
+             * Format: date-time
+             * @description When the collection was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
+        };
+        CollectionReference: {
+            /**
+             * @description The ID of the collection
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description The name of the collection
+             * @example 2025 Highlights
+             */
+            name: string;
+        };
         ConfigSchemaItems: {
             /**
              * @description The maximum allowable length of the array
@@ -722,6 +790,18 @@ export interface components {
              */
             name: string;
         };
+        CreateCollection: {
+            /**
+             * @description The description of the collection
+             * @example 2025 content highlights for annual showcase
+             */
+            description?: string;
+            /**
+             * @description The name of the collection
+             * @example 2025 Highlights
+             */
+            name: string;
+        };
         CreateMediaContainer: {
             /**
              * @description Names of classifiers to run on the uploaded asset after processing
@@ -730,6 +810,13 @@ export interface components {
              *     ]
              */
             classifiersOnUpload?: string[];
+            /**
+             * @description IDs of collections to add this container to
+             * @example [
+             *       "mbjq36xe6397dsi6x9nq4ghc"
+             *     ]
+             */
+            collectionIds?: string[];
             /**
              * @description The MIME type of the primary asset
              * @example image/jpeg
@@ -741,11 +828,6 @@ export interface components {
              * @example Blissful Fields
              */
             name?: string;
-            /**
-             * @description The directory path of the media container
-             * @example /
-             */
-            path?: string;
             /**
              * @description The ID of the storage unit to use. If not provided, the default storage unit will be used.
              * @example mbjq36xe6397dsi6x9nq4ghc
@@ -769,11 +851,6 @@ export interface components {
              * @example Blissful Fields
              */
             name: string;
-            /**
-             * @description The directory path of the media container
-             * @example /
-             */
-            path: string;
             /**
              * @description The status of the media container
              * @example WAITING_FOR_UPLOAD
@@ -857,24 +934,6 @@ export interface components {
              */
             permanently: boolean;
         };
-        DirectoryTreeItem: {
-            /**
-             * @description The full path to the directory
-             * @example /skate-tricks/kickflips
-             */
-            path: string;
-            /**
-             * @description The type of the tree item
-             * @example DIRECTORY
-             * @enum {string}
-             */
-            treeItemType: "DIRECTORY";
-            /**
-             * @description The URL to list the contents of the directory
-             * @example https://longpoint.example.com/api/media/tree?path=/skate-tricks/kickflips
-             */
-            url: string;
-        };
         GenerateContainerLink: {
             /**
              * @description The ID of the media container
@@ -912,6 +971,12 @@ export interface components {
         GenerateMediaLinks: {
             /** @description The containers to generate links for */
             containers: components["schemas"]["GenerateContainerLink"][];
+        };
+        ListMediaContainersResponse: {
+            /** @description The media containers in the response */
+            items: components["schemas"]["MediaContainerSummary"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
         };
         ListStorageUnitsResponse: {
             /** @description The storage units in the response */
@@ -985,10 +1050,12 @@ export interface components {
             primary: components["schemas"]["MediaAsset"];
         };
         MediaContainer: {
+            /** @description Collections this container belongs to */
+            collections?: components["schemas"]["CollectionReference"][];
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-29T05:39:52.998Z
+             * @example 2025-11-30T21:44:05.800Z
              */
             createdAt: string;
             /**
@@ -1001,11 +1068,6 @@ export interface components {
              * @example Blissful Fields
              */
             name: string;
-            /**
-             * @description The directory path of the media container
-             * @example /
-             */
-            path: string;
             /**
              * @description The status of the media container
              * @example WAITING_FOR_UPLOAD
@@ -1046,7 +1108,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-29T05:39:52.998Z
+             * @example 2025-11-30T21:44:05.800Z
              */
             createdAt: string;
             /**
@@ -1059,11 +1121,6 @@ export interface components {
              * @example Blissful Fields
              */
             name: string;
-            /**
-             * @description The directory path of the media container
-             * @example /
-             */
-            path: string;
             /**
              * @description The status of the media container
              * @example WAITING_FOR_UPLOAD
@@ -1082,93 +1139,6 @@ export interface components {
              * @example 2025-11-28T06:05:39.257Z
              */
             updatedAt: string;
-        };
-        MediaContainerTreeItem: {
-            /**
-             * Format: date-time
-             * @description When the media container was created
-             * @example 2025-11-29T05:39:52.998Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the media container
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description A descriptive name for the underlying media
-             * @example Blissful Fields
-             */
-            name: string;
-            /**
-             * @description The directory path of the media container
-             * @example /
-             */
-            path: string;
-            /**
-             * @description The status of the media container
-             * @example WAITING_FOR_UPLOAD
-             * @enum {string}
-             */
-            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /**
-             * @description The type of the tree item
-             * @example MEDIA
-             * @enum {string}
-             */
-            treeItemType: "MEDIA";
-            /**
-             * @description The primary media type.
-             * @example IMAGE
-             * @enum {string}
-             */
-            type: "IMAGE";
-            /**
-             * Format: date-time
-             * @description When the media container was last updated
-             * @example 2025-11-28T06:05:39.257Z
-             */
-            updatedAt: string;
-        };
-        MediaTree: {
-            /**
-             * @description The items in the tree
-             * @example [
-             *       {
-             *         "type": "DIRECTORY",
-             *         "content": {
-             *           "path": "/skate-tricks/kickflips/bloopers",
-             *           "url": "https://longpoint.example.com/api/media/tree?path=/skate-tricks/kickflips/bloopers"
-             *         }
-             *       },
-             *       {
-             *         "type": "MEDIA",
-             *         "content": {
-             *           "id": "123",
-             *           "name": "Stairs",
-             *           "type": "IMAGE",
-             *           "status": "READY",
-             *           "createdAt": "2025-10-16T00:00:00.000Z"
-             *         }
-             *       },
-             *       {
-             *         "type": "MEDIA",
-             *         "content": {
-             *           "id": "123",
-             *           "name": "Long gap",
-             *           "type": "IMAGE",
-             *           "status": "READY",
-             *           "createdAt": "2025-10-16T00:00:00.000Z"
-             *         }
-             *       }
-             *     ]
-             */
-            items: (components["schemas"]["DirectoryTreeItem"] | components["schemas"]["MediaContainerTreeItem"])[];
-            /**
-             * @description The media tree path
-             * @example /skate-tricks/kickflips
-             */
-            path: string;
         };
         PaginationMetadata: {
             /**
@@ -1517,17 +1487,24 @@ export interface components {
              */
             name?: string;
         };
+        UpdateCollection: {
+            /**
+             * @description The description of the collection
+             * @example 2025 content highlights for annual showcase
+             */
+            description?: string;
+            /**
+             * @description The name of the collection
+             * @example 2025 Highlights
+             */
+            name?: string;
+        };
         UpdateMediaContainer: {
             /**
              * @description A descriptive name for the underlying media
              * @example Blissful Fields
              */
             name?: string;
-            /**
-             * @description The directory path of the media container
-             * @example /
-             */
-            path?: string;
         };
         UpdatePluginSettings: {
             /**
@@ -1830,6 +1807,180 @@ export interface operations {
             };
         };
     };
+    listCollections: {
+        parameters: {
+            query?: {
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Collection"][];
+                };
+            };
+        };
+    };
+    createCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCollection"];
+            };
+        };
+        responses: {
+            /** @description The collection was created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Collection"];
+                };
+            };
+        };
+    };
+    getCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Collection"];
+                };
+            };
+            /** @description Collection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The collection was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCollection"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Collection"];
+                };
+            };
+            /** @description Collection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    listMediaContainers: {
+        parameters: {
+            query?: {
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMediaContainersResponse"];
+                };
+            };
+        };
+    };
     createMedia: {
         parameters: {
             query?: never;
@@ -1967,7 +2118,7 @@ export interface operations {
                     /** @example {
                      *       "errorCode": "RESOURCE_ALREADY_EXISTS",
                      *       "messages": [
-                     *         "Media container with name \"My Container\" already exists at path \"/\""
+                     *         "Media container with name \"My Container\" already exists"
                      *       ]
                      *     } */
                     "application/json": {
@@ -2041,29 +2192,6 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
-                };
-            };
-        };
-    };
-    getTree: {
-        parameters: {
-            query?: {
-                /** @description The path to get the tree for */
-                path?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The contents of the media tree */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MediaTree"];
                 };
             };
         };

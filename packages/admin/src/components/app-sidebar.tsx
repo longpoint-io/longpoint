@@ -33,6 +33,7 @@ import {
   ScanSearchIcon,
   Settings2Icon,
   SettingsIcon,
+  SquareLibraryIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -43,9 +44,14 @@ const sidebarItems = [
     icon: HomeIcon,
   },
   {
-    label: 'Browser',
+    label: 'Assets',
     url: '/browser',
     icon: ImagePlayIcon,
+  },
+  {
+    label: 'Collections',
+    url: '/collections',
+    icon: SquareLibraryIcon,
   },
   {
     label: 'Classifiers',

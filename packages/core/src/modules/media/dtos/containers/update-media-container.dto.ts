@@ -3,5 +3,5 @@ import { MediaContainerDto } from './media-container.dto';
 
 @ApiSchema({ name: 'UpdateMediaContainer' })
 export class UpdateMediaContainerDto extends PartialType(
-  PickType(MediaContainerDto, ['name', 'path'] as const)
+  PickType(MediaContainerDto, ['name'] as const)
 ) {}

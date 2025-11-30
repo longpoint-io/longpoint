@@ -1,4 +1,3 @@
-import { LibraryBreadcrumb } from '@/components/library-breadcrumb';
 import { MediaGrid } from '@/components/media-grid';
 import { MediaTable } from '@/components/media-table';
 import { useUploadContext } from '@/contexts/upload-context';
@@ -40,16 +39,14 @@ export function Browser() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['library-tree', currentPath],
     queryFn: async () => {
-      const tree = await client.media.getTree({ path: currentPath });
+      const results = await client.media.listMediaContainers({ pageSize: 100 });
       const links = await client.media.generateLinks({
-        containers: tree.items
-          .filter((item) => item.treeItemType === 'MEDIA')
-          .map((item) => ({
-            containerId: item.id,
-            w: 500,
-          })),
+        containers: results.items.map((item) => ({
+          containerId: item.id,
+          w: 500,
+        })),
       });
-      return { tree, links };
+      return { results, links };
     },
   });
 
@@ -61,7 +58,7 @@ export function Browser() {
     openDialog();
   };
 
-  const items = data?.tree.items || [];
+  const items = data?.results.items || [];
   const isEmpty = !isLoading && items.length === 0 && currentPath === '/';
 
   return (
@@ -69,12 +66,6 @@ export function Browser() {
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight">Browser</h1>
       </div>
-
-      {currentPath !== '/' && (
-        <div className="border-b pb-6">
-          <LibraryBreadcrumb currentPath={currentPath} />
-        </div>
-      )}
 
       {error && (
         <div className="text-center py-12">
@@ -174,14 +165,12 @@ export function Browser() {
                 items={items}
                 links={data?.links || {}}
                 isLoading={isLoading}
-                onFolderClick={handleFolderClick}
               />
             ) : (
               <MediaTable
                 items={items}
                 links={data?.links || {}}
                 isLoading={isLoading}
-                onFolderClick={handleFolderClick}
               />
             )}
           </div>

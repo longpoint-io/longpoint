@@ -226,12 +226,7 @@ export function MediaDetail() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-muted-foreground text-sm font-mono mb-1">
-            {media.path !== '/' ? media.path + '/' : '/'}
-          </p>
-          <h2 className="text-3xl font-bold">{media.name}</h2>
-        </div>
+        <h2 className="text-3xl font-bold">{media.name}</h2>
         <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>

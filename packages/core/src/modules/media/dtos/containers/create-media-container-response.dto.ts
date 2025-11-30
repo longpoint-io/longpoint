@@ -4,7 +4,7 @@ import { MediaContainerDto } from './media-container.dto';
 
 export type CreateMediaContainerResponseParam = Pick<
   SelectedMediaContainer,
-  'id' | 'name' | 'status' | 'path'
+  'id' | 'name' | 'status'
 > & {
   url: string;
   expiresAt: Date;
@@ -13,7 +13,7 @@ export type CreateMediaContainerResponseParam = Pick<
 @ApiSchema({ name: 'CreateMediaContainerResponse' })
 export class CreateMediaContainerResponseDto extends PickType(
   MediaContainerDto,
-  ['id', 'name', 'path', 'status'] as const
+  ['id', 'name', 'status'] as const
 ) {
   @ApiProperty({
     description: 'The signed URL to upload the asset with.',
@@ -32,7 +32,6 @@ export class CreateMediaContainerResponseDto extends PickType(
     super();
     this.id = data.id;
     this.name = data.name;
-    this.path = data.path;
     this.status = data.status;
     this.url = data.url;
     this.expiresAt = data.expiresAt;

@@ -19,18 +19,19 @@ import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery';
 import { StorageUnitEntity } from '../../storage/entities/storage-unit.entity';
 import {
-  MediaAssetDto,
   MediaAssetVariantsDto,
   MediaContainerSummaryDto,
   UpdateMediaContainerDto,
 } from '../dtos';
 import { MediaContainerDto } from '../dtos/containers/media-container.dto';
 import {
+  CollectionNotFound,
   MediaContainerAlreadyDeleted,
   MediaContainerAlreadyExists,
   MediaContainerNotEmbeddable,
   MediaContainerNotFound,
 } from '../media.errors';
+import { CollectionService } from '../services/collection.service';
 
 export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   storageUnit: StorageUnitEntity;
@@ -38,12 +39,12 @@ export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   pathPrefix: string;
   urlSigningService: UrlSigningService;
   eventPublisher: EventPublisher;
+  collectionService: CollectionService;
 }
 
 export class MediaContainerEntity {
   public readonly id: string;
   private _name: string;
-  private _path: string;
   private _type: MediaType;
   private _status: MediaContainerStatus;
   private _createdAt: Date;
@@ -53,12 +54,12 @@ export class MediaContainerEntity {
   private readonly pathPrefix: string;
   private readonly urlSigningService: UrlSigningService;
   private readonly eventPublisher: EventPublisher;
+  private readonly collectionService: CollectionService;
   private assets: SelectedMediaContainer['assets'];
 
   constructor(args: MediaContainerEntityArgs) {
     this.id = args.id;
     this._name = args.name;
-    this._path = args.path;
     this._type = args.type;
     this._status = args.status;
     this._createdAt = args.createdAt;
@@ -68,28 +69,25 @@ export class MediaContainerEntity {
     this.pathPrefix = args.pathPrefix;
     this.urlSigningService = args.urlSigningService;
     this.eventPublisher = args.eventPublisher;
+    this.collectionService = args.collectionService;
     this.assets = args.assets;
   }
 
   async update(data: UpdateMediaContainerDto) {
-    const { name: newName, path: newPath } = data;
+    const { name: newName } = data;
 
-    if (newName || newPath) {
+    if (newName && newName !== this._name) {
       const existingContainer =
-        await this.prismaService.mediaContainer.findUnique({
+        await this.prismaService.mediaContainer.findFirst({
           where: {
-            path_name: {
-              path: newPath ?? this.path,
-              name: newName ?? this.name,
-            },
+            name: newName,
+            deletedAt: null,
+            id: { not: this.id },
           },
         });
 
       if (existingContainer) {
-        throw new MediaContainerAlreadyExists(
-          newName ?? this.name,
-          newPath ?? this.path
-        );
+        throw new MediaContainerAlreadyExists(newName);
       }
     }
 
@@ -98,13 +96,11 @@ export class MediaContainerEntity {
         where: { id: this.id },
         data: {
           name: newName,
-          path: newPath,
         },
         select: selectMediaContainer(),
       });
 
       this._name = updated.name;
-      this._path = updated.path;
       this._type = updated.type;
       this._status = updated.status as MediaContainerStatus;
       this._createdAt = updated.createdAt;
@@ -169,7 +165,6 @@ export class MediaContainerEntity {
     return new MediaContainerDto({
       id: this.id,
       name: this.name,
-      path: this.path,
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,
@@ -182,7 +177,6 @@ export class MediaContainerEntity {
     return new MediaContainerSummaryDto({
       id: this.id,
       name: this.name,
-      path: this.path,
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,
@@ -218,7 +212,6 @@ export class MediaContainerEntity {
 
     const textParts: string[] = [
       `Name: ${this.name}`,
-      `Path: ${this.path}`,
       `MIME Type: ${primaryAsset.mimeType}`,
       dimensions ? `Dimensions: ${dimensions}` : '',
       primaryAsset.size ? `Size: ${formatBytes(primaryAsset.size)}` : '',
@@ -242,21 +235,6 @@ export class MediaContainerEntity {
       await Promise.all(
         this.assets.map(async (asset) => await this.hydrateAsset(asset))
       )
-    );
-  }
-
-  private async getThumbnailAssets() {
-    if (
-      this.type == MediaType.IMAGE &&
-      this.assets.length === 1 &&
-      this.assets[0].variant === MediaAssetVariant.PRIMARY
-    ) {
-      return [new MediaAssetDto(await this.hydrateAsset(this.assets[0]))];
-    }
-    return await Promise.all(
-      this.assets
-        .filter((asset) => asset.variant === MediaAssetVariant.THUMBNAIL)
-        .map(async (asset) => new MediaAssetDto(await this.hydrateAsset(asset)))
     );
   }
 
@@ -300,12 +278,63 @@ export class MediaContainerEntity {
     return String(result);
   }
 
-  get name() {
-    return this._name;
+  /**
+   * Adds this container to a collection.
+   * @param collectionId - The ID of the collection to add to
+   */
+  async addToCollection(collectionId: string): Promise<void> {
+    const collection = await this.collectionService.getCollectionById(
+      collectionId
+    );
+    if (!collection) {
+      throw new CollectionNotFound(collectionId);
+    }
+
+    const existing =
+      await this.prismaService.mediaContainerCollection.findUnique({
+        where: {
+          containerId_collectionId: {
+            containerId: this.id,
+            collectionId,
+          },
+        },
+      });
+
+    if (existing) {
+      return; // Already in collection
+    }
+
+    await this.prismaService.mediaContainerCollection.create({
+      data: {
+        containerId: this.id,
+        collectionId,
+      },
+    });
   }
 
-  get path() {
-    return this._path;
+  /**
+   * Removes this container from a collection.
+   * @param collectionId - The ID of the collection to remove from
+   */
+  async removeFromCollection(collectionId: string): Promise<void> {
+    await this.prismaService.mediaContainerCollection.deleteMany({
+      where: {
+        containerId: this.id,
+        collectionId,
+      },
+    });
+  }
+
+  /**
+   * Gets all collections this container belongs to.
+   * @returns An array of CollectionEntity instances
+   */
+  async getCollections() {
+    return this.collectionService.listCollectionsByContainerId(this.id);
+  }
+
+  get name() {
+    return this._name;
   }
 
   get type() {

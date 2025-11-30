@@ -127,6 +127,25 @@ class MediaClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
+   * List media containers
+   */
+    async listMediaContainers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListMediaContainersResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `media/containers${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
    * Create a media container
    *
    * Creates an empty container that is ready to receive an upload.
@@ -167,18 +186,61 @@ class MediaClient {
   }
 
     /**
-   * List the contents of a media tree
+   * Create a collection
+   *
+   * Creates a new collection for organizing media containers.
    */
-    async getTree(options?: { path?: string }): Promise<components['schemas']['MediaTree']> {
+    async createCollection(data: components['schemas']['CreateCollection']): Promise<components['schemas']['Collection']> {
+        const url = `media/collections`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List collections
+   */
+    async listCollections(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['Collection'][]> {
         const params = new URLSearchParams();
         if (options) {
-          if (options.path !== undefined) {
-            params.append('path', String(options.path));
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
           }
         }
         const queryString = params.toString();
-        const url = `media/tree${queryString ? `?${queryString}` : ''}`;
+        const url = `media/collections${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a collection
+   */
+    async getCollection(id: string): Promise<components['schemas']['Collection']> {
+        const url = `media/collections/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a collection
+   */
+    async updateCollection(id: string, data: components['schemas']['UpdateCollection']): Promise<components['schemas']['Collection']> {
+        const url = `media/collections/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a collection
+   *
+   * Soft deletes a collection by default. Pass permanently=true in body to permanently delete.
+   */
+    async deleteCollection(id: string): Promise<void> {
+        const url = `media/collections/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
         return response.data;
   }
 

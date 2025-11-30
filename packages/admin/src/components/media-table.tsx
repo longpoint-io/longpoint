@@ -11,18 +11,12 @@ import {
 import { MediaTableRow } from './media-table-row';
 
 export interface MediaTableProps {
-  items: components['schemas']['MediaTree']['items'];
+  items: components['schemas']['MediaContainerSummary'][];
   isLoading?: boolean;
-  onFolderClick?: (path: string) => void;
   links: Record<string, string>;
 }
 
-export function MediaTable({
-  items,
-  isLoading,
-  onFolderClick,
-  links,
-}: MediaTableProps) {
+export function MediaTable({ items, isLoading, links }: MediaTableProps) {
   if (isLoading) {
     return (
       <Table>
@@ -76,12 +70,9 @@ export function MediaTable({
       <TableBody>
         {items.map((item, index) => (
           <MediaTableRow
-            key={`${item.treeItemType}-${index}`}
+            key={item.id}
             item={item}
-            onFolderClick={onFolderClick}
-            thumbnailLink={
-              item.treeItemType === 'MEDIA' ? links[item.id] : undefined
-            }
+            thumbnailLink={item.type === 'IMAGE' ? links[item.id] : undefined}
           />
         ))}
       </TableBody>

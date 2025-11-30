@@ -82,7 +82,7 @@
     "db:push": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "prisma db push",
+        "command": "prisma db push && prisma generate",
         "cwd": "packages/core/src/database"
       }
     },

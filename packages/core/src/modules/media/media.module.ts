@@ -3,28 +3,28 @@ import { MediaProbeService } from '../common/services/media-probe/media-probe.se
 import { EventModule } from '../event';
 import { FileDeliveryModule } from '../file-delivery';
 import { StorageModule } from '../storage';
+import { CollectionController } from './controllers/collection.controller';
 import { MediaContainerController } from './controllers/media-container.controller';
 import { MediaLinkGeneratorController } from './controllers/media-link-generator.controller';
-import { MediaTreeController } from './controllers/media-tree.controller';
 import { MediaMetadataListeners } from './listeners/media-metadata.listeners';
+import { CollectionService } from './services/collection.service';
 import { MediaContainerService } from './services/media-container.service';
 import { MediaLinkGeneratorService } from './services/media-link-generator.service';
-import { MediaTreeService } from './services/media-tree.service';
 
 @Module({
   imports: [StorageModule, FileDeliveryModule, EventModule],
   controllers: [
     MediaContainerController,
-    MediaTreeController,
+    CollectionController,
     MediaLinkGeneratorController,
   ],
   providers: [
     MediaContainerService,
+    CollectionService,
     MediaProbeService,
-    MediaTreeService,
     MediaLinkGeneratorService,
     MediaMetadataListeners,
   ],
-  exports: [MediaContainerService],
+  exports: [MediaContainerService, CollectionService],
 })
 export class MediaModule {}
