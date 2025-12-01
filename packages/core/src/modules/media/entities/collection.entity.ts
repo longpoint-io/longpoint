@@ -89,6 +89,19 @@ export class CollectionEntity {
     }
   }
 
+  /**
+   * Remove one or more media containers from the collection.
+   * @param containerIds - The unique identifiers of the media containers to remove
+   */
+  async removeMediaContainers(containerIds: string[]): Promise<void> {
+    await this.prismaService.mediaContainerCollection.deleteMany({
+      where: {
+        collectionId: this.id,
+        containerId: { in: containerIds },
+      },
+    });
+  }
+
   toDto(): CollectionDto {
     return new CollectionDto({
       id: this.id,

@@ -228,7 +228,9 @@ export class MediaContainerService {
    *
    * @returns An array of MediaContainerEntity instances matching the IDs
    */
-  async listContainersByIds(ids: string[]): Promise<MediaContainerEntity[]> {
+  async listMediaContainersByIds(
+    ids: string[]
+  ): Promise<MediaContainerEntity[]> {
     const containers = await this.prismaService.mediaContainer.findMany({
       where: { id: { in: ids } },
       select: {

@@ -257,6 +257,15 @@ class MediaClient {
   }
 
     /**
+   * Remove media containers from a collection
+   */
+    async removeContainersFromCollection(id: string, data: components['schemas']['RemoveContainersFromCollection']): Promise<void> {
+        const url = `media/collections/${encodeURIComponent(String(id))}/containers`;
+        const response = await this.httpClient.delete(url, { data });
+        return response.data;
+  }
+
+    /**
    * Generate links for media containers
    */
     async generateLinks(data: components['schemas']['GenerateMediaLinks']): Promise<Record<string, any>> {

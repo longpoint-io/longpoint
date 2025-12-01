@@ -340,9 +340,6 @@ export function CollectionDetail() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Collection</DialogTitle>
-            <DialogDescription>
-              Update the collection name and description.
-            </DialogDescription>
           </DialogHeader>
           <form onSubmit={editForm.handleSubmit(handleEdit)}>
             <FieldGroup>
@@ -355,7 +352,6 @@ export function CollectionDetail() {
                     <Input
                       {...field}
                       id="collection-name"
-                      placeholder="Collection name"
                       autoComplete="off"
                       aria-invalid={fieldState.invalid}
                     />
@@ -377,7 +373,6 @@ export function CollectionDetail() {
                       <InputGroupTextarea
                         {...field}
                         id="collection-description"
-                        placeholder="Collection description (optional)"
                         rows={4}
                         className="min-h-24 resize-none"
                         aria-invalid={fieldState.invalid}

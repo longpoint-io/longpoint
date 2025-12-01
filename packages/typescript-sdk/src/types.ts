@@ -101,6 +101,23 @@ export interface paths {
         patch: operations["updateCollection"];
         trace?: never;
     };
+    "/media/collections/{id}/containers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove media containers from a collection */
+        delete: operations["removeContainersFromCollection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/containers": {
         parameters: {
             query?: never;
@@ -1095,7 +1112,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-01T20:42:35.746Z
+             * @example 2025-12-01T23:51:48.136Z
              */
             createdAt: string;
             /**
@@ -1148,7 +1165,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-01T20:42:35.746Z
+             * @example 2025-12-01T23:51:48.136Z
              */
             createdAt: string;
             /**
@@ -1251,6 +1268,15 @@ export interface components {
              * @example openai
              */
             id: string;
+        };
+        RemoveContainersFromCollection: {
+            /**
+             * @description The IDs of the media containers to remove from the collection
+             * @example [
+             *       "mbjq36xe6397dsi6x9nq4ghc"
+             *     ]
+             */
+            containerIds: string[];
         };
         SearchIndex: {
             /**
@@ -1985,6 +2011,48 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CollectionDetails"];
                 };
+            };
+            /** @description Collection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    removeContainersFromCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemoveContainersFromCollection"];
+            };
+        };
+        responses: {
+            /** @description The media containers were removed from the collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Collection not found */
             404: {

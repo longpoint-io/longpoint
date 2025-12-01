@@ -25,6 +25,7 @@ import {
   ListCollectionsResponseDto,
   UpdateCollectionDto,
 } from '../dtos';
+import { RemoveContainersFromCollectionDto } from '../dtos/collections/remove-containers-from-collection.dto';
 import { ApiCollectionNotFoundResponse } from '../media.errors';
 import { CollectionService } from '../services/collection.service';
 
@@ -115,5 +116,25 @@ export class CollectionController {
       id
     );
     await collection.delete();
+  }
+
+  @Delete(':id/containers')
+  @RequirePermission(Permission.COLLECTION_UPDATE)
+  @ApiOperation({
+    summary: 'Remove media containers from a collection',
+    operationId: 'removeContainersFromCollection',
+  })
+  @ApiOkResponse({
+    description: 'The media containers were removed from the collection',
+  })
+  @ApiCollectionNotFoundResponse()
+  async removeContainersFromCollection(
+    @Param('id') id: string,
+    @Body() body: RemoveContainersFromCollectionDto
+  ) {
+    const collection = await this.collectionService.getCollectionByIdOrThrow(
+      id
+    );
+    await collection.removeMediaContainers(body.containerIds);
   }
 }
