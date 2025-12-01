@@ -1,12 +1,8 @@
 import { MediaGrid } from '@/components/media-grid';
+import { MediaTable } from '@/components/media-table';
 import { useClient } from '@/hooks/common/use-client';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@longpoint/ui/components/card';
 import {
   Dialog,
   DialogContent,
@@ -22,18 +18,47 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@longpoint/ui/components/empty';
-import { Field, FieldGroup, FieldLabel } from '@longpoint/ui/components/field';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@longpoint/ui/components/field';
+import { Input } from '@longpoint/ui/components/input';
+import {
+  InputGroup,
+  InputGroupTextarea,
+} from '@longpoint/ui/components/input-group';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@longpoint/ui/components/tooltip';
+import { cn } from '@longpoint/ui/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Calendar, ImageIcon, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Calendar,
+  EditIcon,
+  ImageIcon,
+  LayoutGrid,
+  Table,
+  Trash2,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import * as z from 'zod';
+
+const VIEW_TYPE_STORAGE_KEY = 'collection-detail-view-type';
+
+const editFormSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+});
+
+type EditFormData = z.infer<typeof editFormSchema>;
 
 export function CollectionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +66,25 @@ export function CollectionDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
+    const saved = localStorage.getItem(VIEW_TYPE_STORAGE_KEY);
+    return (saved === 'grid' || saved === 'table' ? saved : 'grid') as
+      | 'grid'
+      | 'table';
+  });
+
+  useEffect(() => {
+    localStorage.setItem(VIEW_TYPE_STORAGE_KEY, viewType);
+  }, [viewType]);
+
+  const editForm = useForm<EditFormData>({
+    resolver: zodResolver(editFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+    },
+  });
 
   const {
     data: collection,
@@ -70,6 +114,16 @@ export function CollectionDetail() {
     enabled: !!id,
   });
 
+  // Reset form when collection loads or dialog opens
+  useEffect(() => {
+    if (collection && editDialogOpen) {
+      editForm.reset({
+        name: collection.name,
+        description: collection.description || '',
+      });
+    }
+  }, [collection, editDialogOpen, editForm]);
+
   const deleteMutation = useMutation({
     mutationFn: () => client.media.deleteCollection(id!),
     onSuccess: () => {
@@ -88,8 +142,34 @@ export function CollectionDetail() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (data: EditFormData) =>
+      client.media.updateCollection(id!, {
+        name: data.name,
+        description: data.description || undefined,
+      }),
+    onSuccess: () => {
+      toast.success('Collection updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['collection', id] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      setEditDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error('Failed to update collection', {
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      });
+    },
+  });
+
   const handleDelete = () => {
     deleteMutation.mutate();
+  };
+
+  const handleEdit = (data: EditFormData) => {
+    updateMutation.mutate(data);
   };
 
   if (isLoading) {
@@ -99,31 +179,8 @@ export function CollectionDetail() {
           <Skeleton className="h-9 w-64 mb-2" />
           <Skeleton className="h-5 w-48" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-96 w-full" />
-              </CardContent>
-            </Card>
-          </div>
-          <div>
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="space-y-6">
+          <Skeleton className="h-96 w-full" />
         </div>
       </div>
     );
@@ -159,6 +216,14 @@ export function CollectionDetail() {
         <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
+              <Button variant="icon" onClick={() => setEditDialogOpen(true)}>
+                <EditIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Edit</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
                 <Trash2 className="text-destructive" />
               </Button>
@@ -168,91 +233,185 @@ export function CollectionDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Media Containers Section */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Media Containers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingContainers ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6">
-                  {Array.from({ length: 12 }).map((_, index) => (
-                    <div key={index} className="space-y-3">
-                      <Skeleton className="w-full h-24 rounded-lg" />
-                      <Skeleton className="w-3/4 h-4" />
-                      <Skeleton className="w-1/2 h-3" />
-                    </div>
-                  ))}
-                </div>
-              ) : containers.length === 0 ? (
-                <div className="py-12">
-                  <Empty>
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <ImageIcon className="h-12 w-12" />
-                      </EmptyMedia>
-                      <EmptyTitle className="text-2xl">
-                        No media in this collection
-                      </EmptyTitle>
-                      <EmptyDescription className="text-base">
-                        This collection doesn't contain any media containers
-                        yet.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                  </Empty>
-                </div>
-              ) : (
-                <MediaGrid items={containers} links={links} isLoading={false} />
-              )}
-            </CardContent>
-          </Card>
+      {/* Details Subheader */}
+      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b pb-4">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">ID:</span>
+          <span className="font-mono select-all">{collection.id}</span>
         </div>
-
-        {/* Details Section */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardContent className="pt-6">
-              <FieldGroup>
-                <Field>
-                  <FieldLabel>ID</FieldLabel>
-                  <p className="text-sm font-mono text-muted-foreground select-all">
-                    {collection.id}
-                  </p>
-                </Field>
-                <Field>
-                  <FieldLabel>Containers</FieldLabel>
-                  <p className="text-sm">
-                    {collection.mediaContainerCount}{' '}
-                    {collection.mediaContainerCount === 1
-                      ? 'container'
-                      : 'containers'}
-                  </p>
-                </Field>
-                <Field>
-                  <FieldLabel>Created</FieldLabel>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {new Date(collection.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                </Field>
-                <Field>
-                  <FieldLabel>Updated</FieldLabel>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {new Date(collection.updatedAt).toLocaleString()}
-                    </span>
-                  </div>
-                </Field>
-              </FieldGroup>
-            </CardContent>
-          </Card>
+        <div className="h-4 w-px bg-border" />
+        <div className="flex items-center gap-2">
+          <span className="font-medium">Items:</span>
+          <span>{collection.mediaContainerCount}</span>
+        </div>
+        <div className="h-4 w-px bg-border" />
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span className="font-medium">Created:</span>
+          <span>{new Date(collection.createdAt).toLocaleString()}</span>
+        </div>
+        <div className="h-4 w-px bg-border" />
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span className="font-medium">Updated:</span>
+          <span>{new Date(collection.updatedAt).toLocaleString()}</span>
         </div>
       </div>
+
+      {/* Media Containers Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div
+            role="radiogroup"
+            aria-label="View type"
+            className="flex flex-row gap-0.5 border rounded-md p-0.5 bg-muted/30"
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={viewType === 'grid'}
+              aria-label="Grid view"
+              onClick={() => setViewType('grid')}
+              className={cn(
+                'size-8 flex items-center justify-center rounded transition-colors',
+                'hover:bg-muted/50',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                viewType === 'grid'
+                  ? 'bg-background shadow-sm'
+                  : 'bg-transparent'
+              )}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={viewType === 'table'}
+              aria-label="Table view"
+              onClick={() => setViewType('table')}
+              className={cn(
+                'size-8 flex items-center justify-center rounded transition-colors',
+                'hover:bg-muted/50',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                viewType === 'table'
+                  ? 'bg-background shadow-sm'
+                  : 'bg-transparent'
+              )}
+            >
+              <Table className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {isLoadingContainers ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <div key={index} className="space-y-3">
+                <Skeleton className="w-full h-24 rounded-lg" />
+                <Skeleton className="w-3/4 h-4" />
+                <Skeleton className="w-1/2 h-3" />
+              </div>
+            ))}
+          </div>
+        ) : containers.length === 0 ? (
+          <div className="py-12">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ImageIcon className="h-12 w-12" />
+                </EmptyMedia>
+                <EmptyTitle className="text-2xl">
+                  No media in this collection
+                </EmptyTitle>
+                <EmptyDescription className="text-base">
+                  This collection doesn't contain any media containers yet.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
+        ) : viewType === 'grid' ? (
+          <MediaGrid items={containers} links={links} isLoading={false} />
+        ) : (
+          <MediaTable items={containers} links={links} isLoading={false} />
+        )}
+      </div>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Collection</DialogTitle>
+            <DialogDescription>
+              Update the collection name and description.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={editForm.handleSubmit(handleEdit)}>
+            <FieldGroup>
+              <Controller
+                name="name"
+                control={editForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="collection-name">Name</FieldLabel>
+                    <Input
+                      {...field}
+                      id="collection-name"
+                      placeholder="Collection name"
+                      autoComplete="off"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="description"
+                control={editForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="collection-description">
+                      Description
+                    </FieldLabel>
+                    <InputGroup>
+                      <InputGroupTextarea
+                        {...field}
+                        id="collection-description"
+                        placeholder="Collection description (optional)"
+                        rows={4}
+                        className="min-h-24 resize-none"
+                        aria-invalid={fieldState.invalid}
+                      />
+                    </InputGroup>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+            <DialogFooter className="mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+                disabled={updateMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  updateMutation.isPending || !editForm.formState.isDirty
+                }
+                isLoading={updateMutation.isPending}
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
