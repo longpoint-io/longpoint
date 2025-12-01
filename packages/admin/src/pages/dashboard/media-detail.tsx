@@ -1,6 +1,8 @@
 import { MediaType } from '@/components/media-type';
 import { useClient } from '@/hooks/common';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { components } from '@longpoint/sdk';
+import { Longpoint } from '@longpoint/sdk';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -10,6 +12,14 @@ import {
   CardTitle,
 } from '@longpoint/ui/components/card';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@longpoint/ui/components/command';
 import { CopyButton } from '@longpoint/ui/components/copy-button';
 import {
   Dialog,
@@ -26,7 +36,13 @@ import {
   FieldLabel,
 } from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@longpoint/ui/components/popover';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
+import { Spinner } from '@longpoint/ui/components/spinner';
 import {
   Tooltip,
   TooltipContent,
@@ -35,12 +51,225 @@ import {
 import { formatBytes } from '@longpoint/utils/format';
 import { enumToTitleCase } from '@longpoint/utils/string';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Calendar, Download, EditIcon, ImageIcon, Trash2 } from 'lucide-react';
+import {
+  BookmarkIcon,
+  Calendar,
+  Download,
+  EditIcon,
+  ImageIcon,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as z from 'zod';
+
+type AddToCollectionComboboxProps = {
+  client: Longpoint;
+  media: components['schemas']['MediaContainer'] | undefined;
+  onApply: (collectionIds: string[]) => void;
+  onClose: () => void;
+};
+
+function AddToCollectionCombobox({
+  client,
+  media,
+  onApply,
+  onClose,
+}: AddToCollectionComboboxProps) {
+  const [search, setSearch] = useState('');
+  const [collections, setCollections] = useState<
+    components['schemas']['Collection'][]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedCollectionIds, setSelectedCollectionIds] = useState<
+    Set<string>
+  >(new Set());
+
+  const currentCollectionIds = new Set(
+    media?.collections?.map((c) => c.id) || []
+  );
+
+  // Initialize selected collections with current ones
+  useEffect(() => {
+    if (media?.collections) {
+      setSelectedCollectionIds(new Set(media.collections.map((c) => c.id)));
+    }
+  }, [media]);
+
+  // Get current collections (the ones the container is already in)
+  const currentCollections = collections.filter((collection) =>
+    currentCollectionIds.has(collection.id)
+  );
+
+  // Get available collections (not currently in)
+  const availableCollections = collections.filter(
+    (collection) => !currentCollectionIds.has(collection.id)
+  );
+
+  // Filter collections based on search
+  const filterCollections = (cols: components['schemas']['Collection'][]) => {
+    if (!search) return cols;
+    return cols.filter((collection) =>
+      collection.name.toLowerCase().includes(search.toLowerCase())
+    );
+  };
+
+  const filteredCurrentCollections = filterCollections(currentCollections);
+
+  // When searching, show all matching additional collections
+  // When not searching, show up to 5 additional collections
+  const filteredAvailableCollections = filterCollections(availableCollections);
+  const filteredAdditionalCollections = search
+    ? filteredAvailableCollections
+    : filteredAvailableCollections.slice(0, 5);
+
+  const toggleCollection = (collectionId: string) => {
+    setSelectedCollectionIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(collectionId)) {
+        next.delete(collectionId);
+      } else {
+        next.add(collectionId);
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    client.media
+      .listCollections({ pageSize: 100 })
+      .then((response) => {
+        if (!cancelled) {
+          setCollections(response.items || []);
+          setIsLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching collections:', error);
+        if (!cancelled) {
+          setCollections([]);
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client]);
+
+  const handleApply = () => {
+    onApply(Array.from(selectedCollectionIds));
+  };
+
+  const hasChanges =
+    Array.from(selectedCollectionIds).sort().join(',') !==
+    Array.from(currentCollectionIds).sort().join(',');
+
+  return (
+    <div className="flex flex-col">
+      <Command shouldFilter={false}>
+        <CommandInput
+          placeholder="Search collections..."
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList className="max-h-[300px]">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Spinner className="h-4 w-4" />
+            </div>
+          ) : (
+            <>
+              {filteredCurrentCollections.length > 0 && (
+                <CommandGroup>
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                    Current Collections
+                  </div>
+                  {filteredCurrentCollections.map((collection) => (
+                    <CommandItem
+                      key={collection.id}
+                      value={collection.id}
+                      onSelect={() => toggleCollection(collection.id)}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <Checkbox
+                          className="[&_svg]:!text-primary-foreground"
+                          checked={selectedCollectionIds.has(collection.id)}
+                          onCheckedChange={() =>
+                            toggleCollection(collection.id)
+                          }
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <span className="flex-1">{collection.name}</span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+              {filteredAdditionalCollections.length > 0 && (
+                <CommandGroup>
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                    Other Collections
+                  </div>
+                  {filteredAdditionalCollections.map((collection) => (
+                    <CommandItem
+                      key={collection.id}
+                      value={collection.id}
+                      onSelect={() => toggleCollection(collection.id)}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <Checkbox
+                          className="[&_svg]:!text-primary-foreground"
+                          checked={selectedCollectionIds.has(collection.id)}
+                          onCheckedChange={() =>
+                            toggleCollection(collection.id)
+                          }
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <span className="flex-1">{collection.name}</span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+              {filteredCurrentCollections.length === 0 &&
+                filteredAdditionalCollections.length === 0 && (
+                  <CommandEmpty>
+                    {search
+                      ? 'No collections found.'
+                      : 'No collections available.'}
+                  </CommandEmpty>
+                )}
+            </>
+          )}
+        </CommandList>
+      </Command>
+      <div className="border-t p-2 flex justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onClose}
+          disabled={isLoading}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          onClick={handleApply}
+          disabled={!hasChanges || isLoading}
+        >
+          Apply
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function MediaDetail() {
   const { id } = useParams<{ id: string }>();
@@ -50,6 +279,7 @@ export function MediaDetail() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [permanentlyDelete, setPermanentlyDelete] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
 
   const renameFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -89,6 +319,7 @@ export function MediaDetail() {
     onSuccess: () => {
       toast.success('Media deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
       setDeleteDialogOpen(false);
       setPermanentlyDelete(false);
       navigate('/browser');
@@ -114,6 +345,27 @@ export function MediaDetail() {
     },
     onError: (error) => {
       toast.error('Failed to rename media', {
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      });
+    },
+  });
+
+  const updateCollectionsMutation = useMutation({
+    mutationFn: (collectionIds: string[]) => {
+      return client.media.updateMedia(id!, { collectionIds });
+    },
+    onSuccess: () => {
+      toast.success('Collections updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['media', id] });
+      queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      setAddToCollectionOpen(false);
+    },
+    onError: (error) => {
+      toast.error('Failed to update collections', {
         description:
           error instanceof Error
             ? error.message
@@ -228,6 +480,34 @@ export function MediaDetail() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold">{media.name}</h2>
         <div className="flex items-center gap-2">
+          <Popover
+            open={addToCollectionOpen}
+            onOpenChange={setAddToCollectionOpen}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="icon"
+                    disabled={updateCollectionsMutation.isPending}
+                  >
+                    <BookmarkIcon />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Edit Collections</TooltipContent>
+            </Tooltip>
+            <PopoverContent className="w-[300px] p-0" align="end">
+              <AddToCollectionCombobox
+                client={client}
+                media={media}
+                onApply={(collectionIds) => {
+                  updateCollectionsMutation.mutate(collectionIds);
+                }}
+                onClose={() => setAddToCollectionOpen(false)}
+              />
+            </PopoverContent>
+          </Popover>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="icon" onClick={() => setRenameDialogOpen(true)}>

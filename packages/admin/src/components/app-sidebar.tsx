@@ -25,6 +25,7 @@ import {
   SidebarMenuSubItem,
 } from '@longpoint/ui/components/sidebar';
 import {
+  BookmarkIcon,
   ChevronDown,
   HomeIcon,
   ImagePlayIcon,
@@ -33,7 +34,6 @@ import {
   ScanSearchIcon,
   Settings2Icon,
   SettingsIcon,
-  SquareLibraryIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -51,7 +51,7 @@ const sidebarItems = [
   {
     label: 'Collections',
     url: '/collections',
-    icon: SquareLibraryIcon,
+    icon: BookmarkIcon,
   },
   {
     label: 'Classifiers',

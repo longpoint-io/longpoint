@@ -1,3 +1,4 @@
+import { Prisma } from '@/database';
 import { selectCollection } from '@/shared/selectors/collection.selectors';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
@@ -107,11 +108,12 @@ export class CollectionService {
   async listCollections(
     query?: ListCollectionsQueryDto
   ): Promise<CollectionEntity[]> {
-    const paginationOptions = query?.toPrisma() ?? {
+    const paginationOptions = {
       take: 100,
       skip: 0,
       cursor: undefined,
-      orderBy: { id: 'desc' },
+      orderBy: { id: Prisma.SortOrder.desc },
+      ...(query?.toPrisma() ?? {}),
     };
 
     const collections = await this.prismaService.collection.findMany({

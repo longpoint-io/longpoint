@@ -845,7 +845,7 @@ export interface components {
              */
             classifiersOnUpload?: string[];
             /**
-             * @description IDs of collections to add this container to
+             * @description IDs of collections the container is a member of.
              * @example [
              *       "mbjq36xe6397dsi6x9nq4ghc"
              *     ]
@@ -1091,11 +1091,11 @@ export interface components {
         };
         MediaContainer: {
             /** @description Collections this container belongs to */
-            collections?: components["schemas"]["CollectionReference"][];
+            collections: components["schemas"]["CollectionReference"][];
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-01T19:38:40.694Z
+             * @example 2025-12-01T20:42:35.746Z
              */
             createdAt: string;
             /**
@@ -1148,7 +1148,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-01T19:38:40.694Z
+             * @example 2025-12-01T20:42:35.746Z
              */
             createdAt: string;
             /**
@@ -1541,6 +1541,13 @@ export interface components {
         };
         UpdateMediaContainer: {
             /**
+             * @description IDs of collections the container is a member of.
+             * @example [
+             *       "mbjq36xe6397dsi6x9nq4ghc"
+             *     ]
+             */
+            collectionIds?: string[];
+            /**
              * @description A descriptive name for the underlying media
              * @example Blissful Fields
              */
@@ -1854,6 +1861,8 @@ export interface operations {
                 cursor?: string;
                 /** @description The number of items per page */
                 pageSize?: number;
+                /** @description The sort order of the collections. Defaults to last updated. */
+                sort?: "updatedAt:desc" | "name:asc" | "name:desc";
             };
             header?: never;
             path?: never;

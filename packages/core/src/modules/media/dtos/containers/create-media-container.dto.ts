@@ -49,7 +49,7 @@ export class CreateMediaContainerDto extends PartialType(
   @IsString({ each: true })
   @IsOptional()
   @ApiPropertyOptional({
-    description: 'IDs of collections to add this container to',
+    description: 'IDs of collections the container is a member of.',
     example: ['mbjq36xe6397dsi6x9nq4ghc'],
     type: [String],
   })

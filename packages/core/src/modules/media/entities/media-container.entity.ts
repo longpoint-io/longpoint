@@ -3,6 +3,7 @@ import {
   MediaAssetVariant,
   MediaContainerStatus,
   MediaType,
+  Prisma,
 } from '@/database';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
 import { formatBytes } from '@longpoint/utils/format';
@@ -23,6 +24,7 @@ import {
   MediaContainerSummaryDto,
   UpdateMediaContainerDto,
 } from '../dtos';
+import { CollectionReferenceDto } from '../dtos/collections/collection.dto';
 import { MediaContainerDto } from '../dtos/containers/media-container.dto';
 import {
   CollectionNotFound,
@@ -74,7 +76,7 @@ export class MediaContainerEntity {
   }
 
   async update(data: UpdateMediaContainerDto) {
-    const { name: newName } = data;
+    const { name: newName, collectionIds: newCollectionIds } = data;
 
     if (newName && newName !== this._name) {
       const existingContainer =
@@ -91,13 +93,71 @@ export class MediaContainerEntity {
       }
     }
 
-    try {
-      const updated = await this.prismaService.mediaContainer.update({
-        where: { id: this.id },
-        data: {
-          name: newName,
+    let collectionsUpdate: Prisma.MediaContainerCollectionUncheckedUpdateManyWithoutContainerNestedInput =
+      {};
+
+    let allUpdateIds: string[] = [];
+
+    if (newCollectionIds !== undefined) {
+      const currentCollections =
+        await this.prismaService.mediaContainerCollection.findMany({
+          where: { containerId: this.id },
+          select: { collectionId: true },
+        });
+      const currentIds = new Set(currentCollections.map((c) => c.collectionId));
+      const newIds = new Set(newCollectionIds);
+
+      if (newCollectionIds.length > 0) {
+        const dbCollections = await this.prismaService.collection.findMany({
+          where: {
+            id: { in: newCollectionIds },
+          },
+          select: { id: true },
+        });
+        const dbIds = new Set(dbCollections.map((c) => c.id));
+        for (const collectionId of newCollectionIds) {
+          if (!dbIds.has(collectionId)) {
+            throw new CollectionNotFound(collectionId);
+          }
+        }
+      }
+
+      const toAdd = newCollectionIds.filter((id) => !currentIds.has(id));
+      const toRemove = Array.from(currentIds).filter((id) => !newIds.has(id));
+      allUpdateIds = [...toAdd, ...toRemove];
+
+      collectionsUpdate = {
+        createMany: {
+          data: toAdd.map((id) => ({ collectionId: id })),
         },
-        select: selectMediaContainer(),
+        deleteMany: {
+          collectionId: {
+            in: toRemove,
+          },
+        },
+      };
+    }
+
+    try {
+      const updated = await this.prismaService.$transaction(async (tx) => {
+        if (allUpdateIds.length > 0) {
+          await tx.collection.updateMany({
+            where: {
+              id: { in: allUpdateIds },
+            },
+            data: {
+              updatedAt: new Date(),
+            },
+          });
+        }
+        return await tx.mediaContainer.update({
+          where: { id: this.id },
+          data: {
+            name: newName,
+            collections: collectionsUpdate,
+          },
+          select: selectMediaContainer(),
+        });
       });
 
       this._name = updated.name;
@@ -162,6 +222,19 @@ export class MediaContainerEntity {
   }
 
   async toDto(): Promise<MediaContainerDto> {
+    const collections =
+      await this.prismaService.mediaContainerCollection.findMany({
+        where: { containerId: this.id },
+        select: {
+          collection: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
     return new MediaContainerDto({
       id: this.id,
       name: this.name,
@@ -170,6 +243,9 @@ export class MediaContainerEntity {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       variants: await this.getVariants(),
+      collections: collections.map(
+        (c) => new CollectionReferenceDto(c.collection)
+      ),
     });
   }
 
@@ -276,53 +352,6 @@ export class MediaContainerEntity {
         .join(', ');
     }
     return String(result);
-  }
-
-  /**
-   * Adds this container to a collection.
-   * @param collectionId - The ID of the collection to add to
-   */
-  async addToCollection(collectionId: string): Promise<void> {
-    const collection = await this.collectionService.getCollectionById(
-      collectionId
-    );
-    if (!collection) {
-      throw new CollectionNotFound(collectionId);
-    }
-
-    const existing =
-      await this.prismaService.mediaContainerCollection.findUnique({
-        where: {
-          containerId_collectionId: {
-            containerId: this.id,
-            collectionId,
-          },
-        },
-      });
-
-    if (existing) {
-      return; // Already in collection
-    }
-
-    await this.prismaService.mediaContainerCollection.create({
-      data: {
-        containerId: this.id,
-        collectionId,
-      },
-    });
-  }
-
-  /**
-   * Removes this container from a collection.
-   * @param collectionId - The ID of the collection to remove from
-   */
-  async removeFromCollection(collectionId: string): Promise<void> {
-    await this.prismaService.mediaContainerCollection.deleteMany({
-      where: {
-        containerId: this.id,
-        collectionId,
-      },
-    });
   }
 
   get name() {

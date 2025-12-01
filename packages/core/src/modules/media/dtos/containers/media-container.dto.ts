@@ -7,13 +7,13 @@ import {
 import { type SelectedMediaContainer } from '@/shared/selectors/media.selectors';
 import { SupportedMimeType } from '@longpoint/types';
 import { IsValidMediaContainerName } from '@longpoint/validations';
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { CollectionReferenceDto } from '../collections/collection.dto';
 import { MediaAssetVariantsDto } from './media-asset-variants.dto';
 
 export type MediaContainerParams = Omit<SelectedMediaContainer, 'assets'> & {
   variants: MediaAssetVariantsDto;
-  collections?: CollectionReferenceDto[];
+  collections: CollectionReferenceDto[];
 };
 
 @ApiSchema({ name: 'MediaContainer' })
@@ -76,11 +76,11 @@ export class MediaContainerDto {
   })
   variants: MediaAssetVariantsDto;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Collections this container belongs to',
     type: [CollectionReferenceDto],
   })
-  collections?: CollectionReferenceDto[];
+  collections: CollectionReferenceDto[];
 
   constructor(data: MediaContainerParams) {
     this.id = data.id;
