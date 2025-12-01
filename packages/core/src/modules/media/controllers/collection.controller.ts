@@ -18,6 +18,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import {
+  CollectionDetailsDto,
   CollectionDto,
   CreateCollectionDto,
   ListCollectionsQueryDto,
@@ -55,7 +56,7 @@ export class CollectionController {
     summary: 'List collections',
     operationId: 'listCollections',
   })
-  @ApiOkResponse({ type: [CollectionDto] })
+  @ApiOkResponse({ type: ListCollectionsResponseDto })
   async listCollections(@Query() query: ListCollectionsQueryDto) {
     const entities = await this.collectionService.listCollections(query);
     const dtos = await Promise.all(entities.map((entity) => entity.toDto()));
@@ -72,7 +73,7 @@ export class CollectionController {
     summary: 'Get a collection',
     operationId: 'getCollection',
   })
-  @ApiOkResponse({ type: CollectionDto })
+  @ApiOkResponse({ type: CollectionDetailsDto })
   @ApiCollectionNotFoundResponse()
   async getCollection(@Param('id') id: string) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
@@ -87,7 +88,7 @@ export class CollectionController {
     summary: 'Update a collection',
     operationId: 'updateCollection',
   })
-  @ApiOkResponse({ type: CollectionDto })
+  @ApiOkResponse({ type: CollectionDetailsDto })
   @ApiCollectionNotFoundResponse()
   async updateCollection(
     @Param('id') id: string,
@@ -97,7 +98,7 @@ export class CollectionController {
       id
     );
     await collection.update(body);
-    return collection.toDto();
+    return collection.toDetailsDto();
   }
 
   @Delete(':id')

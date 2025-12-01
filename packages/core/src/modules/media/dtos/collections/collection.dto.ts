@@ -65,6 +65,7 @@ export class CollectionDetailsDto extends CollectionDto {
     description: 'The description of the collection',
     example: '2025 content highlights for annual showcase',
     nullable: true,
+    type: 'string',
   })
   description: string | null;
 

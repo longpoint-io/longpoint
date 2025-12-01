@@ -258,11 +258,23 @@ export class MediaContainerService {
   }
 
   async listMediaContainers(query?: ListMediaContainersQueryDto) {
+    const where: any = {
+      deletedAt: null,
+    };
+
+    if (query?.collectionIds && query.collectionIds.length > 0) {
+      where.collections = {
+        some: {
+          collectionId: {
+            in: query.collectionIds,
+          },
+        },
+      };
+    }
+
     const containers = await this.prismaService.mediaContainer.findMany({
       ...(query?.toPrisma() ?? {}),
-      where: {
-        deletedAt: null,
-      },
+      where,
       select: selectMediaContainer(),
     });
 

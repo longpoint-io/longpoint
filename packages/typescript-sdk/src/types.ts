@@ -686,6 +686,40 @@ export interface components {
              */
             updatedAt: string;
         };
+        CollectionDetails: {
+            /**
+             * Format: date-time
+             * @description When the collection was created
+             * @example 2025-11-30T04:25:50.489Z
+             */
+            createdAt: string;
+            /**
+             * @description The description of the collection
+             * @example 2025 content highlights for annual showcase
+             */
+            description: string | null;
+            /**
+             * @description The ID of the collection
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description The number of media containers in the collection
+             * @example 42
+             */
+            mediaContainerCount: number;
+            /**
+             * @description The name of the collection
+             * @example 2025 Highlights
+             */
+            name: string;
+            /**
+             * Format: date-time
+             * @description When the collection was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
+        };
         CollectionReference: {
             /**
              * @description The ID of the collection
@@ -972,6 +1006,12 @@ export interface components {
             /** @description The containers to generate links for */
             containers: components["schemas"]["GenerateContainerLink"][];
         };
+        ListCollectionsResponse: {
+            /** @description The collections in the response */
+            items: components["schemas"]["Collection"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
         ListMediaContainersResponse: {
             /** @description The media containers in the response */
             items: components["schemas"]["MediaContainerSummary"][];
@@ -1055,7 +1095,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-30T21:44:05.800Z
+             * @example 2025-12-01T19:38:40.694Z
              */
             createdAt: string;
             /**
@@ -1108,7 +1148,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-11-30T21:44:05.800Z
+             * @example 2025-12-01T19:38:40.694Z
              */
             createdAt: string;
             /**
@@ -1826,7 +1866,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Collection"][];
+                    "application/json": components["schemas"]["ListCollectionsResponse"];
                 };
             };
         };
@@ -1871,7 +1911,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Collection"];
+                    "application/json": components["schemas"]["CollectionDetails"];
                 };
             };
             /** @description Collection not found */
@@ -1934,7 +1974,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Collection"];
+                    "application/json": components["schemas"]["CollectionDetails"];
                 };
             };
             /** @description Collection not found */
@@ -1960,6 +2000,8 @@ export interface operations {
     listMediaContainers: {
         parameters: {
             query?: {
+                /** @description Filter containers by collection IDs */
+                collectionIds?: string[];
                 /** @description The cursor to the next page */
                 cursor?: string;
                 /** @description The number of items per page */
