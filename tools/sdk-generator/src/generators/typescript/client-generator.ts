@@ -318,9 +318,25 @@ export type * from './types';
       lines.push(`    if (options) {`);
       queryParams.forEach((param) => {
         lines.push(`      if (options.${param.name} !== undefined) {`);
-        lines.push(
-          `        params.append('${param.name}', String(options.${param.name}));`
-        );
+        // Check if parameter is an array type
+        const isArray = param.type.endsWith('[]');
+        if (isArray) {
+          lines.push(`        if (Array.isArray(options.${param.name})) {`);
+          lines.push(`          options.${param.name}.forEach((item) => {`);
+          lines.push(
+            `            params.append('${param.name}', String(item));`
+          );
+          lines.push(`          });`);
+          lines.push(`        } else {`);
+          lines.push(
+            `          params.append('${param.name}', String(options.${param.name}));`
+          );
+          lines.push(`        }`);
+        } else {
+          lines.push(
+            `        params.append('${param.name}', String(options.${param.name}));`
+          );
+        }
         lines.push(`      }`);
       });
       lines.push(`    }`);

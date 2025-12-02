@@ -3,7 +3,7 @@ import { SdkTag } from '@/shared/types/swagger.types';
 import { Permission } from '@longpoint/types';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { GenerateMediaLinksDto } from '../dtos/links/generate-links.dto';
+import { GenerateMediaLinksDto } from '../dtos/generate-links.dto';
 import { MediaLinkGeneratorService } from '../services/media-link-generator.service';
 
 @Controller('media/links')

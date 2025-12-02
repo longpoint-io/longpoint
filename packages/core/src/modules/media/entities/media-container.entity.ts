@@ -3,7 +3,12 @@ import {
   MediaAssetVariant,
   MediaContainerStatus,
   MediaType,
+  Prisma,
 } from '@/database';
+import {
+  CollectionNotFound,
+  CollectionReferenceDto,
+} from '@/modules/collection';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
 import { formatBytes } from '@longpoint/utils/format';
 import {
@@ -19,7 +24,6 @@ import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery';
 import { StorageUnitEntity } from '../../storage/entities/storage-unit.entity';
 import {
-  MediaAssetDto,
   MediaAssetVariantsDto,
   MediaContainerSummaryDto,
   UpdateMediaContainerDto,
@@ -43,7 +47,6 @@ export interface MediaContainerEntityArgs extends SelectedMediaContainer {
 export class MediaContainerEntity {
   public readonly id: string;
   private _name: string;
-  private _path: string;
   private _type: MediaType;
   private _status: MediaContainerStatus;
   private _createdAt: Date;
@@ -58,7 +61,6 @@ export class MediaContainerEntity {
   constructor(args: MediaContainerEntityArgs) {
     this.id = args.id;
     this._name = args.name;
-    this._path = args.path;
     this._type = args.type;
     this._status = args.status;
     this._createdAt = args.createdAt;
@@ -72,39 +74,91 @@ export class MediaContainerEntity {
   }
 
   async update(data: UpdateMediaContainerDto) {
-    const { name: newName, path: newPath } = data;
+    const { name: newName, collectionIds: newCollectionIds } = data;
 
-    if (newName || newPath) {
+    if (newName && newName !== this._name) {
       const existingContainer =
-        await this.prismaService.mediaContainer.findUnique({
+        await this.prismaService.mediaContainer.findFirst({
           where: {
-            path_name: {
-              path: newPath ?? this.path,
-              name: newName ?? this.name,
-            },
+            name: newName,
+            deletedAt: null,
+            id: { not: this.id },
           },
         });
 
       if (existingContainer) {
-        throw new MediaContainerAlreadyExists(
-          newName ?? this.name,
-          newPath ?? this.path
-        );
+        throw new MediaContainerAlreadyExists(newName);
       }
     }
 
-    try {
-      const updated = await this.prismaService.mediaContainer.update({
-        where: { id: this.id },
-        data: {
-          name: newName,
-          path: newPath,
+    let collectionsUpdate: Prisma.MediaContainerCollectionUncheckedUpdateManyWithoutContainerNestedInput =
+      {};
+
+    let allUpdateIds: string[] = [];
+
+    if (newCollectionIds !== undefined) {
+      const currentCollections =
+        await this.prismaService.mediaContainerCollection.findMany({
+          where: { containerId: this.id },
+          select: { collectionId: true },
+        });
+      const currentIds = new Set(currentCollections.map((c) => c.collectionId));
+      const newIds = new Set(newCollectionIds);
+
+      if (newCollectionIds.length > 0) {
+        const dbCollections = await this.prismaService.collection.findMany({
+          where: {
+            id: { in: newCollectionIds },
+          },
+          select: { id: true },
+        });
+        const dbIds = new Set(dbCollections.map((c) => c.id));
+        for (const collectionId of newCollectionIds) {
+          if (!dbIds.has(collectionId)) {
+            throw new CollectionNotFound(collectionId);
+          }
+        }
+      }
+
+      const toAdd = newCollectionIds.filter((id) => !currentIds.has(id));
+      const toRemove = Array.from(currentIds).filter((id) => !newIds.has(id));
+      allUpdateIds = [...toAdd, ...toRemove];
+
+      collectionsUpdate = {
+        createMany: {
+          data: toAdd.map((id) => ({ collectionId: id })),
         },
-        select: selectMediaContainer(),
+        deleteMany: {
+          collectionId: {
+            in: toRemove,
+          },
+        },
+      };
+    }
+
+    try {
+      const updated = await this.prismaService.$transaction(async (tx) => {
+        if (allUpdateIds.length > 0) {
+          await tx.collection.updateMany({
+            where: {
+              id: { in: allUpdateIds },
+            },
+            data: {
+              updatedAt: new Date(),
+            },
+          });
+        }
+        return await tx.mediaContainer.update({
+          where: { id: this.id },
+          data: {
+            name: newName,
+            collections: collectionsUpdate,
+          },
+          select: selectMediaContainer(),
+        });
       });
 
       this._name = updated.name;
-      this._path = updated.path;
       this._type = updated.type;
       this._status = updated.status as MediaContainerStatus;
       this._createdAt = updated.createdAt;
@@ -166,15 +220,30 @@ export class MediaContainerEntity {
   }
 
   async toDto(): Promise<MediaContainerDto> {
+    const collections =
+      await this.prismaService.mediaContainerCollection.findMany({
+        where: { containerId: this.id },
+        select: {
+          collection: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
     return new MediaContainerDto({
       id: this.id,
       name: this.name,
-      path: this.path,
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       variants: await this.getVariants(),
+      collections: collections.map(
+        (c) => new CollectionReferenceDto(c.collection)
+      ),
     });
   }
 
@@ -182,7 +251,6 @@ export class MediaContainerEntity {
     return new MediaContainerSummaryDto({
       id: this.id,
       name: this.name,
-      path: this.path,
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,
@@ -218,7 +286,6 @@ export class MediaContainerEntity {
 
     const textParts: string[] = [
       `Name: ${this.name}`,
-      `Path: ${this.path}`,
       `MIME Type: ${primaryAsset.mimeType}`,
       dimensions ? `Dimensions: ${dimensions}` : '',
       primaryAsset.size ? `Size: ${formatBytes(primaryAsset.size)}` : '',
@@ -242,21 +309,6 @@ export class MediaContainerEntity {
       await Promise.all(
         this.assets.map(async (asset) => await this.hydrateAsset(asset))
       )
-    );
-  }
-
-  private async getThumbnailAssets() {
-    if (
-      this.type == MediaType.IMAGE &&
-      this.assets.length === 1 &&
-      this.assets[0].variant === MediaAssetVariant.PRIMARY
-    ) {
-      return [new MediaAssetDto(await this.hydrateAsset(this.assets[0]))];
-    }
-    return await Promise.all(
-      this.assets
-        .filter((asset) => asset.variant === MediaAssetVariant.THUMBNAIL)
-        .map(async (asset) => new MediaAssetDto(await this.hydrateAsset(asset)))
     );
   }
 
@@ -302,10 +354,6 @@ export class MediaContainerEntity {
 
   get name() {
     return this._name;
-  }
-
-  get path() {
-    return this._path;
   }
 
   get type() {

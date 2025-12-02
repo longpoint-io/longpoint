@@ -78,9 +78,10 @@ export class SearchIndexEntity {
     const scoreMap = new Map<string, number>(
       searchResults.map((result) => [result.id, result.score])
     );
-    const containers = await this.mediaContainerService.listContainersByIds(
-      Array.from(scoreMap.keys())
-    );
+    const containers =
+      await this.mediaContainerService.listMediaContainersByIds(
+        Array.from(scoreMap.keys())
+      );
     containers.sort((a, b) => scoreMap.get(b.id)! - scoreMap.get(a.id)!);
 
     const summaryDtos = await Promise.all(
@@ -315,9 +316,8 @@ export class SearchIndexEntity {
       },
     });
 
-    const containers = await this.mediaContainerService.listContainersByIds(
-      containerIds
-    );
+    const containers =
+      await this.mediaContainerService.listMediaContainersByIds(containerIds);
 
     // Considered stale items if their containers do not exist
     const foundContainerIds = new Set(containers.map((c) => c.id));

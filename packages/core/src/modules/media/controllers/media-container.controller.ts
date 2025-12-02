@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -20,6 +21,8 @@ import {
   CreateMediaContainerDto,
   CreateMediaContainerResponseDto,
   DeleteMediaContainerDto,
+  ListMediaContainersQueryDto,
+  ListMediaContainersResponseDto,
   MediaContainerDto,
   UpdateMediaContainerDto,
 } from '../dtos';
@@ -34,6 +37,24 @@ import { MediaContainerService } from '../services/media-container.service';
 @ApiBearerAuth()
 export class MediaContainerController {
   constructor(private readonly mediaContainerService: MediaContainerService) {}
+
+  @Get()
+  @RequirePermission(Permission.MEDIA_CONTAINER_READ)
+  @ApiOperation({
+    summary: 'List media containers',
+    operationId: 'listMediaContainers',
+  })
+  @ApiOkResponse({ type: ListMediaContainersResponseDto })
+  async listMediaContainers(@Query() query: ListMediaContainersQueryDto) {
+    const containers = await this.mediaContainerService.listMediaContainers(
+      query
+    );
+    return new ListMediaContainersResponseDto({
+      items: await Promise.all(containers.map((c) => c.toSummaryDto())),
+      path: '/media/containers',
+      query,
+    });
+  }
 
   @Post()
   @RequirePermission(Permission.MEDIA_CONTAINER_CREATE)
@@ -55,7 +76,6 @@ export class MediaContainerController {
       id: container.id,
       name: container.name,
       status: container.status,
-      path: container.path,
       url: uploadUrl,
       expiresAt: uploadToken.expiresAt,
     });

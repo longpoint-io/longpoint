@@ -1,5 +1,6 @@
 export { AuthModule } from './auth';
 export { ClassifierModule } from './classifier';
+export { CollectionModule } from './collection';
 export { CommonModule } from './common';
 export { FileDeliveryModule } from './file-delivery';
 export { LoggerModule } from './logger';

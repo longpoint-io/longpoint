@@ -57,7 +57,6 @@ export function SearchResults() {
     id: result.id,
     name: result.name,
     type: result.type,
-    path: result.path,
     status: result.status,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,

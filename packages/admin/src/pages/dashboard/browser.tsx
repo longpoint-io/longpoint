@@ -1,4 +1,3 @@
-import { LibraryBreadcrumb } from '@/components/library-breadcrumb';
 import { MediaGrid } from '@/components/media-grid';
 import { MediaTable } from '@/components/media-table';
 import { useUploadContext } from '@/contexts/upload-context';
@@ -16,12 +15,10 @@ import { cn } from '@longpoint/ui/utils';
 import { useQuery } from '@tanstack/react-query';
 import { LayoutGrid, Table, UploadIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 
 const VIEW_TYPE_STORAGE_KEY = 'browser-view-type';
 
 export function Browser() {
-  const [searchParams, setSearchParams] = useSearchParams();
   const { openDialog } = useUploadContext();
   const client = useClient();
   const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
@@ -31,50 +28,36 @@ export function Browser() {
       | 'table';
   });
 
-  const currentPath = searchParams.get('path') || '/';
-
   useEffect(() => {
     localStorage.setItem(VIEW_TYPE_STORAGE_KEY, viewType);
   }, [viewType]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['library-tree', currentPath],
+    queryKey: ['media-containers'],
     queryFn: async () => {
-      const tree = await client.media.getTree({ path: currentPath });
+      const results = await client.media.listMediaContainers({ pageSize: 100 });
       const links = await client.media.generateLinks({
-        containers: tree.items
-          .filter((item) => item.treeItemType === 'MEDIA')
-          .map((item) => ({
-            containerId: item.id,
-            w: 500,
-          })),
+        containers: results.items.map((item) => ({
+          containerId: item.id,
+          w: 500,
+        })),
       });
-      return { tree, links };
+      return { results, links };
     },
   });
-
-  const handleFolderClick = (path: string) => {
-    setSearchParams({ path });
-  };
 
   const handleUpload = () => {
     openDialog();
   };
 
-  const items = data?.tree.items || [];
-  const isEmpty = !isLoading && items.length === 0 && currentPath === '/';
+  const items = data?.results.items || [];
+  const isEmpty = !isLoading && items.length === 0;
 
   return (
     <div className="space-y-8">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight">Browser</h1>
       </div>
-
-      {currentPath !== '/' && (
-        <div className="border-b pb-6">
-          <LibraryBreadcrumb currentPath={currentPath} />
-        </div>
-      )}
 
       {error && (
         <div className="text-center py-12">
@@ -119,11 +102,7 @@ export function Browser() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold">
-                  {currentPath === '/'
-                    ? 'All Items'
-                    : `Items in ${currentPath.split('/').pop()}`}
-                </h2>
+                <h2 className="text-xl font-semibold">All Items</h2>
                 <p className="text-sm text-muted-foreground">
                   {items.length} {items.length === 1 ? 'item' : 'items'}
                 </p>
@@ -174,14 +153,12 @@ export function Browser() {
                 items={items}
                 links={data?.links || {}}
                 isLoading={isLoading}
-                onFolderClick={handleFolderClick}
               />
             ) : (
               <MediaTable
                 items={items}
                 links={data?.links || {}}
                 isLoading={isLoading}
-                onFolderClick={handleFolderClick}
               />
             )}
           </div>

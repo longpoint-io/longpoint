@@ -13,8 +13,12 @@ import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery/services/url-signing.service';
 import { StorageUnitService } from '../../storage/services/storage-unit.service';
-import { CreateMediaContainerDto } from '../dtos';
-import { MediaAssetNotFound, MediaContainerNotFound } from '../media.errors';
+import { CreateMediaContainerDto, ListMediaContainersQueryDto } from '../dtos';
+import {
+  CollectionNotFound,
+  MediaAssetNotFound,
+  MediaContainerNotFound,
+} from '../media.errors';
 
 export interface CreateMediaContainerParams {
   path: string;
@@ -49,32 +53,47 @@ export class MediaContainerService {
    *
    * The container is created in a WAITING_FOR_UPLOAD status initially.
    * An upload token is automatically generated that expires in 1 hour from creation.
-   * If a name is provided and a container with that name already exists at the path,
+   * If a name is provided and a container with that name already exists,
    * a new name will be automatically generated with an increment counter
    * (e.g., "MyFile.jpg", "MyFile.jpg (1)", "MyFile.jpg (2)", etc.).
    *
    * @param data - Parameters for creating the media container
-   * @param data.path - The path where the container should be created
    * @param data.name - Optional name for the container. If not provided, a placeholder name will be generated
    * @param data.mimeType - The MIME type of the media file
    * @param data.classifiersOnUpload - Optional array of classifier IDs to run on upload
+   * @param data.collectionIds - Optional array of collection IDs to add the container to
    *
    * @returns An object containing:
    *   - uploadToken: The generated upload token with expiration date
    *   - container: The created MediaContainerEntity instance
    */
   async createMediaContainer(data: CreateMediaContainerDto) {
-    const path = data.path ?? '/';
     const uploadToken = this.generateUploadToken();
     const mediaType = mimeTypeToMediaType(data.mimeType);
     const storageUnit = data.storageUnitId
       ? await this.storageUnitService.getStorageUnitById(data.storageUnitId)
       : await this.storageUnitService.getOrCreateDefaultStorageUnit();
 
+    if (data.collectionIds && data.collectionIds.length > 0) {
+      const collections = await this.prismaService.collection.findMany({
+        where: {
+          id: { in: data.collectionIds },
+        },
+        select: {
+          id: true,
+        },
+      });
+      const collectionIds = new Set(collections.map((c) => c.id));
+      for (const collectionId of data.collectionIds) {
+        if (!collectionIds.has(collectionId)) {
+          throw new CollectionNotFound(collectionId);
+        }
+      }
+    }
+
     const container = await this.prismaService.mediaContainer.create({
       data: {
-        name: await this.getEffectiveName(path, data.name),
-        path,
+        name: await this.getEffectiveName(data.name),
         type: mediaType,
         status: 'WAITING_FOR_UPLOAD',
         storageUnitId: storageUnit.id,
@@ -92,6 +111,14 @@ export class MediaContainerService {
             },
           },
         },
+        collections:
+          data.collectionIds && data.collectionIds.length > 0
+            ? {
+                create: data.collectionIds.map((collectionId) => ({
+                  collectionId,
+                })),
+              }
+            : undefined,
       },
       select: selectMediaContainer(),
     });
@@ -167,43 +194,6 @@ export class MediaContainerService {
     return container;
   }
 
-  /**
-   * Retrieves a media container by its path and name combination.
-   *
-   * The path and name together form a unique identifier for containers.
-   *
-   * @param path - The path of the container
-   * @param name - The name of the container
-   *
-   * @returns The MediaContainerEntity if found, or null if not found
-   */
-  async getMediaContainerByPathName(
-    path: string,
-    name: string
-  ): Promise<MediaContainerEntity | null> {
-    const container = await this.prismaService.mediaContainer.findUnique({
-      where: {
-        path_name: { path, name },
-      },
-      select: selectMediaContainer(),
-    });
-
-    if (!container) {
-      return null;
-    }
-
-    return new MediaContainerEntity({
-      ...container,
-      storageUnit: await this.storageUnitService.getStorageUnitByContainerId(
-        container.id
-      ),
-      prismaService: this.prismaService,
-      pathPrefix: this.configService.get('storage.pathPrefix'),
-      urlSigningService: this.urlSigningService,
-      eventPublisher: this.eventPublisher,
-    });
-  }
-
   async getMediaContainerByAssetId(
     assetId: string
   ): Promise<MediaContainerEntity | null> {
@@ -232,52 +222,15 @@ export class MediaContainerService {
   }
 
   /**
-   * Lists all media containers that are located at or under the specified path.
-   *
-   * Only returns containers that have not been deleted (deletedAt is null).
-   * Uses a prefix match, so containers in subdirectories are included.
-   *
-   * @param path - The path prefix to search for containers
-   *
-   * @returns An array of MediaContainerEntity instances matching the path
-   */
-  async listContainersByPath(path: string): Promise<MediaContainerEntity[]> {
-    const containers = await this.prismaService.mediaContainer.findMany({
-      where: {
-        path: { startsWith: path },
-        deletedAt: null,
-      },
-      select: selectMediaContainerSummary(),
-    });
-
-    const entities = await Promise.all(
-      containers.map(
-        async (container) =>
-          new MediaContainerEntity({
-            ...container,
-            storageUnit:
-              await this.storageUnitService.getStorageUnitByContainerId(
-                container.id
-              ),
-            prismaService: this.prismaService,
-            pathPrefix: this.configService.get('storage.pathPrefix'),
-            urlSigningService: this.urlSigningService,
-            eventPublisher: this.eventPublisher,
-          })
-      )
-    );
-
-    return entities;
-  }
-
-  /**
    * Lists media containers by their unique identifiers.
    *
    * @param ids - The unique identifiers of the media containers
    *
    * @returns An array of MediaContainerEntity instances matching the IDs
    */
-  async listContainersByIds(ids: string[]): Promise<MediaContainerEntity[]> {
+  async listMediaContainersByIds(
+    ids: string[]
+  ): Promise<MediaContainerEntity[]> {
     const containers = await this.prismaService.mediaContainer.findMany({
       where: { id: { in: ids } },
       select: {
@@ -304,31 +257,66 @@ export class MediaContainerService {
 
     return entities;
   }
+
+  async listMediaContainers(query?: ListMediaContainersQueryDto) {
+    const where: any = {
+      deletedAt: null,
+    };
+
+    if (query?.collectionIds && query.collectionIds.length > 0) {
+      where.collections = {
+        some: {
+          collectionId: {
+            in: query.collectionIds,
+          },
+        },
+      };
+    }
+
+    const containers = await this.prismaService.mediaContainer.findMany({
+      ...(query?.toPrisma() ?? {}),
+      where,
+      select: selectMediaContainer(),
+    });
+
+    return Promise.all(
+      containers.map(
+        async (c) =>
+          new MediaContainerEntity({
+            ...c,
+            storageUnit:
+              await this.storageUnitService.getStorageUnitByContainerId(c.id),
+            prismaService: this.prismaService,
+            pathPrefix: this.configService.get('storage.pathPrefix'),
+            urlSigningService: this.urlSigningService,
+            eventPublisher: this.eventPublisher,
+          })
+      )
+    );
+  }
+
   /**
    * Determines the effective name to use for a media container.
    *
    * If a name is provided, it checks for conflicts and automatically generates
-   * a new name with an increment counter if a container with the same path and
-   * name already exists (e.g., "MyFile.jpg", "MyFile.jpg (1)", "MyFile.jpg (2)", etc.).
+   * a new name with an increment counter if a container with the same name
+   * already exists (e.g., "MyFile.jpg", "MyFile.jpg (1)", "MyFile.jpg (2)", etc.).
    * If no name is provided, generates a placeholder name by finding the next available
-   * sequential placeholder name (e.g., "placeholder", "placeholder 1", "placeholder 2", etc.).
+   * sequential placeholder name (e.g., "New Media", "New Media 1", "New Media 2", etc.).
    *
-   * @param path - The path where the container will be created (defaults to '/')
    * @param name - Optional explicit name for the container
    *
    * @returns The effective name to use for the container
    *
    * @throws {Error} If the maximum number of containers (9999) is exceeded
    */
-  private async getEffectiveName(path = '/', name?: string) {
+  private async getEffectiveName(name?: string) {
     if (name) {
       const existingContainer =
-        await this.prismaService.mediaContainer.findUnique({
+        await this.prismaService.mediaContainer.findFirst({
           where: {
-            path_name: {
-              path,
-              name,
-            },
+            name,
+            deletedAt: null,
           },
         });
 
@@ -342,10 +330,10 @@ export class MediaContainerService {
 
       const allContainers = await this.prismaService.mediaContainer.findMany({
         where: {
-          path,
           name: {
             startsWith: baseName,
           },
+          deletedAt: null,
         },
         select: {
           name: true,
@@ -376,7 +364,7 @@ export class MediaContainerService {
 
       if (counter > MAX_COUNTER) {
         throw new Error(
-          `Maximum number of containers (${MAX_COUNTER}) exceeded for name "${baseName}" at path: ${path}`
+          `Maximum number of containers (${MAX_COUNTER}) exceeded for name "${baseName}"`
         );
       }
 
@@ -385,10 +373,10 @@ export class MediaContainerService {
 
     const containers = await this.prismaService.mediaContainer.findMany({
       where: {
-        path,
         name: {
           startsWith: this.PLACEHOLDER_CONTAINER_NAME,
         },
+        deletedAt: null,
       },
     });
 
@@ -410,7 +398,7 @@ export class MediaContainerService {
 
       if (counter > MAX_COUNTER) {
         throw new Error(
-          `Maximum number of placeholder containers (${MAX_COUNTER}) exceeded for path: ${path}`
+          `Maximum number of placeholder containers (${MAX_COUNTER}) exceeded`
         );
       }
 

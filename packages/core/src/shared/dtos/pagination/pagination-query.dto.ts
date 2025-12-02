@@ -1,3 +1,4 @@
+import { Prisma } from '@/database';
 import { base64Decode } from '@longpoint/utils/string';
 import { ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -44,6 +45,16 @@ export class PaginationQueryDto {
    * ```
    */
   toPrisma(cursorKey = 'id') {
+    let orderBy: any[] = [];
+
+    if ('sort' in this && typeof this.sort === 'string') {
+      const sortOrder = this.sort
+        ? (this.sort.split(':')[1] as Prisma.SortOrder)
+        : 'desc';
+      const sortField = this.sort ? this.sort.split(':')[0] : 'updatedAt';
+      orderBy = [{ [sortField]: sortOrder }, { [cursorKey]: 'desc' }];
+    }
+
     return {
       take: this.pageSize,
       skip: this.cursor ? 1 : 0,
@@ -52,7 +63,7 @@ export class PaginationQueryDto {
             [cursorKey]: this.cursor,
           } as any)
         : undefined,
-      orderBy: { [cursorKey]: 'desc' },
+      orderBy,
     };
   }
 }

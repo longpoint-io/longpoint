@@ -1,2 +1,2 @@
 export * from './containers';
-export * from './tree';
+export * from './generate-links.dto';

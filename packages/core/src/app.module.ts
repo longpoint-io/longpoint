@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import {
   AuthModule,
   ClassifierModule,
+  CollectionModule,
   CommonModule,
   FileDeliveryModule,
   LoggerModule,
@@ -27,6 +28,7 @@ import { EventModule } from './modules/event';
     // Feature modules
     AuthModule,
     ClassifierModule,
+    CollectionModule,
     FileDeliveryModule,
     MediaModule,
     SearchModule,

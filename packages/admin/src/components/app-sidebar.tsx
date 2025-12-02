@@ -25,6 +25,7 @@ import {
   SidebarMenuSubItem,
 } from '@longpoint/ui/components/sidebar';
 import {
+  BookmarkIcon,
   ChevronDown,
   HomeIcon,
   ImagePlayIcon,
@@ -43,9 +44,14 @@ const sidebarItems = [
     icon: HomeIcon,
   },
   {
-    label: 'Browser',
+    label: 'Assets',
     url: '/browser',
     icon: ImagePlayIcon,
+  },
+  {
+    label: 'Collections',
+    url: '/collections',
+    icon: BookmarkIcon,
   },
   {
     label: 'Classifiers',

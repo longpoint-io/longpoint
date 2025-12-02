@@ -43,14 +43,12 @@ export const ApiMediaAssetNotFoundResponse = () => {
 };
 
 export class MediaContainerAlreadyExists extends ResourceAlreadyExists {
-  constructor(name: string, path: string) {
-    super(
-      `Media container with name "${name}" already exists at path "${path}"`
-    );
+  constructor(name: string) {
+    super(`Media container with name "${name}" already exists`);
   }
 }
 export const mediaContainerExistsDoc = apiErrorDoc(
-  new MediaContainerAlreadyExists('My Container', '/')
+  new MediaContainerAlreadyExists('My Container')
 );
 export const ApiMediaContainerAlreadyExistsResponse = () =>
   applyDecorators(
@@ -77,16 +75,6 @@ export class MediaContainerNotEmbeddable extends BaseError {
       `Media container ${mediaContainerId} is not currently embeddable, due to the primary asset not being ready`,
       HttpStatus.BAD_REQUEST,
       { mediaContainerId }
-    );
-  }
-}
-
-export class TreePathNotFound extends BaseError {
-  constructor(path: string) {
-    super(
-      ErrorCode.RESOURCE_NOT_FOUND,
-      `Tree path not found: ${path}`,
-      HttpStatus.NOT_FOUND
     );
   }
 }

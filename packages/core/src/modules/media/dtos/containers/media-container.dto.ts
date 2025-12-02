@@ -4,17 +4,16 @@ import {
   MediaContainerStatus,
   MediaType,
 } from '@/database';
+import { CollectionReferenceDto } from '@/modules/collection';
 import { type SelectedMediaContainer } from '@/shared/selectors/media.selectors';
 import { SupportedMimeType } from '@longpoint/types';
-import {
-  IsValidMediaContainerName,
-  IsValidMediaContainerPath,
-} from '@longpoint/validations';
+import { IsValidMediaContainerName } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { MediaAssetVariantsDto } from './media-asset-variants.dto';
 
 export type MediaContainerParams = Omit<SelectedMediaContainer, 'assets'> & {
   variants: MediaAssetVariantsDto;
+  collections: CollectionReferenceDto[];
 };
 
 @ApiSchema({ name: 'MediaContainer' })
@@ -31,13 +30,6 @@ export class MediaContainerDto {
     example: 'Blissful Fields',
   })
   name: string;
-
-  @IsValidMediaContainerPath()
-  @ApiProperty({
-    description: 'The directory path of the media container',
-    example: '/',
-  })
-  path: string;
 
   @ApiProperty({
     description: 'The primary media type.',
@@ -84,14 +76,20 @@ export class MediaContainerDto {
   })
   variants: MediaAssetVariantsDto;
 
+  @ApiProperty({
+    description: 'Collections this container belongs to',
+    type: [CollectionReferenceDto],
+  })
+  collections: CollectionReferenceDto[];
+
   constructor(data: MediaContainerParams) {
     this.id = data.id;
     this.name = data.name;
-    this.path = data.path;
     this.type = data.type;
     this.status = data.status;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
     this.variants = data.variants;
+    this.collections = data.collections;
   }
 }

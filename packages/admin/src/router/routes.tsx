@@ -6,6 +6,8 @@ import { Browser } from '../pages/dashboard/browser';
 import { Classifiers } from '../pages/dashboard/classifiers';
 import { CreateClassifier } from '../pages/dashboard/classifiers/create';
 import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
+import { Collections } from '../pages/dashboard/collections';
+import { CollectionDetail } from '../pages/dashboard/collections/detail';
 import { DashboardHome } from '../pages/dashboard/home';
 import { MediaDetail } from '../pages/dashboard/media-detail';
 import { PluginDetail } from '../pages/dashboard/plugins/detail';
@@ -173,6 +175,30 @@ export function AppRoutes() {
             <AuthGuard>
               <DashboardLayout>
                 <PluginDetail />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/collections"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <Collections />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/collections/:id"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <CollectionDetail />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

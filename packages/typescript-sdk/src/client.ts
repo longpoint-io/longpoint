@@ -13,6 +13,7 @@ export class Longpoint {
   analysis: AnalysisClient;
   media: MediaClient;
   storage: StorageClient;
+  collections: CollectionsClient;
   search: SearchClient;
   system: SystemClient;
 
@@ -29,6 +30,7 @@ export class Longpoint {
     this.analysis = new AnalysisClient(this.httpClient);
     this.media = new MediaClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
+    this.collections = new CollectionsClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
   }
@@ -127,6 +129,34 @@ class MediaClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
+   * List media containers
+   */
+    async listMediaContainers(options?: { cursor?: string; pageSize?: number; collectionIds?: string[] }): Promise<components['schemas']['ListMediaContainersResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+          if (options.collectionIds !== undefined) {
+            if (Array.isArray(options.collectionIds)) {
+              options.collectionIds.forEach((item) => {
+                params.append('collectionIds', String(item));
+              });
+            } else {
+              params.append('collectionIds', String(options.collectionIds));
+            }
+          }
+        }
+        const queryString = params.toString();
+        const url = `media/containers${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
    * Create a media container
    *
    * Creates an empty container that is ready to receive an upload.
@@ -163,22 +193,6 @@ class MediaClient {
     async deleteMedia(containerId: string, data: components['schemas']['DeleteMediaContainer']): Promise<void> {
         const url = `media/containers/${encodeURIComponent(String(containerId))}`;
         const response = await this.httpClient.delete(url, { data });
-        return response.data;
-  }
-
-    /**
-   * List the contents of a media tree
-   */
-    async getTree(options?: { path?: string }): Promise<components['schemas']['MediaTree']> {
-        const params = new URLSearchParams();
-        if (options) {
-          if (options.path !== undefined) {
-            params.append('path', String(options.path));
-          }
-        }
-        const queryString = params.toString();
-        const url = `media/tree${queryString ? `?${queryString}` : ''}`;
-        const response = await this.httpClient.get(url);
         return response.data;
   }
 
@@ -327,6 +341,90 @@ class StorageClient {
     async deleteStorageConfig(id: string): Promise<void> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+}
+
+class CollectionsClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Create a collection
+   *
+   * Creates a new collection for organizing media containers.
+   */
+    async createCollection(data: components['schemas']['CreateCollection']): Promise<components['schemas']['Collection']> {
+        const url = `collections`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List collections
+   */
+    async listCollections(options?: { cursor?: string; pageSize?: number; sort?: 'updatedAt:desc' | 'name:asc' | 'name:desc' }): Promise<components['schemas']['ListCollectionsResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+          if (options.sort !== undefined) {
+            params.append('sort', String(options.sort));
+          }
+        }
+        const queryString = params.toString();
+        const url = `collections${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a collection
+   */
+    async getCollection(id: string): Promise<components['schemas']['CollectionDetails']> {
+        const url = `collections/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a collection
+   */
+    async updateCollection(id: string, data: components['schemas']['UpdateCollection']): Promise<components['schemas']['CollectionDetails']> {
+        const url = `collections/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a collection
+   *
+   * Soft deletes a collection by default. Pass permanently=true in body to permanently delete.
+   */
+    async deleteCollection(id: string): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * Add media containers to a collection
+   */
+    async addContainersToCollection(id: string, data: components['schemas']['AddContainersToCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(id))}/containers`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * Remove media containers from a collection
+   */
+    async removeContainersFromCollection(id: string, data: components['schemas']['RemoveContainersFromCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(id))}/containers`;
+        const response = await this.httpClient.delete(url, { data });
         return response.data;
   }
 }

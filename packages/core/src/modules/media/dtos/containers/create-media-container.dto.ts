@@ -9,16 +9,13 @@ import {
 import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { MediaContainerDto } from './media-container.dto';
 
-export type CreateMediaContainerParam = Pick<
-  MediaContainerDto,
-  'name' | 'path'
-> & {
+export type CreateMediaContainerParam = Pick<MediaContainerDto, 'name'> & {
   mimeType: SupportedMimeType;
 };
 
 @ApiSchema({ name: 'CreateMediaContainer' })
 export class CreateMediaContainerDto extends PartialType(
-  PickType(MediaContainerDto, ['name', 'path'] as const)
+  PickType(MediaContainerDto, ['name'] as const)
 ) {
   @IsEnum(SupportedMimeType)
   @ApiProperty({
@@ -47,4 +44,14 @@ export class CreateMediaContainerDto extends PartialType(
     type: [String],
   })
   classifiersOnUpload?: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: 'IDs of collections the container is a member of.',
+    example: ['mbjq36xe6397dsi6x9nq4ghc'],
+    type: [String],
+  })
+  collectionIds?: string[];
 }
