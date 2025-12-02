@@ -174,7 +174,7 @@ export function UploadProvider({ children }: UploadProviderProps) {
 
     if (allComplete && hasSuccessfulUploads && !hasInvalidatedRef.current) {
       // Invalidate library tree queries to refresh the media list
-      queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      queryClient.invalidateQueries({ queryKey: ['media-containers'] });
       hasInvalidatedRef.current = true;
     }
   }, [allFiles, queryClient]);

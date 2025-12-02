@@ -319,7 +319,7 @@ export function MediaDetail() {
       client.media.deleteMedia(id!, { permanently: permanentlyDelete }),
     onSuccess: () => {
       toast.success('Media deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      queryClient.invalidateQueries({ queryKey: ['media-containers'] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setDeleteDialogOpen(false);
       setPermanentlyDelete(false);
@@ -341,7 +341,7 @@ export function MediaDetail() {
     onSuccess: () => {
       toast.success('Media renamed successfully');
       queryClient.invalidateQueries({ queryKey: ['media', id] });
-      queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      queryClient.invalidateQueries({ queryKey: ['media-containers'] });
       setRenameDialogOpen(false);
     },
     onError: (error) => {
@@ -361,7 +361,7 @@ export function MediaDetail() {
     onSuccess: () => {
       toast.success('Collections updated successfully');
       queryClient.invalidateQueries({ queryKey: ['media', id] });
-      queryClient.invalidateQueries({ queryKey: ['library-tree'] });
+      queryClient.invalidateQueries({ queryKey: ['media-containers'] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setAddToCollectionOpen(false);
     },

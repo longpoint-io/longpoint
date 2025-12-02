@@ -15,12 +15,10 @@ import { cn } from '@longpoint/ui/utils';
 import { useQuery } from '@tanstack/react-query';
 import { LayoutGrid, Table, UploadIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 
 const VIEW_TYPE_STORAGE_KEY = 'browser-view-type';
 
 export function Browser() {
-  const [searchParams, setSearchParams] = useSearchParams();
   const { openDialog } = useUploadContext();
   const client = useClient();
   const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
@@ -30,14 +28,12 @@ export function Browser() {
       | 'table';
   });
 
-  const currentPath = searchParams.get('path') || '/';
-
   useEffect(() => {
     localStorage.setItem(VIEW_TYPE_STORAGE_KEY, viewType);
   }, [viewType]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['library-tree', currentPath],
+    queryKey: ['media-containers'],
     queryFn: async () => {
       const results = await client.media.listMediaContainers({ pageSize: 100 });
       const links = await client.media.generateLinks({
@@ -50,16 +46,12 @@ export function Browser() {
     },
   });
 
-  const handleFolderClick = (path: string) => {
-    setSearchParams({ path });
-  };
-
   const handleUpload = () => {
     openDialog();
   };
 
   const items = data?.results.items || [];
-  const isEmpty = !isLoading && items.length === 0 && currentPath === '/';
+  const isEmpty = !isLoading && items.length === 0;
 
   return (
     <div className="space-y-8">
@@ -110,11 +102,7 @@ export function Browser() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold">
-                  {currentPath === '/'
-                    ? 'All Items'
-                    : `Items in ${currentPath.split('/').pop()}`}
-                </h2>
+                <h2 className="text-xl font-semibold">All Items</h2>
                 <p className="text-sm text-muted-foreground">
                   {items.length} {items.length === 1 ? 'item' : 'items'}
                 </p>
