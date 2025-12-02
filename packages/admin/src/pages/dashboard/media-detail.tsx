@@ -48,6 +48,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@longpoint/ui/components/tooltip';
+import { cn } from '@longpoint/ui/lib/utils';
 import { formatBytes } from '@longpoint/utils/format';
 import { enumToTitleCase } from '@longpoint/utils/string';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -491,7 +492,13 @@ export function MediaDetail() {
                     variant="icon"
                     disabled={updateCollectionsMutation.isPending}
                   >
-                    <BookmarkIcon />
+                    <BookmarkIcon
+                      className={cn(
+                        media.collections.length > 0
+                          ? 'fill-destructive stroke-destructive'
+                          : ''
+                      )}
+                    />
                   </Button>
                 </PopoverTrigger>
               </TooltipTrigger>

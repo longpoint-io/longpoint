@@ -1,4 +1,5 @@
 import { components } from '@longpoint/sdk';
+import { Checkbox } from '@longpoint/ui/components/checkbox';
 import { TableCell, TableRow } from '@longpoint/ui/components/table';
 import { ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,18 +8,41 @@ import { MediaType } from './media-type';
 interface MediaTableRowProps {
   item: components['schemas']['MediaContainerSummary'];
   thumbnailLink?: string;
+  selected?: boolean;
+  onSelectChange?: (selected: boolean) => void;
+  multiSelect?: boolean;
 }
 
-export function MediaTableRow({ item, thumbnailLink }: MediaTableRowProps) {
+export function MediaTableRow({
+  item,
+  thumbnailLink,
+  selected = false,
+  onSelectChange,
+  multiSelect = false,
+}: MediaTableRowProps) {
   const navigate = useNavigate();
 
   const { id, name, createdAt, updatedAt, type } = item;
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelectChange?.(!selected);
+  };
 
   return (
     <TableRow
       className="cursor-pointer hover:bg-muted/50"
       onClick={() => navigate(`/media/${id}`)}
     >
+      {multiSelect && (
+        <TableCell onClick={handleCheckboxClick}>
+          <Checkbox
+            checked={selected}
+            onCheckedChange={(checked) => onSelectChange?.(checked === true)}
+            onClick={handleCheckboxClick}
+          />
+        </TableCell>
+      )}
       <TableCell>
         <div className="flex items-center gap-3">
           <div className="size-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded overflow-hidden shrink-0">

@@ -6,9 +6,30 @@ export interface MediaGridProps {
   items: components['schemas']['MediaContainerSummary'][];
   isLoading?: boolean;
   links: Record<string, string>;
+  multiSelect?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (selectedIds: Set<string>) => void;
 }
 
-export function MediaGrid({ items, isLoading, links }: MediaGridProps) {
+export function MediaGrid({
+  items,
+  isLoading,
+  links,
+  multiSelect = false,
+  selectedIds = new Set(),
+  onSelectionChange,
+}: MediaGridProps) {
+  const handleItemSelectionChange = (itemId: string, selected: boolean) => {
+    if (!onSelectionChange) return;
+    const newSelection = new Set(selectedIds);
+    if (selected) {
+      newSelection.add(itemId);
+    } else {
+      newSelection.delete(itemId);
+    }
+    onSelectionChange(newSelection);
+  };
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6">
@@ -29,11 +50,16 @@ export function MediaGrid({ items, isLoading, links }: MediaGridProps) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-      {items.map((item, index) => (
+      {items.map((item) => (
         <MediaGridItem
           key={item.id}
           item={item}
           thumbnailLink={item.type === 'IMAGE' ? links[item.id] : undefined}
+          multiSelect={multiSelect}
+          selected={selectedIds.has(item.id)}
+          onSelectChange={(selected) =>
+            handleItemSelectionChange(item.id, selected)
+          }
         />
       ))}
     </div>

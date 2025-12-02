@@ -12,6 +12,12 @@ import {
   DialogTitle,
 } from '@longpoint/ui/components/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@longpoint/ui/components/dropdown-menu';
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -39,9 +45,11 @@ import { cn } from '@longpoint/ui/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Calendar,
+  ChevronDown,
   EditIcon,
   ImageIcon,
   LayoutGrid,
+  ListXIcon,
   Table,
   Trash2,
 } from 'lucide-react';
@@ -67,6 +75,11 @@ export function CollectionDetail() {
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [removeContainersDialogOpen, setRemoveContainersDialogOpen] =
+    useState(false);
+  const [selectedContainerIds, setSelectedContainerIds] = useState<Set<string>>(
+    new Set()
+  );
   const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
     const saved = localStorage.getItem(VIEW_TYPE_STORAGE_KEY);
     return (saved === 'grid' || saved === 'table' ? saved : 'grid') as
@@ -164,12 +177,41 @@ export function CollectionDetail() {
     },
   });
 
+  const removeContainersMutation = useMutation({
+    mutationFn: (containerIds: string[]) =>
+      client.media.removeContainersFromCollection(id!, {
+        containerIds,
+      }),
+    onSuccess: () => {
+      toast.success('Containers removed from collection successfully');
+      queryClient.invalidateQueries({ queryKey: ['collection', id] });
+      queryClient.invalidateQueries({
+        queryKey: ['media-containers', 'collection', id],
+      });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      setSelectedContainerIds(new Set());
+      setRemoveContainersDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error('Failed to remove containers from collection', {
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      });
+    },
+  });
+
   const handleDelete = () => {
     deleteMutation.mutate();
   };
 
   const handleEdit = (data: EditFormData) => {
     updateMutation.mutate(data);
+  };
+
+  const handleRemoveContainers = () => {
+    removeContainersMutation.mutate(Array.from(selectedContainerIds));
   };
 
   if (isLoading) {
@@ -261,45 +303,79 @@ export function CollectionDetail() {
       {/* Media Containers Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div
-            role="radiogroup"
-            aria-label="View type"
-            className="flex flex-row gap-0.5 border rounded-md p-0.5 bg-muted/30"
-          >
-            <button
-              type="button"
-              role="radio"
-              aria-checked={viewType === 'grid'}
-              aria-label="Grid view"
-              onClick={() => setViewType('grid')}
-              className={cn(
-                'size-8 flex items-center justify-center rounded transition-colors',
-                'hover:bg-muted/50',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                viewType === 'grid'
-                  ? 'bg-background shadow-sm'
-                  : 'bg-transparent'
-              )}
+          <div className="flex items-center gap-2">
+            {selectedContainerIds.size > 0 && (
+              <span className="text-sm text-muted-foreground">
+                {selectedContainerIds.size} selected
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {selectedContainerIds.size > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Actions
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setSelectedContainerIds(new Set())}
+                  >
+                    <ListXIcon />
+                    Clear Selection
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setRemoveContainersDialogOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remove from collection
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <div
+              role="radiogroup"
+              aria-label="View type"
+              className="flex flex-row gap-0.5 border rounded-md p-0.5 bg-muted/30"
             >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={viewType === 'table'}
-              aria-label="Table view"
-              onClick={() => setViewType('table')}
-              className={cn(
-                'size-8 flex items-center justify-center rounded transition-colors',
-                'hover:bg-muted/50',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                viewType === 'table'
-                  ? 'bg-background shadow-sm'
-                  : 'bg-transparent'
-              )}
-            >
-              <Table className="h-4 w-4" />
-            </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={viewType === 'grid'}
+                aria-label="Grid view"
+                onClick={() => setViewType('grid')}
+                className={cn(
+                  'size-8 flex items-center justify-center rounded transition-colors',
+                  'hover:bg-muted/50',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  viewType === 'grid'
+                    ? 'bg-background shadow-sm'
+                    : 'bg-transparent'
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={viewType === 'table'}
+                aria-label="Table view"
+                onClick={() => setViewType('table')}
+                className={cn(
+                  'size-8 flex items-center justify-center rounded transition-colors',
+                  'hover:bg-muted/50',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  viewType === 'table'
+                    ? 'bg-background shadow-sm'
+                    : 'bg-transparent'
+                )}
+              >
+                <Table className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -330,9 +406,23 @@ export function CollectionDetail() {
             </Empty>
           </div>
         ) : viewType === 'grid' ? (
-          <MediaGrid items={containers} links={links} isLoading={false} />
+          <MediaGrid
+            items={containers}
+            links={links}
+            isLoading={false}
+            multiSelect={true}
+            selectedIds={selectedContainerIds}
+            onSelectionChange={setSelectedContainerIds}
+          />
         ) : (
-          <MediaTable items={containers} links={links} isLoading={false} />
+          <MediaTable
+            items={containers}
+            links={links}
+            isLoading={false}
+            multiSelect={true}
+            selectedIds={selectedContainerIds}
+            onSelectionChange={setSelectedContainerIds}
+          />
         )}
       </div>
 
@@ -433,6 +523,45 @@ export function CollectionDetail() {
               isLoading={deleteMutation.isPending}
             >
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={removeContainersDialogOpen}
+        onOpenChange={setRemoveContainersDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove Containers from Collection</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove{' '}
+              <span className="font-semibold">
+                {selectedContainerIds.size} container
+                {selectedContainerIds.size !== 1 ? 's' : ''}
+              </span>{' '}
+              from the collection{' '}
+              <span className="font-semibold">{collection.name}</span>? This
+              will not delete the containers, only remove them from this
+              collection.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRemoveContainersDialogOpen(false)}
+              disabled={removeContainersMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRemoveContainers}
+              disabled={removeContainersMutation.isPending}
+              isLoading={removeContainersMutation.isPending}
+            >
+              Remove
             </Button>
           </DialogFooter>
         </DialogContent>
