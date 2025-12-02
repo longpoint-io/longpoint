@@ -257,6 +257,15 @@ class MediaClient {
   }
 
     /**
+   * Add media containers to a collection
+   */
+    async addContainersToCollection(id: string, data: components['schemas']['AddContainersToCollection']): Promise<void> {
+        const url = `media/collections/${encodeURIComponent(String(id))}/containers`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
    * Remove media containers from a collection
    */
     async removeContainersFromCollection(id: string, data: components['schemas']['RemoveContainersFromCollection']): Promise<void> {

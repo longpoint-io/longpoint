@@ -14,3 +14,16 @@ export class RemoveContainersFromCollectionDto {
   })
   containerIds!: string[];
 }
+
+@ApiSchema({ name: 'AddContainersToCollection' })
+export class AddContainersToCollectionDto {
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'The IDs of the media containers to add to the collection',
+    example: ['mbjq36xe6397dsi6x9nq4ghc'],
+    type: [String],
+  })
+  containerIds!: string[];
+}

@@ -1,7 +1,10 @@
+import { BaseError } from '@/shared/errors';
 import {
   selectCollection,
   SelectedCollection,
 } from '@/shared/selectors/collection.selectors';
+import { ErrorCode } from '@longpoint/types';
+import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
 import {
@@ -89,6 +92,47 @@ export class CollectionEntity {
     }
   }
 
+  async addMediaContainers(containerIds: string[]): Promise<void> {
+    const existingContainers =
+      await this.prismaService.mediaContainerCollection.findMany({
+        where: {
+          collectionId: this.id,
+          containerId: { in: containerIds },
+        },
+      });
+    const existingContainerIds = new Set(
+      existingContainers.map((c) => c.containerId)
+    );
+    const newContainerIds = containerIds.filter(
+      (id) => !existingContainerIds.has(id)
+    );
+    if (newContainerIds.length > 0) {
+      try {
+        await this.prismaService.mediaContainerCollection.createMany({
+          data: newContainerIds.map((id) => ({
+            collectionId: this.id,
+            containerId: id,
+          })),
+        });
+      } catch (e) {
+        if (PrismaService.isNotFoundError(e)) {
+          throw new BaseError(
+            ErrorCode.RESOURCE_NOT_FOUND,
+            'One or more media containers were not found',
+            HttpStatus.NOT_FOUND
+          );
+        }
+        throw e;
+      }
+      this._count.containers =
+        await this.prismaService.mediaContainerCollection.count({
+          where: {
+            collectionId: this.id,
+          },
+        });
+    }
+  }
+
   /**
    * Remove one or more media containers from the collection.
    * @param containerIds - The unique identifiers of the media containers to remove
@@ -100,6 +144,12 @@ export class CollectionEntity {
         containerId: { in: containerIds },
       },
     });
+    this._count.containers =
+      await this.prismaService.mediaContainerCollection.count({
+        where: {
+          collectionId: this.id,
+        },
+      });
   }
 
   toDto(): CollectionDto {

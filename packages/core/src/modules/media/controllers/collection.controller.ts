@@ -18,6 +18,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import {
+  AddContainersToCollectionDto,
   CollectionDetailsDto,
   CollectionDto,
   CreateCollectionDto,
@@ -25,7 +26,7 @@ import {
   ListCollectionsResponseDto,
   UpdateCollectionDto,
 } from '../dtos';
-import { RemoveContainersFromCollectionDto } from '../dtos/collections/remove-containers-from-collection.dto';
+import { RemoveContainersFromCollectionDto } from '../dtos/collections/collection-containers.dto';
 import { ApiCollectionNotFoundResponse } from '../media.errors';
 import { CollectionService } from '../services/collection.service';
 
@@ -116,6 +117,26 @@ export class CollectionController {
       id
     );
     await collection.delete();
+  }
+
+  @Post(':id/containers')
+  @RequirePermission(Permission.COLLECTION_UPDATE)
+  @ApiOperation({
+    summary: 'Add media containers to a collection',
+    operationId: 'addContainersToCollection',
+  })
+  @ApiOkResponse({
+    description: 'The media containers were added to the collection',
+  })
+  @ApiCollectionNotFoundResponse()
+  async addContainersToCollection(
+    @Param('id') id: string,
+    @Body() body: AddContainersToCollectionDto
+  ) {
+    const collection = await this.collectionService.getCollectionByIdOrThrow(
+      id
+    );
+    await collection.addMediaContainers(body.containerIds);
   }
 
   @Delete(':id/containers')

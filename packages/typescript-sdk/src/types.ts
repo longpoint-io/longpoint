@@ -110,7 +110,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post?: never;
+        /** Add media containers to a collection */
+        post: operations["addContainersToCollection"];
         /** Remove media containers from a collection */
         delete: operations["removeContainersFromCollection"];
         options?: never;
@@ -461,6 +462,15 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AddContainersToCollection: {
+            /**
+             * @description The IDs of the media containers to add to the collection
+             * @example [
+             *       "mbjq36xe6397dsi6x9nq4ghc"
+             *     ]
+             */
+            containerIds: string[];
+        };
         ClassificationProvider: {
             /** @description The schema for classifier input */
             classifierInputSchema: {
@@ -1112,7 +1122,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-01T23:51:48.136Z
+             * @example 2025-12-02T21:44:25.698Z
              */
             createdAt: string;
             /**
@@ -1165,7 +1175,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-01T23:51:48.136Z
+             * @example 2025-12-02T21:44:25.698Z
              */
             createdAt: string;
             /**
@@ -2011,6 +2021,48 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CollectionDetails"];
                 };
+            };
+            /** @description Collection not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    addContainersToCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddContainersToCollection"];
+            };
+        };
+        responses: {
+            /** @description The media containers were added to the collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Collection not found */
             404: {
