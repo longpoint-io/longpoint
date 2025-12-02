@@ -4,11 +4,11 @@ import {
   MediaContainerStatus,
   MediaType,
 } from '@/database';
+import { CollectionReferenceDto } from '@/modules/collection';
 import { type SelectedMediaContainer } from '@/shared/selectors/media.selectors';
 import { SupportedMimeType } from '@longpoint/types';
 import { IsValidMediaContainerName } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { CollectionReferenceDto } from '../collections/collection.dto';
 import { MediaAssetVariantsDto } from './media-asset-variants.dto';
 
 export type MediaContainerParams = Omit<SelectedMediaContainer, 'assets'> & {

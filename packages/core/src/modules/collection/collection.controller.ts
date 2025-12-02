@@ -17,6 +17,8 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
+import { ApiCollectionNotFoundResponse } from './collection.errors';
+import { CollectionService } from './collection.service';
 import {
   AddContainersToCollectionDto,
   CollectionDetailsDto,
@@ -24,14 +26,12 @@ import {
   CreateCollectionDto,
   ListCollectionsQueryDto,
   ListCollectionsResponseDto,
+  RemoveContainersFromCollectionDto,
   UpdateCollectionDto,
-} from '../dtos';
-import { RemoveContainersFromCollectionDto } from '../dtos/collections/collection-containers.dto';
-import { ApiCollectionNotFoundResponse } from '../media.errors';
-import { CollectionService } from '../services/collection.service';
+} from './dtos';
 
-@Controller('media/collections')
-@ApiSdkTag(SdkTag.Media)
+@Controller('collections')
+@ApiSdkTag(SdkTag.Collections)
 @ApiBearerAuth()
 export class CollectionController {
   constructor(private readonly collectionService: CollectionService) {}
@@ -64,7 +64,7 @@ export class CollectionController {
     const dtos = await Promise.all(entities.map((entity) => entity.toDto()));
     return new ListCollectionsResponseDto({
       items: dtos,
-      path: '/media/collections',
+      path: '/collections',
       query,
     });
   }

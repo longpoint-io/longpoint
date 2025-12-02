@@ -141,7 +141,7 @@ function AddToCollectionCombobox({
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
-    client.media
+    client.collections
       .listCollections({ pageSize: 100 })
       .then((response) => {
         if (!cancelled) {

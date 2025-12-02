@@ -105,7 +105,7 @@ export function CollectionDetail() {
     error,
   } = useQuery({
     queryKey: ['collection', id],
-    queryFn: () => client.media.getCollection(id!),
+    queryFn: () => client.collections.getCollection(id!),
     enabled: !!id,
   });
 
@@ -138,7 +138,7 @@ export function CollectionDetail() {
   }, [collection, editDialogOpen, editForm]);
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.media.deleteCollection(id!),
+    mutationFn: () => client.collections.deleteCollection(id!),
     onSuccess: () => {
       toast.success('Collection deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['collections'] });
@@ -157,7 +157,7 @@ export function CollectionDetail() {
 
   const updateMutation = useMutation({
     mutationFn: (data: EditFormData) =>
-      client.media.updateCollection(id!, {
+      client.collections.updateCollection(id!, {
         name: data.name,
         description: data.description || undefined,
       }),
@@ -179,7 +179,7 @@ export function CollectionDetail() {
 
   const removeContainersMutation = useMutation({
     mutationFn: (containerIds: string[]) =>
-      client.media.removeContainersFromCollection(id!, {
+      client.collections.removeContainersFromCollection(id!, {
         containerIds,
       }),
     onSuccess: () => {

@@ -5,14 +5,17 @@ import {
 } from '@/shared/selectors/collection.selectors';
 import { ErrorCode } from '@longpoint/types';
 import { HttpStatus } from '@nestjs/common';
-import { PrismaService } from '../../common/services/prisma/prisma.service';
-import { EventPublisher } from '../../event';
+import { PrismaService } from '../common/services/prisma/prisma.service';
+import { EventPublisher } from '../event';
+import {
+  CollectionAlreadyExists,
+  CollectionNotFound,
+} from './collection.errors';
 import {
   CollectionDetailsDto,
   CollectionDto,
   UpdateCollectionDto,
-} from '../dtos';
-import { CollectionAlreadyExists, CollectionNotFound } from '../media.errors';
+} from './dtos';
 
 export interface CollectionEntityArgs extends SelectedCollection {
   prismaService: PrismaService;

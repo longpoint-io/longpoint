@@ -1,11 +1,14 @@
 import { Prisma } from '@/database';
 import { selectCollection } from '@/shared/selectors/collection.selectors';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../common/services/prisma/prisma.service';
-import { EventPublisher } from '../../event';
-import { CreateCollectionDto, ListCollectionsQueryDto } from '../dtos';
-import { CollectionEntity } from '../entities/collection.entity';
-import { CollectionAlreadyExists, CollectionNotFound } from '../media.errors';
+import { PrismaService } from '../common/services/prisma/prisma.service';
+import { EventPublisher } from '../event';
+import { CollectionEntity } from './collection.entity';
+import {
+  CollectionAlreadyExists,
+  CollectionNotFound,
+} from './collection.errors';
+import { CreateCollectionDto, ListCollectionsQueryDto } from './dtos';
 
 /**
  * Service for managing collections and their relationships with media containers.

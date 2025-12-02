@@ -5,6 +5,10 @@ import {
   MediaType,
   Prisma,
 } from '@/database';
+import {
+  CollectionNotFound,
+  CollectionReferenceDto,
+} from '@/modules/collection';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
 import { formatBytes } from '@longpoint/utils/format';
 import {
@@ -24,16 +28,13 @@ import {
   MediaContainerSummaryDto,
   UpdateMediaContainerDto,
 } from '../dtos';
-import { CollectionReferenceDto } from '../dtos/collections/collection.dto';
 import { MediaContainerDto } from '../dtos/containers/media-container.dto';
 import {
-  CollectionNotFound,
   MediaContainerAlreadyDeleted,
   MediaContainerAlreadyExists,
   MediaContainerNotEmbeddable,
   MediaContainerNotFound,
 } from '../media.errors';
-import { CollectionService } from '../services/collection.service';
 
 export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   storageUnit: StorageUnitEntity;
@@ -41,7 +42,6 @@ export interface MediaContainerEntityArgs extends SelectedMediaContainer {
   pathPrefix: string;
   urlSigningService: UrlSigningService;
   eventPublisher: EventPublisher;
-  collectionService: CollectionService;
 }
 
 export class MediaContainerEntity {
@@ -56,7 +56,6 @@ export class MediaContainerEntity {
   private readonly pathPrefix: string;
   private readonly urlSigningService: UrlSigningService;
   private readonly eventPublisher: EventPublisher;
-  private readonly collectionService: CollectionService;
   private assets: SelectedMediaContainer['assets'];
 
   constructor(args: MediaContainerEntityArgs) {
@@ -71,7 +70,6 @@ export class MediaContainerEntity {
     this.pathPrefix = args.pathPrefix;
     this.urlSigningService = args.urlSigningService;
     this.eventPublisher = args.eventPublisher;
-    this.collectionService = args.collectionService;
     this.assets = args.assets;
   }
 

@@ -4,7 +4,7 @@ import { UrlSigningService } from '@/modules/file-delivery';
 import { SupportedMimeType } from '@longpoint/types';
 import { mimeTypeToExtension } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
-import { GenerateMediaLinksDto } from '../dtos/links/generate-links.dto';
+import { GenerateMediaLinksDto } from '../dtos/generate-links.dto';
 
 @Injectable()
 export class MediaLinkGeneratorService {

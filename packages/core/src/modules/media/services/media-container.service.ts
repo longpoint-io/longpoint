@@ -1,7 +1,7 @@
 import { ConfigService } from '@/modules/common/services';
 import { SupportedMimeType } from '@longpoint/types';
 import { mimeTypeToMediaType } from '@longpoint/utils/media';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { addHours } from 'date-fns';
 import {
@@ -19,7 +19,6 @@ import {
   MediaAssetNotFound,
   MediaContainerNotFound,
 } from '../media.errors';
-import { CollectionService } from './collection.service';
 
 export interface CreateMediaContainerParams {
   path: string;
@@ -46,9 +45,7 @@ export class MediaContainerService {
     private readonly storageUnitService: StorageUnitService,
     private readonly configService: ConfigService,
     private readonly urlSigningService: UrlSigningService,
-    private readonly eventPublisher: EventPublisher,
-    @Inject(forwardRef(() => CollectionService))
-    private readonly collectionService: CollectionService
+    private readonly eventPublisher: EventPublisher
   ) {}
 
   /**
@@ -77,13 +74,18 @@ export class MediaContainerService {
       ? await this.storageUnitService.getStorageUnitById(data.storageUnitId)
       : await this.storageUnitService.getOrCreateDefaultStorageUnit();
 
-    // Validate collection IDs if provided
     if (data.collectionIds && data.collectionIds.length > 0) {
+      const collections = await this.prismaService.collection.findMany({
+        where: {
+          id: { in: data.collectionIds },
+        },
+        select: {
+          id: true,
+        },
+      });
+      const collectionIds = new Set(collections.map((c) => c.id));
       for (const collectionId of data.collectionIds) {
-        const collection = await this.collectionService.getCollectionById(
-          collectionId
-        );
-        if (!collection) {
+        if (!collectionIds.has(collectionId)) {
           throw new CollectionNotFound(collectionId);
         }
       }
@@ -133,7 +135,6 @@ export class MediaContainerService {
         pathPrefix: this.configService.get('storage.pathPrefix'),
         urlSigningService: this.urlSigningService,
         eventPublisher: this.eventPublisher,
-        collectionService: this.collectionService,
       }),
     };
   }
@@ -168,7 +169,6 @@ export class MediaContainerService {
       pathPrefix: this.configService.get('storage.pathPrefix'),
       urlSigningService: this.urlSigningService,
       eventPublisher: this.eventPublisher,
-      collectionService: this.collectionService,
     });
   }
 
@@ -251,7 +251,6 @@ export class MediaContainerService {
             pathPrefix: this.configService.get('storage.pathPrefix'),
             urlSigningService: this.urlSigningService,
             eventPublisher: this.eventPublisher,
-            collectionService: this.collectionService,
           })
       )
     );
@@ -291,7 +290,6 @@ export class MediaContainerService {
             pathPrefix: this.configService.get('storage.pathPrefix'),
             urlSigningService: this.urlSigningService,
             eventPublisher: this.eventPublisher,
-            collectionService: this.collectionService,
           })
       )
     );

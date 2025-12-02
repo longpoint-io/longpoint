@@ -23,7 +23,7 @@ export function Collections() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['collections'],
-    queryFn: () => client.media.listCollections(),
+    queryFn: () => client.collections.listCollections(),
   });
 
   if (isLoading) {

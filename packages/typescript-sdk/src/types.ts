@@ -58,7 +58,7 @@ export interface paths {
         patch: operations["updateClassifier"];
         trace?: never;
     };
-    "/media/collections": {
+    "/collections": {
         parameters: {
             query?: never;
             header?: never;
@@ -79,7 +79,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/media/collections/{id}": {
+    "/collections/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -101,7 +101,7 @@ export interface paths {
         patch: operations["updateCollection"];
         trace?: never;
     };
-    "/media/collections/{id}/containers": {
+    "/collections/{id}/containers": {
         parameters: {
             query?: never;
             header?: never;
@@ -1122,7 +1122,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-02T21:44:25.698Z
+             * @example 2025-12-02T22:11:59.314Z
              */
             createdAt: string;
             /**
@@ -1175,7 +1175,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the media container was created
-             * @example 2025-12-02T21:44:25.698Z
+             * @example 2025-12-02T22:11:59.314Z
              */
             createdAt: string;
             /**

@@ -54,7 +54,7 @@ export function CreateCollectionDialog({
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
-      client.media.createCollection({
+      client.collections.createCollection({
         name: data.name,
         description: data.description || undefined,
       }),
