@@ -24,13 +24,13 @@ export class SystemService {
   }
 
   async getSystemStatus() {
-    const totalContainers = await this.prismaService.mediaContainer.count({
+    const totalAssets = await this.prismaService.asset.count({
       where: {
         deletedAt: null,
         status: 'READY',
       },
     });
 
-    return new SystemStatusDto({ totalContainers });
+    return new SystemStatusDto({ totalAssets });
   }
 }

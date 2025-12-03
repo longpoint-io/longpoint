@@ -1,4 +1,4 @@
-import { MediaAssetVariant } from '@/database';
+import { AssetVariantType } from '@/database';
 import { PrismaService } from '@/modules/common/services';
 import { UrlSigningService } from '@/modules/file-delivery';
 import { SupportedMimeType } from '@longpoint/types';
@@ -7,24 +7,24 @@ import { Injectable } from '@nestjs/common';
 import { GenerateMediaLinksDto } from '../dtos/generate-links.dto';
 
 @Injectable()
-export class MediaLinkGeneratorService {
+export class AssetLinkGeneratorService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly urlSigningService: UrlSigningService
   ) {}
 
   async generateLinks(body: GenerateMediaLinksDto) {
-    const containers = await this.prismaService.mediaContainer.findMany({
+    const assets = await this.prismaService.asset.findMany({
       where: {
         id: {
-          in: body.containers.map((container) => container.containerId),
+          in: body.assets.map((asset) => asset.assetId),
         },
       },
       select: {
         id: true,
-        assets: {
+        variants: {
           where: {
-            variant: MediaAssetVariant.PRIMARY,
+            variant: AssetVariantType.PRIMARY,
           },
           select: {
             mimeType: true,
@@ -33,29 +33,29 @@ export class MediaLinkGeneratorService {
       },
     });
 
-    const containerMap = new Map<string, { mimeType: string }>(
-      containers.map((container) => [
-        container.id,
-        { mimeType: container.assets[0]?.mimeType ?? '' },
+    const assetMap = new Map<string, { mimeType: string }>(
+      assets.map((asset) => [
+        asset.id,
+        { mimeType: asset.variants[0]?.mimeType ?? '' },
       ])
     );
 
-    const links = body.containers.reduce((acc, containerOptions) => {
-      const containerData = containerMap.get(containerOptions.containerId);
+    const links = body.assets.reduce((acc, assetOptions) => {
+      const assetData = assetMap.get(assetOptions.assetId);
 
-      if (!containerData?.mimeType) {
+      if (!assetData?.mimeType) {
         return acc;
       }
 
       const filename = `primary.${mimeTypeToExtension(
-        containerData.mimeType as SupportedMimeType
+        assetData.mimeType as SupportedMimeType
       )}`;
       const link = this.urlSigningService.generateSignedUrl(
-        containerOptions.containerId,
+        assetOptions.assetId,
         filename,
-        containerOptions
+        assetOptions
       );
-      return { ...acc, [containerOptions.containerId]: link };
+      return { ...acc, [assetOptions.assetId]: link };
     }, {} as Record<string, string>);
     return links;
   }

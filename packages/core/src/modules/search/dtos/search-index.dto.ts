@@ -9,7 +9,7 @@ export interface SearchIndexParams {
   active: boolean;
   indexing: boolean;
   vectorProvider: VectorProviderShortDto;
-  mediaIndexed: number;
+  assetsIndexed: number;
   lastIndexedAt: Date | null;
   config: ConfigValues | null;
 }
@@ -54,10 +54,10 @@ export class SearchIndexDto {
   vectorProvider: VectorProviderShortDto;
 
   @ApiProperty({
-    description: 'The number of media items indexed',
+    description: 'The number of assets indexed',
     example: 100,
   })
-  mediaIndexed: number;
+  assetsIndexed: number;
 
   @ApiProperty({
     description: 'The date and time the index last ran successfully',
@@ -81,7 +81,7 @@ export class SearchIndexDto {
     this.active = data.active;
     this.indexing = data.indexing;
     this.vectorProvider = data.vectorProvider;
-    this.mediaIndexed = data.mediaIndexed;
+    this.assetsIndexed = data.assetsIndexed;
     this.lastIndexedAt = data.lastIndexedAt;
     this.config = data.config;
   }

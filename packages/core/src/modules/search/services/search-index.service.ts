@@ -1,6 +1,6 @@
 import { Prisma } from '@/database';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
-import { MediaContainerService } from '@/modules/media';
+import { AssetService } from '@/modules/media';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateSearchIndexDto } from '../dtos';
@@ -19,7 +19,7 @@ export class SearchIndexService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly vectorProviderService: VectorProviderService,
-    private readonly mediaContainerService: MediaContainerService,
+    private readonly assetService: AssetService,
     private readonly configSchemaService: ConfigSchemaService
   ) {}
 
@@ -67,7 +67,7 @@ export class SearchIndexService {
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
       vectorProvider,
-      mediaContainerService: this.mediaContainerService,
+      assetService: this.assetService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,
       configSchemaService: this.configSchemaService,
@@ -96,7 +96,7 @@ export class SearchIndexService {
           lastIndexedAt: index.lastIndexedAt,
           mediaIndexed: index.mediaIndexed,
           vectorProvider,
-          mediaContainerService: this.mediaContainerService,
+          assetService: this.assetService,
           prismaService: this.prismaService,
           configFromDb: index.config as ConfigValues,
           configSchemaService: this.configSchemaService,
@@ -130,7 +130,7 @@ export class SearchIndexService {
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
       vectorProvider,
-      mediaContainerService: this.mediaContainerService,
+      assetService: this.assetService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,
       configSchemaService: this.configSchemaService,
@@ -170,7 +170,7 @@ export class SearchIndexService {
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
       vectorProvider,
-      mediaContainerService: this.mediaContainerService,
+      assetService: this.assetService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,
       configSchemaService: this.configSchemaService,

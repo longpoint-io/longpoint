@@ -20,13 +20,13 @@ import {
 import { ApiCollectionNotFoundResponse } from './collection.errors';
 import { CollectionService } from './collection.service';
 import {
-  AddContainersToCollectionDto,
+  AddAssetsToCollectionDto,
   CollectionDetailsDto,
   CollectionDto,
   CreateCollectionDto,
   ListCollectionsQueryDto,
   ListCollectionsResponseDto,
-  RemoveContainersFromCollectionDto,
+  RemoveAssetsFromCollectionDto,
   UpdateCollectionDto,
 } from './dtos';
 
@@ -119,43 +119,43 @@ export class CollectionController {
     await collection.delete();
   }
 
-  @Post(':id/containers')
+  @Post(':id/assets')
   @RequirePermission(Permission.COLLECTION_UPDATE)
   @ApiOperation({
-    summary: 'Add media containers to a collection',
-    operationId: 'addContainersToCollection',
+    summary: 'Add assets to a collection',
+    operationId: 'addAssetsToCollection',
   })
   @ApiOkResponse({
-    description: 'The media containers were added to the collection',
+    description: 'The assets were added to the collection',
   })
   @ApiCollectionNotFoundResponse()
-  async addContainersToCollection(
+  async addAssetsToCollection(
     @Param('id') id: string,
-    @Body() body: AddContainersToCollectionDto
+    @Body() body: AddAssetsToCollectionDto
   ) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
       id
     );
-    await collection.addMediaContainers(body.containerIds);
+    await collection.addAssets(body.assetIds);
   }
 
-  @Delete(':id/containers')
+  @Delete(':id/assets')
   @RequirePermission(Permission.COLLECTION_UPDATE)
   @ApiOperation({
-    summary: 'Remove media containers from a collection',
-    operationId: 'removeContainersFromCollection',
+    summary: 'Remove assets from a collection',
+    operationId: 'removeAssetsFromCollection',
   })
   @ApiOkResponse({
-    description: 'The media containers were removed from the collection',
+    description: 'The assets were removed from the collection',
   })
   @ApiCollectionNotFoundResponse()
-  async removeContainersFromCollection(
+  async removeAssetsFromCollection(
     @Param('id') id: string,
-    @Body() body: RemoveContainersFromCollectionDto
+    @Body() body: RemoveAssetsFromCollectionDto
   ) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
       id
     );
-    await collection.removeMediaContainers(body.containerIds);
+    await collection.removeAssets(body.assetIds);
   }
 }

@@ -12,7 +12,7 @@ import {
 import { MediaTableRow } from './media-table-row';
 
 export interface MediaTableProps {
-  items: components['schemas']['MediaContainerSummary'][];
+  items: components['schemas']['AssetSummary'][];
   isLoading?: boolean;
   links: Record<string, string>;
   multiSelect?: boolean;

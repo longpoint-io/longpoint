@@ -3,7 +3,7 @@ import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { MediaGridItem } from './media-grid-item';
 
 export interface MediaGridProps {
-  items: components['schemas']['MediaContainerSummary'][];
+  items: components['schemas']['AssetSummary'][];
   isLoading?: boolean;
   links: Record<string, string>;
   multiSelect?: boolean;

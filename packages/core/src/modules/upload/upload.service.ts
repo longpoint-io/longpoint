@@ -1,17 +1,16 @@
 import {
-  MediaAsset,
-  MediaAssetStatus,
-  MediaContainerStatus,
+  AssetStatus,
+  AssetVariant,
+  AssetVariantStatus,
   Prisma,
 } from '@/database';
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { StorageUnitService } from '@/modules/storage';
-import type { StorageProvider } from '@longpoint/devkit';
 import { SupportedMimeType } from '@longpoint/types';
 import {
-  getMediaContainerPath,
+  getAssetPath,
+  mimeTypeToAssetType,
   mimeTypeToExtension,
-  mimeTypeToMediaType,
 } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import { isAfter } from 'date-fns';
@@ -33,20 +32,20 @@ export class UploadService {
     private readonly eventPublisher: EventPublisher
   ) {}
 
-  async upload(containerId: string, query: UploadAssetQueryDto, req: Request) {
+  async upload(assetId: string, query: UploadAssetQueryDto, req: Request) {
     const uploadToken = await this.prismaService.uploadToken.findUnique({
       where: {
         token: query.token,
       },
       select: {
         expiresAt: true,
-        mediaAsset: {
+        assetVariant: {
           select: {
             id: true,
-            containerId: true,
+            assetId: true,
             mimeType: true,
             classifiersOnUpload: true,
-            container: {
+            asset: {
               select: {
                 storageUnitId: true,
               },
@@ -60,18 +59,19 @@ export class UploadService {
       throw new TokenExpired();
     }
 
-    const storageUnit =
-      await this.storageUnitService.getStorageUnitByContainerId(containerId);
+    const storageUnit = await this.storageUnitService.getStorageUnitByAssetId(
+      assetId
+    );
 
-    await this.updateAsset(uploadToken.mediaAsset.id, {
+    await this.updateVariant(uploadToken.assetVariant.id, {
       status: 'PROCESSING',
     });
 
     const extension = mimeTypeToExtension(
-      uploadToken.mediaAsset.mimeType as SupportedMimeType
+      uploadToken.assetVariant.mimeType as SupportedMimeType
     );
-    const fullPath = getMediaContainerPath(containerId, {
-      storageUnitId: uploadToken.mediaAsset.container.storageUnitId,
+    const fullPath = getAssetPath(assetId, {
+      storageUnitId: uploadToken.assetVariant.asset.storageUnitId,
       prefix: this.configService.get('storage.pathPrefix'),
       suffix: `primary.${extension}`,
     });
@@ -79,9 +79,9 @@ export class UploadService {
     try {
       const provider = await storageUnit.getProvider();
       await provider.upload(fullPath, req);
-      await this.finalize(fullPath, provider, uploadToken.mediaAsset);
+      await this.finalize(fullPath, uploadToken.assetVariant);
     } catch (error) {
-      await this.updateAsset(uploadToken.mediaAsset.id, {
+      await this.updateVariant(uploadToken.assetVariant.id, {
         status: 'FAILED',
       });
       throw error;
@@ -90,26 +90,25 @@ export class UploadService {
 
   private async finalize(
     fullPath: string,
-    provider: StorageProvider,
-    asset: Pick<MediaAsset, 'id' | 'containerId' | 'mimeType'>
+    variant: Pick<AssetVariant, 'id' | 'assetId' | 'mimeType'>
   ) {
     try {
-      // Extract filename from fullPath (format: {prefix}/{storageUnitId}/{containerId}/primary.{extension})
+      // Extract filename from fullPath (format: {prefix}/{storageUnitId}/{assetId}/primary.{extension})
       const pathParts = fullPath.split('/');
       const filename = pathParts[pathParts.length - 1];
       const url = this.urlSigningService.generateSignedUrl(
-        asset.containerId,
+        variant.assetId,
         filename
       );
       const baseUrl = this.configService.get('server.baseUrl');
       const fullUrl = new URL(url, baseUrl).href;
 
-      const mediaType = mimeTypeToMediaType(asset.mimeType);
-      let assetUpdateData: Prisma.MediaAssetUpdateInput = {};
+      const assetType = mimeTypeToAssetType(variant.mimeType);
+      let variantUpdateData: Prisma.AssetVariantUpdateInput = {};
 
-      if (mediaType === 'IMAGE') {
+      if (assetType === 'IMAGE') {
         const imageProbe = await this.probeService.probeImage(fullUrl);
-        assetUpdateData = {
+        variantUpdateData = {
           width: imageProbe.width,
           height: imageProbe.height,
           aspectRatio: imageProbe.aspectRatio,
@@ -117,88 +116,88 @@ export class UploadService {
         };
       }
 
-      await this.updateAsset(asset.id, {
-        ...assetUpdateData,
+      await this.updateVariant(variant.id, {
+        ...variantUpdateData,
         status: 'READY',
         uploadToken: {
           delete: true,
         },
       });
-      await this.eventPublisher.publish('media.asset.ready', {
-        id: asset.id,
-        containerId: asset.containerId,
+      await this.eventPublisher.publish('asset.variant.ready', {
+        id: variant.id,
+        assetId: variant.assetId,
       });
     } catch (e) {
-      await this.updateAsset(asset.id, {
+      await this.updateVariant(variant.id, {
         status: 'FAILED',
       });
-      await this.eventPublisher.publish('media.asset.failed', {
-        id: asset.id,
-        containerId: asset.containerId,
+      await this.eventPublisher.publish('asset.variant.failed', {
+        id: variant.id,
+        assetId: variant.assetId,
       });
       throw e;
     }
   }
 
   /**
-   * Updates an asset and syncs the container status
-   * @param assetId
+   * Updates a variant and syncs the asset status
+   * @param variantId
    * @param data
    */
-  private async updateAsset(
-    assetId: string,
-    data: Prisma.MediaAssetUpdateInput
+  private async updateVariant(
+    variantId: string,
+    data: Prisma.AssetVariantUpdateInput
   ) {
-    let containerId: string | null = null;
+    let assetId: string | null = null;
     let wasReady = false;
     let isReady = false;
 
     await this.prismaService.$transaction(async (tx) => {
-      const updatedAsset = await tx.mediaAsset.update({
+      const updatedVariant = await tx.assetVariant.update({
         where: {
-          id: assetId,
+          id: variantId,
         },
         data,
         select: {
-          containerId: true,
+          assetId: true,
         },
       });
 
-      containerId = updatedAsset.containerId;
+      assetId = updatedVariant.assetId;
 
-      const container = await tx.mediaContainer.findUnique({
+      const asset = await tx.asset.findUnique({
         where: {
-          id: containerId,
+          id: assetId,
         },
         select: {
           status: true,
         },
       });
 
-      wasReady = container?.status === 'READY';
+      wasReady = asset?.status === 'READY';
 
-      const allAssetsForContainer = await tx.mediaAsset.findMany({
+      const allVariantsForAsset = await tx.assetVariant.findMany({
         where: {
-          containerId: updatedAsset.containerId,
+          assetId: updatedVariant.assetId,
         },
         select: {
           status: true,
         },
       });
 
-      const statusBreakdown = Object.values(MediaAssetStatus).reduce(
+      const statusBreakdown = Object.values(AssetVariantStatus).reduce(
         (acc, status) => {
           acc[status] = 0;
           return acc;
         },
-        {} as Record<MediaAssetStatus, number>
+        {} as Record<AssetVariantStatus, number>
       );
 
-      for (const asset of allAssetsForContainer) {
-        statusBreakdown[asset.status]++;
+      for (const variant of allVariantsForAsset) {
+        statusBreakdown[variant.status]++;
       }
 
-      let containerStatus: MediaContainerStatus = 'PROCESSING';
+      let assetStatus: AssetStatus = 'PROCESSING';
 
       const fullyReady =
         statusBreakdown['PROCESSING'] === 0 &&
@@ -214,28 +213,28 @@ export class UploadService {
         statusBreakdown['FAILED'] > 0;
 
       if (fullyReady) {
-        containerStatus = 'READY';
+        assetStatus = 'READY';
       } else if (completeFailure) {
-        containerStatus = 'FAILED';
+        assetStatus = 'FAILED';
       } else if (partialFailure) {
-        containerStatus = 'PARTIALLY_FAILED';
+        assetStatus = 'PARTIALLY_FAILED';
       }
 
-      isReady = containerStatus === 'READY';
+      isReady = assetStatus === 'READY';
 
-      await tx.mediaContainer.update({
+      await tx.asset.update({
         where: {
-          id: updatedAsset.containerId,
+          id: updatedVariant.assetId,
         },
         data: {
-          status: containerStatus,
+          status: assetStatus,
         },
       });
     });
 
-    if (containerId && !wasReady && isReady) {
-      await this.eventPublisher.publish('media.container.ready', {
-        containerId,
+    if (assetId && !wasReady && isReady) {
+      await this.eventPublisher.publish('asset.ready', {
+        assetId,
       });
     }
   }

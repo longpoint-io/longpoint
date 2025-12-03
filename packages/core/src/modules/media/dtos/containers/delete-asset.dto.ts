@@ -1,12 +1,12 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
 
-@ApiSchema({ name: 'DeleteMediaContainer' })
-export class DeleteMediaContainerDto {
+@ApiSchema({ name: 'DeleteAsset' })
+export class DeleteAssetDto {
   @IsBoolean()
   @IsOptional()
   @ApiProperty({
-    description: 'Whether to permanently delete the media container',
+    description: 'Whether to permanently delete the asset',
     example: false,
     default: false,
     type: Boolean,

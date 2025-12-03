@@ -1,13 +1,13 @@
 import { ApiSchema, PickType } from '@nestjs/swagger';
-import { MediaContainerDto, MediaContainerParams } from './media-container.dto';
+import { AssetDto, AssetParams } from './asset.dto';
 
-export type MediaContainerSummaryParams = Pick<
-  MediaContainerParams,
+export type AssetSummaryParams = Pick<
+  AssetParams,
   'id' | 'name' | 'type' | 'status' | 'createdAt' | 'updatedAt'
 >;
 
-@ApiSchema({ name: 'MediaContainerSummary' })
-export class MediaContainerSummaryDto extends PickType(MediaContainerDto, [
+@ApiSchema({ name: 'AssetSummary' })
+export class AssetSummaryDto extends PickType(AssetDto, [
   'id',
   'name',
   'type',
@@ -15,7 +15,7 @@ export class MediaContainerSummaryDto extends PickType(MediaContainerDto, [
   'createdAt',
   'updatedAt',
 ] as const) {
-  constructor(data: MediaContainerSummaryParams) {
+  constructor(data: AssetSummaryParams) {
     super();
     this.id = data.id;
     this.name = data.name;

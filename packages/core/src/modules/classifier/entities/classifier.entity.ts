@@ -1,7 +1,7 @@
 import { Classifier, ClassifierRunStatus, Prisma } from '@/database';
 import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
-import { MediaAssetDto, MediaContainerService } from '@/modules/media';
+import { AssetVariantDto, AssetService } from '@/modules/media';
 import { Unexpected } from '@/shared/errors';
 import { selectClassifier } from '@/shared/selectors/classifier.selectors';
 import { ConfigValues } from '@longpoint/config-schema';
@@ -25,14 +25,14 @@ export interface ClassifierEntityArgs
   classificationProvider: ClassificationProviderEntity;
   prismaService: PrismaService;
   classificationProviderService: ClassificationProviderService;
-  mediaContainerService: MediaContainerService;
+  assetService: AssetService;
   eventPublisher: EventPublisher;
 }
 
 export class ClassifierEntity {
   private readonly prismaService: PrismaService;
   private readonly classificationProviderService: ClassificationProviderService;
-  private readonly mediaContainerService: MediaContainerService;
+  private readonly assetService: AssetService;
   private readonly eventPublisher: EventPublisher;
   private readonly logger = new Logger(ClassifierEntity.name);
 
@@ -54,41 +54,41 @@ export class ClassifierEntity {
     this._modelInput = args.modelInput as ConfigValues;
     this.prismaService = args.prismaService;
     this.classificationProviderService = args.classificationProviderService;
-    this.mediaContainerService = args.mediaContainerService;
+    this.assetService = args.assetService;
     this.eventPublisher = args.eventPublisher;
   }
 
   /**
-   * Runs the classifier on a media asset.
-   * @param mediaAssetId - The ID of the media asset to run the classifier on.
+   * Runs the classifier on an asset variant.
+   * @param assetVariantId - The ID of the asset variant to run the classifier on.
    * @returns The result of the classifier run.
    */
-  async run(mediaAssetId: string) {
-    const container =
-      await this.mediaContainerService.getMediaContainerByAssetIdOrThrow(
-        mediaAssetId
+  async run(assetVariantId: string) {
+    const asset =
+      await this.assetService.getAssetByVariantIdOrThrow(
+        assetVariantId
       );
-    const containerId = container.id;
-    const serialized = await container.toDto();
-    const asset = serialized.variants.primary;
+    const assetId = asset.id;
+    const serialized = await asset.toDto();
+    const variant = serialized.variants.primary;
 
-    if (!asset.url) {
+    if (!variant.url) {
       this.logger.warn(
-        `Media asset "${mediaAssetId}" has no URL - skipping classifier run`
-      );
-      return;
-    }
-
-    if (!this.classificationProvider.isMimeTypeSupported(asset.mimeType)) {
-      this.logger.warn(
-        `Classification provider "${this.classificationProvider.fullyQualifiedId}" does not support mime type "${asset.mimeType}" - skipping classifier run`
+        `Asset variant "${assetVariantId}" has no URL - skipping classifier run`
       );
       return;
     }
 
-    if ((asset.size ?? 0) > this.classificationProvider.maxFileSize) {
+    if (!this.classificationProvider.isMimeTypeSupported(variant.mimeType)) {
       this.logger.warn(
-        `Media asset "${mediaAssetId}" is too large for classification provider "${this.classificationProvider.fullyQualifiedId}" - skipping classifier run`
+        `Classification provider "${this.classificationProvider.fullyQualifiedId}" does not support mime type "${variant.mimeType}" - skipping classifier run`
+      );
+      return;
+    }
+
+    if ((variant.size ?? 0) > this.classificationProvider.maxFileSize) {
+      this.logger.warn(
+        `Asset variant "${assetVariantId}" is too large for classification provider "${this.classificationProvider.fullyQualifiedId}" - skipping classifier run`
       );
       return;
     }
@@ -97,13 +97,13 @@ export class ClassifierEntity {
       data: {
         status: ClassifierRunStatus.PROCESSING,
         classifierId: this.id,
-        mediaAssetId,
+        assetVariantId,
         startedAt: new Date(),
       },
     });
 
     try {
-      const source = await this.getAssetSource(asset);
+      const source = await this.getAssetSource(variant);
       const result = await this.classificationProvider.classify({
         source,
         classifierInput: this.modelInput as ConfigValues,
@@ -121,8 +121,8 @@ export class ClassifierEntity {
       await this.eventPublisher.publish(
         ClassifierEvents.CLASSIFIER_RUN_COMPLETE,
         {
-          mediaContainerId: containerId,
-          mediaAssetId,
+          assetId: assetId,
+          assetVariantId,
           classifierId: this.id,
           classifierName: this.name,
           result,
@@ -239,12 +239,12 @@ export class ClassifierEntity {
     });
   }
 
-  private async getAssetSource(asset: MediaAssetDto) {
-    if (!asset.url) {
-      throw new Unexpected('Asset URL is required');
+  private async getAssetSource(variant: AssetVariantDto) {
+    if (!variant.url) {
+      throw new Unexpected('Variant URL is required');
     }
 
-    const url = new URL(asset.url);
+    const url = new URL(variant.url);
 
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
       const imageData = await fetch(url.href);
@@ -252,16 +252,16 @@ export class ClassifierEntity {
       const base64 = Buffer.from(imageBuffer).toString('base64');
       return {
         base64,
-        mimeType: asset.mimeType,
-        base64DataUri: toBase64DataUri(asset.mimeType, base64),
+        mimeType: variant.mimeType,
+        base64DataUri: toBase64DataUri(variant.mimeType, base64),
         url: undefined,
       };
     }
 
     return {
       base64: undefined,
-      mimeType: asset.mimeType,
-      url: asset.url,
+      mimeType: variant.mimeType,
+      url: variant.url,
     };
   }
 

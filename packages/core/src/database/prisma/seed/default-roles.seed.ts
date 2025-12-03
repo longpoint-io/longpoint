@@ -1,5 +1,5 @@
 import { Permission } from '@longpoint/types';
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 
 export async function createDefaultRoles(prisma: PrismaClient) {
   await prisma.$transaction(async (tx) => {

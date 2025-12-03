@@ -1,38 +1,38 @@
-import { MediaAssetStatus } from '@/database';
+import { AssetVariantStatus } from '@/database';
 import { ClassifierRunDto } from '@/modules/classifier/dtos';
-import { type SelectedMediaAsset } from '@/shared/selectors/media.selectors';
+import { type SelectedAssetVariant } from '@/modules/media/media.selectors';
 import { JsonObject } from '@/shared/types/object.types';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-export type MediaAssetParams = SelectedMediaAsset & {
+export type AssetVariantParams = SelectedAssetVariant & {
   url?: string;
 };
 
-@ApiSchema({ name: 'MediaAsset' })
-export class MediaAssetDto {
+@ApiSchema({ name: 'AssetVariant' })
+export class AssetVariantDto {
   @ApiProperty({
-    description: 'The ID of the media asset',
+    description: 'The ID of the asset variant',
     example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
 
   @ApiProperty({
-    description: 'The status of the media asset',
-    example: MediaAssetStatus.WAITING_FOR_UPLOAD,
-    enum: MediaAssetStatus,
+    description: 'The status of the asset variant',
+    example: AssetVariantStatus.WAITING_FOR_UPLOAD,
+    enum: AssetVariantStatus,
   })
-  status: MediaAssetStatus;
+  status: AssetVariantStatus;
 
   @ApiProperty({
-    description: 'The MIME type of the media asset',
+    description: 'The MIME type of the asset variant',
     example: SupportedMimeType.JPEG,
     enum: SupportedMimeType,
   })
   mimeType: SupportedMimeType;
 
   @ApiProperty({
-    description: 'The width of the media asset in pixels, if applicable',
+    description: 'The width of the asset variant in pixels, if applicable',
     example: 100,
     type: 'number',
     nullable: true,
@@ -40,7 +40,7 @@ export class MediaAssetDto {
   width: number | null;
 
   @ApiProperty({
-    description: 'The height of the media asset in pixels, if applicable',
+    description: 'The height of the asset variant in pixels, if applicable',
     example: 100,
     type: 'number',
     nullable: true,
@@ -48,7 +48,7 @@ export class MediaAssetDto {
   height: number | null;
 
   @ApiProperty({
-    description: 'The size of the media asset in bytes',
+    description: 'The size of the asset variant in bytes',
     example: 100,
     type: 'number',
     nullable: true,
@@ -56,7 +56,7 @@ export class MediaAssetDto {
   size: number | null;
 
   @ApiProperty({
-    description: 'The aspect ratio of the media asset, if applicable',
+    description: 'The aspect ratio of the asset variant, if applicable',
     example: 1.777777,
     type: 'number',
     nullable: true,
@@ -78,7 +78,7 @@ export class MediaAssetDto {
   metadata: JsonObject | null;
 
   @ApiProperty({
-    description: 'The URL of the media asset',
+    description: 'The URL of the asset variant',
     type: 'string',
     example:
       'https://longpoint.example.com/storage/default/abc123/original.jpg',
@@ -87,12 +87,12 @@ export class MediaAssetDto {
   url: string | null;
 
   @ApiProperty({
-    description: 'The classifier runs for the media asset',
+    description: 'The classifier runs for the asset variant',
     type: [ClassifierRunDto],
   })
   classifierRuns: ClassifierRunDto[];
 
-  constructor(data: MediaAssetParams) {
+  constructor(data: AssetVariantParams) {
     this.id = data.id;
     this.status = data.status;
     this.mimeType = data.mimeType as SupportedMimeType;

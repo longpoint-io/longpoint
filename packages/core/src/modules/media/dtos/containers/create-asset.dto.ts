@@ -7,19 +7,19 @@ import {
   PickType,
 } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
-import { MediaContainerDto } from './media-container.dto';
+import { AssetDto } from './asset.dto';
 
-export type CreateMediaContainerParam = Pick<MediaContainerDto, 'name'> & {
+export type CreateAssetParam = Pick<AssetDto, 'name'> & {
   mimeType: SupportedMimeType;
 };
 
-@ApiSchema({ name: 'CreateMediaContainer' })
-export class CreateMediaContainerDto extends PartialType(
-  PickType(MediaContainerDto, ['name'] as const)
+@ApiSchema({ name: 'CreateAsset' })
+export class CreateAssetDto extends PartialType(
+  PickType(AssetDto, ['name'] as const)
 ) {
   @IsEnum(SupportedMimeType)
   @ApiProperty({
-    description: 'The MIME type of the primary asset',
+    description: 'The MIME type of the primary variant',
     example: SupportedMimeType.JPEG,
     enum: SupportedMimeType,
   })
@@ -39,7 +39,7 @@ export class CreateMediaContainerDto extends PartialType(
   @IsOptional()
   @ApiPropertyOptional({
     description:
-      'Names of classifiers to run on the uploaded asset after processing',
+      'Names of classifiers to run on the uploaded variant after processing',
     example: ['general-tagging'],
     type: [String],
   })
@@ -49,7 +49,7 @@ export class CreateMediaContainerDto extends PartialType(
   @IsString({ each: true })
   @IsOptional()
   @ApiPropertyOptional({
-    description: 'IDs of collections the container is a member of.',
+    description: 'IDs of collections the asset is a member of.',
     example: ['mbjq36xe6397dsi6x9nq4ghc'],
     type: [String],
   })

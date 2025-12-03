@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { selectClassifier } from '../../shared/selectors/classifier.selectors';
 import { PrismaService } from '../common/services';
 import { EventPublisher } from '../event';
-import { MediaContainerService } from '../media';
+import { AssetService } from '../media';
 import { ClassifierNotFound } from './classifier.errors';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { ClassifierEntity } from './entities';
@@ -14,7 +14,7 @@ export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly classificationProviderService: ClassificationProviderService,
-    private readonly mediaContainerService: MediaContainerService,
+    private readonly assetService: AssetService,
     private readonly eventPublisher: EventPublisher
   ) {}
 
@@ -47,7 +47,7 @@ export class ClassifierService {
       modelInput: processedModelInput,
       prismaService: this.prismaService,
       classificationProviderService: this.classificationProviderService,
-      mediaContainerService: this.mediaContainerService,
+      assetService: this.assetService,
       eventPublisher: this.eventPublisher,
     });
 
@@ -77,7 +77,7 @@ export class ClassifierService {
       prismaService: this.prismaService,
       classificationProviderService: this.classificationProviderService,
       modelInput: classifier.modelInput as ConfigValues,
-      mediaContainerService: this.mediaContainerService,
+      assetService: this.assetService,
       eventPublisher: this.eventPublisher,
     });
   }
@@ -106,7 +106,7 @@ export class ClassifierService {
           classificationProvider,
           prismaService: this.prismaService,
           classificationProviderService: this.classificationProviderService,
-          mediaContainerService: this.mediaContainerService,
+          assetService: this.assetService,
           eventPublisher: this.eventPublisher,
         });
       })

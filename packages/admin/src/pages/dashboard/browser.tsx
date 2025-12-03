@@ -33,12 +33,12 @@ export function Browser() {
   }, [viewType]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['media-containers'],
+    queryKey: ['assets'],
     queryFn: async () => {
-      const results = await client.media.listMediaContainers({ pageSize: 100 });
-      const links = await client.media.generateLinks({
-        containers: results.items.map((item) => ({
-          containerId: item.id,
+      const results = await client.assets.listAssets({ pageSize: 100 });
+      const links = await client.assets.generateLinks({
+        assets: results.items.map((item) => ({
+          assetId: item.id,
           w: 500,
         })),
       });

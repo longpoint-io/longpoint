@@ -1,5 +1,5 @@
 export * from './dtos';
-export { MediaContainerNotFound } from './media.errors';
+export { AssetNotFound } from './media.errors';
 export * from './media.events';
 export * from './media.module';
-export { MediaContainerService } from './services/media-container.service';
+export { AssetService } from './services/asset.service';

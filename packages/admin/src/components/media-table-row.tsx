@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { MediaType } from './media-type';
 
 interface MediaTableRowProps {
-  item: components['schemas']['MediaContainerSummary'];
+  item: components['schemas']['AssetSummary'];
   thumbnailLink?: string;
   selected?: boolean;
   onSelectChange?: (selected: boolean) => void;

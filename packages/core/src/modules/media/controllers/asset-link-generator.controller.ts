@@ -4,20 +4,20 @@ import { Permission } from '@longpoint/types';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { GenerateMediaLinksDto } from '../dtos/generate-links.dto';
-import { MediaLinkGeneratorService } from '../services/media-link-generator.service';
+import { AssetLinkGeneratorService } from '../services/asset-link-generator.service';
 
-@Controller('media/links')
-@ApiSdkTag(SdkTag.Media)
+@Controller('links')
+@ApiSdkTag(SdkTag.Assets)
 @ApiBearerAuth()
-export class MediaLinkGeneratorController {
+export class AssetLinkGeneratorController {
   constructor(
-    private readonly mediaLinkGeneratorService: MediaLinkGeneratorService
+    private readonly assetLinkGeneratorService: AssetLinkGeneratorService
   ) {}
 
   @Post()
-  @RequirePermission(Permission.MEDIA_CONTAINER_READ)
+  @RequirePermission(Permission.ASSET_READ)
   @ApiOperation({
-    summary: 'Generate links for media containers',
+    summary: 'Generate links for assets',
     operationId: 'generateLinks',
   })
   @ApiOkResponse({
@@ -34,6 +34,6 @@ export class MediaLinkGeneratorController {
     },
   })
   generateLinks(@Body() body: GenerateMediaLinksDto) {
-    return this.mediaLinkGeneratorService.generateLinks(body);
+    return this.assetLinkGeneratorService.generateLinks(body);
   }
 }

@@ -1,19 +1,19 @@
 import { length, registerDecorator, ValidationOptions } from 'class-validator';
 
-export const mediaContainerNameConstants = {
+export const assetNameConstants = {
   MIN_NAME_LENGTH: 2,
   MAX_NAME_LENGTH: 255,
 };
 
-export const isValidMediaContainerName = (name: string) => {
+export const isValidAssetName = (name: string) => {
   return length(
     name,
-    mediaContainerNameConstants.MIN_NAME_LENGTH,
-    mediaContainerNameConstants.MAX_NAME_LENGTH
+    assetNameConstants.MIN_NAME_LENGTH,
+    assetNameConstants.MAX_NAME_LENGTH
   );
 };
 
-export const IsValidMediaContainerName = (
+export const IsValidAssetName = (
   validationOptions?: ValidationOptions
 ) => {
   return function (object: any, propertyName: string) {
@@ -21,7 +21,7 @@ export const IsValidMediaContainerName = (
       target: object.constructor,
       propertyName,
       options: validationOptions,
-      validator: { validate: isValidMediaContainerName },
+      validator: { validate: isValidAssetName },
     });
   };
 };

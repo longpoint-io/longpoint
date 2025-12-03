@@ -4,7 +4,7 @@ import { enumToTitleCase } from '@longpoint/utils/string';
 import { ImageIcon } from 'lucide-react';
 
 export interface MediaTypeProps {
-  type: components['schemas']['MediaContainer']['type'];
+  type: components['schemas']['Asset']['type'];
   className?: string;
   showText?: boolean;
   showIcon?: boolean;

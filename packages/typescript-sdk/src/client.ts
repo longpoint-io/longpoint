@@ -11,7 +11,7 @@ export class Longpoint {
   private httpClient: AxiosInstance;
   plugins: PluginsClient;
   analysis: AnalysisClient;
-  media: MediaClient;
+  assets: AssetsClient;
   storage: StorageClient;
   collections: CollectionsClient;
   search: SearchClient;
@@ -28,7 +28,7 @@ export class Longpoint {
     });
     this.plugins = new PluginsClient(this.httpClient);
     this.analysis = new AnalysisClient(this.httpClient);
-    this.media = new MediaClient(this.httpClient);
+    this.assets = new AssetsClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.collections = new CollectionsClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
@@ -125,13 +125,13 @@ class AnalysisClient {
   }
 }
 
-class MediaClient {
+class AssetsClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * List media containers
+   * List assets
    */
-    async listMediaContainers(options?: { cursor?: string; pageSize?: number; collectionIds?: string[] }): Promise<components['schemas']['ListMediaContainersResponse']> {
+    async listAssets(options?: { cursor?: string; pageSize?: number; collectionIds?: string[] }): Promise<components['schemas']['ListAssetsResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -151,64 +151,64 @@ class MediaClient {
           }
         }
         const queryString = params.toString();
-        const url = `media/containers${queryString ? `?${queryString}` : ''}`;
+        const url = `assets${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Create a media container
+   * Create an asset
    *
-   * Creates an empty container that is ready to receive an upload.
+   * Creates an empty asset that is ready to receive an upload.
    */
-    async createMedia(data: components['schemas']['CreateMediaContainer']): Promise<components['schemas']['CreateMediaContainerResponse']> {
-        const url = `media/containers`;
+    async createAsset(data: components['schemas']['CreateAsset']): Promise<components['schemas']['CreateAssetResponse']> {
+        const url = `assets`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
 
     /**
-   * Get a media container
+   * Get an asset
    */
-    async getMedia(containerId: string): Promise<components['schemas']['MediaContainer']> {
-        const url = `media/containers/${encodeURIComponent(String(containerId))}`;
+    async getAsset(assetId: string): Promise<components['schemas']['Asset']> {
+        const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Update a media container
+   * Update an asset
    */
-    async updateMedia(containerId: string, data: components['schemas']['UpdateMediaContainer']): Promise<components['schemas']['MediaContainer']> {
-        const url = `media/containers/${encodeURIComponent(String(containerId))}`;
+    async updateAsset(assetId: string, data: components['schemas']['UpdateAsset']): Promise<components['schemas']['Asset']> {
+        const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
 
     /**
-   * Delete a media container
+   * Delete an asset
    *
-   * All associated assets will be deleted.
+   * All associated variants will be deleted.
    */
-    async deleteMedia(containerId: string, data: components['schemas']['DeleteMediaContainer']): Promise<void> {
-        const url = `media/containers/${encodeURIComponent(String(containerId))}`;
+    async deleteAsset(assetId: string, data: components['schemas']['DeleteAsset']): Promise<void> {
+        const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
   }
 
     /**
-   * Generate links for media containers
+   * Generate links for assets
    */
     async generateLinks(data: components['schemas']['GenerateMediaLinks']): Promise<Record<string, any>> {
-        const url = `media/links`;
+        const url = `links`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
 
     /**
-   * Upload an asset to a media container
+   * Upload an asset variant
    */
-    async upload(containerId: string, options?: { token?: string }): Promise<void> {
+    async upload(assetId: string, options?: { token?: string }): Promise<void> {
         const params = new URLSearchParams();
         if (options) {
           if (options.token !== undefined) {
@@ -216,7 +216,7 @@ class MediaClient {
           }
         }
         const queryString = params.toString();
-        const url = `media/containers/${encodeURIComponent(String(containerId))}/upload${queryString ? `?${queryString}` : ''}`;
+        const url = `assets/${encodeURIComponent(String(assetId))}/upload${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.put(url);
         return response.data;
   }
@@ -411,19 +411,19 @@ class CollectionsClient {
   }
 
     /**
-   * Add media containers to a collection
+   * Add assets to a collection
    */
-    async addContainersToCollection(id: string, data: components['schemas']['AddContainersToCollection']): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}/containers`;
+    async addAssetsToCollection(id: string, data: components['schemas']['AddAssetsToCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(id))}/assets`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
 
     /**
-   * Remove media containers from a collection
+   * Remove assets from a collection
    */
-    async removeContainersFromCollection(id: string, data: components['schemas']['RemoveContainersFromCollection']): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}/containers`;
+    async removeAssetsFromCollection(id: string, data: components['schemas']['RemoveAssetsFromCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(id))}/assets`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
   }

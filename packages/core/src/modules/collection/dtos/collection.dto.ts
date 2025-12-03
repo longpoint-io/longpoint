@@ -1,4 +1,4 @@
-import { SelectedCollection } from '@/shared/selectors/collection.selectors';
+import { SelectedCollection } from '@/modules/collection/collection.selectors';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 export type CollectionReferenceParams = Pick<SelectedCollection, 'id' | 'name'>;
@@ -25,16 +25,16 @@ export class CollectionReferenceDto {
 
 export type CollectionParams = CollectionReferenceParams &
   Pick<SelectedCollection, 'createdAt' | 'updatedAt'> & {
-    mediaContainerCount: number;
+    assetCount: number;
   };
 
 @ApiSchema({ name: 'Collection' })
 export class CollectionDto extends CollectionReferenceDto {
   @ApiProperty({
-    description: 'The number of media containers in the collection',
+    description: 'The number of assets in the collection',
     example: 42,
   })
-  mediaContainerCount: number;
+  assetCount: number;
 
   @ApiProperty({
     description: 'When the collection was created',
@@ -52,7 +52,7 @@ export class CollectionDto extends CollectionReferenceDto {
     super(data);
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
-    this.mediaContainerCount = data.mediaContainerCount;
+    this.assetCount = data.assetCount;
   }
 }
 

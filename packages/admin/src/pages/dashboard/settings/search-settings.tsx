@@ -1,6 +1,7 @@
 import { CreateSearchIndexDialog } from '@/components/create-search-index-dialog';
 import { DeleteSearchIndexDialog } from '@/components/delete-search-index-dialog';
 import { useClient } from '@/hooks/common';
+import { components } from '@longpoint/sdk';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -53,10 +54,10 @@ export function SearchSettings() {
   });
 
   const activeIndex = indexes?.find((index) => index.active === true);
-  const totalContainers = systemStatus?.totalContainers ?? 0;
-  const indexedContainers = activeIndex?.mediaIndexed ?? 0;
+  const totalContainers = systemStatus?.totalAssets ?? 0;
+  const indexedAssets = activeIndex?.assetsIndexed ?? 0;
   const progressPercentage =
-    totalContainers > 0 ? (indexedContainers / totalContainers) * 100 : 0;
+    totalContainers > 0 ? (indexedAssets / totalContainers) * 100 : 0;
 
   const handleDeleteClick = (index: components['schemas']['SearchIndex']) => {
     setIndexToDelete({
@@ -154,16 +155,6 @@ export function SearchSettings() {
                       {index.vectorProvider.name}
                     </span>
                   </div>
-                  {index.embeddingModel && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Embedding Model
-                      </span>
-                      <span className="font-medium">
-                        {index.embeddingModel.name}
-                      </span>
-                    </div>
-                  )}
                   {index.lastIndexedAt && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">
@@ -175,8 +166,10 @@ export function SearchSettings() {
                     </div>
                   )}
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Media Indexed</span>
-                    <span className="font-medium">{index.mediaIndexed}</span>
+                    <span className="text-muted-foreground">
+                      Assets Indexed
+                    </span>
+                    <span className="font-medium">{index.assetsIndexed}</span>
                   </div>
                 </div>
                 {index.active && (

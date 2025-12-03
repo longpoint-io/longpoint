@@ -1,35 +1,35 @@
 import { EventPayload } from '../event/event.types';
 
-export const MediaEvents = {
-  MEDIA_ASSET_READY: 'media.asset.ready',
-  MEDIA_ASSET_FAILED: 'media.asset.failed',
-  MEDIA_CONTAINER_READY: 'media.container.ready',
-  MEDIA_CONTAINER_DELETED: 'media.container.deleted',
+export const AssetEvents = {
+  ASSET_VARIANT_READY: 'asset.variant.ready',
+  ASSET_VARIANT_FAILED: 'asset.variant.failed',
+  ASSET_READY: 'asset.ready',
+  ASSET_DELETED: 'asset.deleted',
 } as const;
 
-export type MediaEvents = (typeof MediaEvents)[keyof typeof MediaEvents];
+export type AssetEvents = (typeof AssetEvents)[keyof typeof AssetEvents];
 
-export interface MediaAssetReadyEventPayload extends EventPayload {
+export interface AssetVariantReadyEventPayload extends EventPayload {
   id: string;
-  containerId: string;
+  assetId: string;
 }
 
-export type MediaAssetFailedEventPayload = Pick<
-  MediaAssetReadyEventPayload,
-  'id' | 'containerId'
+export type AssetVariantFailedEventPayload = Pick<
+  AssetVariantReadyEventPayload,
+  'id' | 'assetId'
 >;
 
-export interface MediaContainerReadyEventPayload extends EventPayload {
-  containerId: string;
+export interface AssetReadyEventPayload extends EventPayload {
+  assetId: string;
 }
 
-export interface MediaContainerDeletedEventPayload extends EventPayload {
-  containerIds: string[];
+export interface AssetDeletedEventPayload extends EventPayload {
+  assetIds: string[];
 }
 
-export interface MediaEventPayloads {
-  [MediaEvents.MEDIA_ASSET_READY]: MediaAssetReadyEventPayload;
-  [MediaEvents.MEDIA_ASSET_FAILED]: MediaAssetFailedEventPayload;
-  [MediaEvents.MEDIA_CONTAINER_READY]: MediaContainerReadyEventPayload;
-  [MediaEvents.MEDIA_CONTAINER_DELETED]: MediaContainerDeletedEventPayload;
+export interface AssetEventPayloads {
+  [AssetEvents.ASSET_VARIANT_READY]: AssetVariantReadyEventPayload;
+  [AssetEvents.ASSET_VARIANT_FAILED]: AssetVariantFailedEventPayload;
+  [AssetEvents.ASSET_READY]: AssetReadyEventPayload;
+  [AssetEvents.ASSET_DELETED]: AssetDeletedEventPayload;
 }

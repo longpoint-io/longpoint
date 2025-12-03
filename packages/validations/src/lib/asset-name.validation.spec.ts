@@ -1,44 +1,44 @@
 import { validate } from 'class-validator';
 import {
-  IsValidMediaContainerName,
-  isValidMediaContainerName,
-  mediaContainerNameConstants,
-} from './media-container-name.validation.js';
+  IsValidAssetName,
+  isValidAssetName,
+  assetNameConstants,
+} from './asset-name.validation.js';
 
-describe('MediaContainerNameValidation', () => {
+describe('AssetNameValidation', () => {
   describe('constants', () => {
     it('should have correct min and max length values', () => {
-      expect(mediaContainerNameConstants.MIN_NAME_LENGTH).toBe(2);
-      expect(mediaContainerNameConstants.MAX_NAME_LENGTH).toBe(255);
+      expect(assetNameConstants.MIN_NAME_LENGTH).toBe(2);
+      expect(assetNameConstants.MAX_NAME_LENGTH).toBe(255);
     });
   });
 
-  describe('isValidMediaContainerName', () => {
+  describe('isValidAssetName', () => {
     it('should return true for valid names within length limits', () => {
-      expect(isValidMediaContainerName('ab')).toBe(true);
-      expect(isValidMediaContainerName('valid name')).toBe(true);
-      expect(isValidMediaContainerName('a'.repeat(255))).toBe(true);
+      expect(isValidAssetName('ab')).toBe(true);
+      expect(isValidAssetName('valid name')).toBe(true);
+      expect(isValidAssetName('a'.repeat(255))).toBe(true);
     });
 
     it('should return false for names that are too short', () => {
-      expect(isValidMediaContainerName('')).toBe(false);
-      expect(isValidMediaContainerName('a')).toBe(false);
+      expect(isValidAssetName('')).toBe(false);
+      expect(isValidAssetName('a')).toBe(false);
     });
 
     it('should return false for names that are too long', () => {
-      expect(isValidMediaContainerName('a'.repeat(256))).toBe(false);
-      expect(isValidMediaContainerName('a'.repeat(300))).toBe(false);
+      expect(isValidAssetName('a'.repeat(256))).toBe(false);
+      expect(isValidAssetName('a'.repeat(300))).toBe(false);
     });
 
     it('should handle edge cases', () => {
-      expect(isValidMediaContainerName('a'.repeat(2))).toBe(true); // exactly min length
-      expect(isValidMediaContainerName('a'.repeat(255))).toBe(true); // exactly max length
+      expect(isValidAssetName('a'.repeat(2))).toBe(true); // exactly min length
+      expect(isValidAssetName('a'.repeat(255))).toBe(true); // exactly max length
     });
   });
 
-  describe('IsValidMediaContainerName decorator', () => {
+  describe('IsValidAssetName decorator', () => {
     class TestClass {
-      @IsValidMediaContainerName()
+      @IsValidAssetName()
       name: string;
 
       constructor(name: string) {
@@ -103,9 +103,9 @@ describe('MediaContainerNameValidation', () => {
     });
   });
 
-  describe('IsValidMediaContainerName decorator with custom validation options', () => {
+  describe('IsValidAssetName decorator with custom validation options', () => {
     class TestClassWithCustomMessage {
-      @IsValidMediaContainerName({ message: 'Custom validation message' })
+      @IsValidAssetName({ message: 'Custom validation message' })
       name: string;
 
       constructor(name: string) {

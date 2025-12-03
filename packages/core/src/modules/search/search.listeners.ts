@@ -3,8 +3,8 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import type { ClassifierRunCompleteEventPayload } from '../classifier';
 import { HandleEvent } from '../event';
 import {
-  type MediaContainerDeletedEventPayload,
-  type MediaContainerReadyEventPayload,
+  type AssetDeletedEventPayload,
+  type AssetReadyEventPayload,
 } from '../media';
 import { SearchIndexService } from './services/search-index.service';
 
@@ -30,14 +30,14 @@ export class SearchListeners implements OnModuleDestroy {
     );
   }
 
-  @HandleEvent('media.container.ready')
-  async handleMediaContainerReady(payload: MediaContainerReadyEventPayload) {
+  @HandleEvent('asset.ready')
+  async handleAssetReady(payload: AssetReadyEventPayload) {
     await this.indexExecutor.requestRun();
   }
 
-  @HandleEvent('media.container.deleted')
-  async handleMediaContainerDeleted(
-    payload: MediaContainerDeletedEventPayload
+  @HandleEvent('asset.deleted')
+  async handleAssetDeleted(
+    payload: AssetDeletedEventPayload
   ) {
     await this.indexExecutor.requestRun();
   }
@@ -48,7 +48,7 @@ export class SearchListeners implements OnModuleDestroy {
   ) {
     const activeIndex = await this.searchIndexService.getActiveIndex();
     if (activeIndex) {
-      await activeIndex.markContainersAsStale([payload.mediaContainerId]);
+      await activeIndex.markAssetsAsStale([payload.assetId]);
       await this.indexExecutor.requestRun();
     }
   }

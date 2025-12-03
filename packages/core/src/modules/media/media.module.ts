@@ -3,21 +3,21 @@ import { MediaProbeService } from '../common/services/media-probe/media-probe.se
 import { EventModule } from '../event';
 import { FileDeliveryModule } from '../file-delivery';
 import { StorageModule } from '../storage';
-import { MediaContainerController } from './controllers/media-container.controller';
-import { MediaLinkGeneratorController } from './controllers/media-link-generator.controller';
+import { AssetLinkGeneratorController } from './controllers/asset-link-generator.controller';
+import { AssetController } from './controllers/asset.controller';
 import { MediaMetadataListeners } from './listeners/media-metadata.listeners';
-import { MediaContainerService } from './services/media-container.service';
-import { MediaLinkGeneratorService } from './services/media-link-generator.service';
+import { AssetLinkGeneratorService } from './services/asset-link-generator.service';
+import { AssetService } from './services/asset.service';
 
 @Module({
   imports: [StorageModule, FileDeliveryModule, EventModule],
-  controllers: [MediaContainerController, MediaLinkGeneratorController],
+  controllers: [AssetController, AssetLinkGeneratorController],
   providers: [
-    MediaContainerService,
+    AssetService,
     MediaProbeService,
-    MediaLinkGeneratorService,
+    AssetLinkGeneratorService,
     MediaMetadataListeners,
   ],
-  exports: [MediaContainerService],
+  exports: [AssetService],
 })
-export class MediaModule {}
+export class AssetModule {}

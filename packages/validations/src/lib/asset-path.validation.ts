@@ -12,7 +12,7 @@ export const pathValidationConstants = {
   ],
 };
 
-export const isValidMediaContainerPath = (path: string) => {
+export const isValidAssetPath = (path: string) => {
   if (!path || typeof path !== 'string') {
     return false;
   }
@@ -65,7 +65,7 @@ export const isValidMediaContainerPath = (path: string) => {
   return true;
 };
 
-export const IsValidMediaContainerPath = (
+export const IsValidAssetPath = (
   validationOptions?: ValidationOptions
 ) => {
   return function (object: object, propertyName: string) {
@@ -73,7 +73,7 @@ export const IsValidMediaContainerPath = (
       target: object.constructor,
       propertyName,
       options: validationOptions,
-      validator: { validate: isValidMediaContainerPath },
+      validator: { validate: isValidAssetPath },
     });
   };
 };

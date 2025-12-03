@@ -7,7 +7,7 @@ import { ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MediaGridItemProps {
-  item: components['schemas']['MediaContainerSummary'];
+  item: components['schemas']['AssetSummary'];
   thumbnailLink?: string;
   selected?: boolean;
   onSelectChange?: (selected: boolean) => void;

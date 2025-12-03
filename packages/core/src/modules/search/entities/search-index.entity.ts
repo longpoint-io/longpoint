@@ -1,7 +1,6 @@
 import { SearchIndexItemStatus } from '@/database';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
-import { MediaContainerService } from '@/modules/media';
-import { MediaContainerSummaryDto } from '@/modules/media/dtos/containers/media-container-summary.dto';
+import { AssetService, AssetSummaryDto } from '@/modules/media';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
 import { SearchIndexDto } from '../dtos';
@@ -16,7 +15,7 @@ export interface SearchIndexEntityArgs {
   configFromDb: ConfigValues;
   lastIndexedAt: Date | null;
   vectorProvider: VectorProviderEntity;
-  mediaContainerService: MediaContainerService;
+  assetService: AssetService;
   prismaService: PrismaService;
   configSchemaService: ConfigSchemaService;
 }
@@ -30,7 +29,7 @@ export class SearchIndexEntity {
   private _lastIndexedAt: Date | null;
   private _configFromDb: ConfigValues;
   private readonly vectorProvider: VectorProviderEntity;
-  private readonly mediaContainerService: MediaContainerService;
+  private readonly assetService: AssetService;
   private readonly prismaService: PrismaService;
   private readonly logger = new Logger(SearchIndexEntity.name);
 
@@ -43,15 +42,15 @@ export class SearchIndexEntity {
     this._configFromDb = args.configFromDb;
     this._lastIndexedAt = args.lastIndexedAt;
     this.vectorProvider = args.vectorProvider;
-    this.mediaContainerService = args.mediaContainerService;
+    this.assetService = args.assetService;
     this.prismaService = args.prismaService;
   }
 
-  async markContainersAsStale(containerIds: string[]): Promise<void> {
+  async markAssetsAsStale(assetIds: string[]): Promise<void> {
     await this.prismaService.searchIndexItem.updateMany({
       where: {
         indexId: this.id,
-        mediaContainerId: { in: containerIds },
+        assetId: { in: assetIds },
       },
       data: {
         status: SearchIndexItemStatus.STALE,
@@ -60,11 +59,11 @@ export class SearchIndexEntity {
   }
 
   /**
-   * Queries the search index with a text query and returns matching media containers.
+   * Queries the search index with a text query and returns matching assets.
    * @param queryText The search query text
-   * @returns Array of MediaContainerSummaryDto matching the query
+   * @returns Array of AssetSummaryDto matching the query
    */
-  async query(queryText: string): Promise<MediaContainerSummaryDto[]> {
+  async query(queryText: string): Promise<AssetSummaryDto[]> {
     const indexConfigValues = await this.getIndexConfigValues();
     const searchResults = await this.vectorProvider.embedAndSearch(
       queryText,
@@ -78,14 +77,13 @@ export class SearchIndexEntity {
     const scoreMap = new Map<string, number>(
       searchResults.map((result) => [result.id, result.score])
     );
-    const containers =
-      await this.mediaContainerService.listMediaContainersByIds(
-        Array.from(scoreMap.keys())
-      );
-    containers.sort((a, b) => scoreMap.get(b.id)! - scoreMap.get(a.id)!);
+    const assets = await this.assetService.listAssetsByIds(
+      Array.from(scoreMap.keys())
+    );
+    assets.sort((a, b) => scoreMap.get(b.id)! - scoreMap.get(a.id)!);
 
     const summaryDtos = await Promise.all(
-      containers.map((container) => container.toSummaryDto())
+      assets.map((asset) => asset.toSummaryDto())
     );
 
     return summaryDtos;
@@ -107,11 +105,11 @@ export class SearchIndexEntity {
     });
 
     try {
-      // Step 1: Delete items with null mediaContainerId in batches
-      await this.deleteNullContainerItems();
+      // Step 1: Delete items with null assetId in batches
+      await this.deleteNullAssetItems();
 
-      // Step 2: Find containers that need indexing (new ones and stale ones)
-      const newContainers = await this.prismaService.mediaContainer.findMany({
+      // Step 2: Find assets that need indexing (new ones and stale ones)
+      const newAssets = await this.prismaService.asset.findMany({
         where: {
           status: 'READY',
           deletedAt: null,
@@ -130,29 +128,26 @@ export class SearchIndexEntity {
         where: {
           indexId: this.id,
           status: SearchIndexItemStatus.STALE,
-          mediaContainerId: { not: null },
+          assetId: { not: null },
         },
         select: {
-          mediaContainerId: true,
+          assetId: true,
         },
       });
 
-      const staleContainerIds = staleItems
-        .map((item) => item.mediaContainerId)
+      const staleAssetIds = staleItems
+        .map((item) => item.assetId)
         .filter((id): id is string => id !== null);
 
-      const containersToIndex = [
-        ...newContainers.map((c) => c.id),
-        ...staleContainerIds,
-      ];
+      const assetsToIndex = [...newAssets.map((a) => a.id), ...staleAssetIds];
 
-      if (containersToIndex.length === 0) {
-        this.logger.log('No containers to index');
+      if (assetsToIndex.length === 0) {
+        this.logger.log('No assets to index');
       } else {
         this.logger.log(
-          `Indexing ${containersToIndex.length} containers in batches (${newContainers.length} new, ${staleContainerIds.length} stale)`
+          `Indexing ${assetsToIndex.length} assets in batches (${newAssets.length} new, ${staleAssetIds.length} stale)`
         );
-        await this.indexContainersBatch(containersToIndex);
+        await this.indexAssetsBatch(assetsToIndex);
       }
 
       const totalIndexed = await this.prismaService.searchIndexItem.count({
@@ -206,10 +201,10 @@ export class SearchIndexEntity {
   }
 
   /**
-   * Deletes items with null mediaContainerId in batches.
+   * Deletes items with null assetId in batches.
    * @param batchSize Number of items to process per batch (default: 50)
    */
-  private async deleteNullContainerItems(batchSize = 50): Promise<void> {
+  private async deleteNullAssetItems(batchSize = 50): Promise<void> {
     let hasMore = true;
     let offset = 0;
 
@@ -217,7 +212,7 @@ export class SearchIndexEntity {
       const nullItems = await this.prismaService.searchIndexItem.findMany({
         where: {
           indexId: this.id,
-          mediaContainerId: null,
+          assetId: null,
         },
         select: {
           externalId: true,
@@ -233,7 +228,7 @@ export class SearchIndexEntity {
 
       const externalIds = nullItems.map((item) => item.externalId);
       this.logger.log(
-        `Deleting batch of ${externalIds.length} external IDs with null mediaContainerId`
+        `Deleting batch of ${externalIds.length} external IDs with null assetId`
       );
 
       // Delete from vector store first, then from database
@@ -261,19 +256,19 @@ export class SearchIndexEntity {
   }
 
   /**
-   * Indexes multiple containers in batches for better scalability.
-   * @param containerIds Array of media container IDs to index
-   * @param batchSize Number of containers to process per batch (default: 50)
+   * Indexes multiple assets in batches for better scalability.
+   * @param assetIds Array of asset IDs to index
+   * @param batchSize Number of assets to process per batch (default: 50)
    */
-  private async indexContainersBatch(
-    containerIds: string[],
+  private async indexAssetsBatch(
+    assetIds: string[],
     batchSize = 50
   ): Promise<void> {
-    for (let i = 0; i < containerIds.length; i += batchSize) {
-      const batch = containerIds.slice(i, i + batchSize);
+    for (let i = 0; i < assetIds.length; i += batchSize) {
+      const batch = assetIds.slice(i, i + batchSize);
       this.logger.log(
         `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
-          containerIds.length / batchSize
+          assetIds.length / batchSize
         )} (${batch.length} containers)`
       );
 
@@ -290,17 +285,17 @@ export class SearchIndexEntity {
   }
 
   /**
-   * Processes a batch of containers by fetching them, generating embeddings, and upserting.
-   * @param containerIds Array of media container IDs to process
+   * Processes a batch of assets by fetching them, generating embeddings, and upserting.
+   * @param assetIds Array of asset IDs to process
    */
-  private async processBatch(containerIds: string[]): Promise<void> {
+  private async processBatch(assetIds: string[]): Promise<void> {
     // Mark new items as INDEXING
     await this.prismaService.searchIndexItem.createMany({
-      data: containerIds.map((mediaContainerId) => ({
+      data: assetIds.map((assetId) => ({
         indexId: this.id,
-        mediaContainerId,
+        assetId,
         status: SearchIndexItemStatus.INDEXING,
-        externalId: mediaContainerId,
+        externalId: assetId,
       })),
       skipDuplicates: true,
     });
@@ -309,26 +304,23 @@ export class SearchIndexEntity {
     await this.prismaService.searchIndexItem.updateMany({
       where: {
         indexId: this.id,
-        mediaContainerId: { in: containerIds },
+        assetId: { in: assetIds },
       },
       data: {
         status: SearchIndexItemStatus.INDEXING,
       },
     });
 
-    const containers =
-      await this.mediaContainerService.listMediaContainersByIds(containerIds);
+    const assets = await this.assetService.listAssetsByIds(assetIds);
 
-    // Considered stale items if their containers do not exist
-    const foundContainerIds = new Set(containers.map((c) => c.id));
-    const missingContainerIds = containerIds.filter(
-      (id) => !foundContainerIds.has(id)
-    );
-    if (missingContainerIds.length > 0) {
+    // Considered stale items if their assets do not exist
+    const foundAssetIds = new Set(assets.map((a) => a.id));
+    const missingAssetIds = assetIds.filter((id) => !foundAssetIds.has(id));
+    if (missingAssetIds.length > 0) {
       const missingItems = await this.prismaService.searchIndexItem.findMany({
         where: {
           indexId: this.id,
-          mediaContainerId: { in: missingContainerIds },
+          assetId: { in: missingAssetIds },
         },
         select: {
           id: true,
@@ -353,44 +345,44 @@ export class SearchIndexEntity {
       await this.prismaService.searchIndexItem.deleteMany({
         where: {
           indexId: this.id,
-          mediaContainerId: { in: missingContainerIds },
+          assetId: { in: missingAssetIds },
         },
       });
     }
 
-    if (containers.length === 0) {
+    if (assets.length === 0) {
       return;
     }
 
-    // Get the search index item IDs for the found containers
+    // Get the search index item IDs for the found assets
     const indexItems = await this.prismaService.searchIndexItem.findMany({
       where: {
         indexId: this.id,
-        mediaContainerId: { in: Array.from(foundContainerIds) },
+        assetId: { in: Array.from(foundAssetIds) },
       },
       select: {
         id: true,
         externalId: true,
-        mediaContainerId: true,
+        assetId: true,
       },
     });
 
-    // Create a map from media container ID to search index item external ID
-    const containerIdToItemId = new Map(
-      indexItems.map((item) => [item.mediaContainerId, item.externalId])
+    // Create a map from asset ID to search index item external ID
+    const assetIdToItemId = new Map(
+      indexItems.map((item) => [item.assetId, item.externalId])
     );
 
     try {
-      const documents = containers.map((container) => {
-        const externalId = containerIdToItemId.get(container.id);
+      const documents = assets.map((asset) => {
+        const externalId = assetIdToItemId.get(asset.id);
         if (!externalId) {
           throw new Error(
-            `Search index item external ID not found for container ${container.id}`
+            `Search index item external ID not found for asset ${asset.id}`
           );
         }
         return {
           id: externalId, // Use search index item external ID as the vector document ID
-          text: container.toEmbeddingText(),
+          text: asset.toEmbeddingText(),
         };
       });
 
@@ -401,11 +393,11 @@ export class SearchIndexEntity {
       // TODO: Handle after embedding model is implemented
       // }
 
-      // Only update items for containers that were actually found
+      // Only update items for assets that were actually found
       await this.prismaService.searchIndexItem.updateMany({
         where: {
           indexId: this.id,
-          mediaContainerId: { in: Array.from(foundContainerIds) },
+          assetId: { in: Array.from(foundAssetIds) },
         },
         data: {
           status: SearchIndexItemStatus.INDEXED,
@@ -438,7 +430,7 @@ export class SearchIndexEntity {
       await this.prismaService.searchIndexItem.deleteMany({
         where: {
           indexId: this.id,
-          mediaContainerId: { in: Array.from(foundContainerIds) },
+          assetId: { in: Array.from(foundAssetIds) },
         },
       });
       throw error;
@@ -455,7 +447,7 @@ export class SearchIndexEntity {
         ? await this.vectorProvider.processIndexConfigFromDb(this._configFromDb)
         : null,
       vectorProvider: this.vectorProvider.toShortDto(),
-      mediaIndexed: this._mediaIndexed,
+      assetsIndexed: this._mediaIndexed,
       lastIndexedAt: this._lastIndexedAt,
     });
   }

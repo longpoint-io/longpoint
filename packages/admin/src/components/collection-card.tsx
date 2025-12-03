@@ -33,8 +33,8 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           <span>{new Date(collection.createdAt).toLocaleDateString()}</span>
         </div>
         <div className="text-sm">
-          <span className="text-muted-foreground">Containers: </span>
-          <span className="font-medium">{collection.mediaContainerCount}</span>
+          <span className="text-muted-foreground">Assets: </span>
+          <span className="font-medium">{collection.assetCount}</span>
         </div>
       </CardContent>
       <CardFooter className="pt-0">

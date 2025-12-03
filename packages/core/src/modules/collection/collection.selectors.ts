@@ -9,7 +9,7 @@ export const selectCollection = () => {
     updatedAt: true,
     _count: {
       select: {
-        containers: true,
+        assets: true,
       },
     },
   } satisfies Prisma.CollectionSelect;

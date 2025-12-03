@@ -128,7 +128,7 @@ export class GoogleCloudStorageProvider extends StorageProvider {
 
   /**
    * Normalize a path to a GCS object name.
-   * The path parameter should be in format: {prefix}/{storageUnitId}/{containerId}/...
+   * The path parameter should be in format: {prefix}/{storageUnitId}/{assetId}/...
    * We normalize leading slashes and use the full path as the GCS object name.
    */
   private normalizeGCSKey(path: string): string {

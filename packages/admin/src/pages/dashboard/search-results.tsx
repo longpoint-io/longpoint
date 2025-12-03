@@ -35,9 +35,9 @@ export function SearchResults() {
     queryKey: ['search', query],
     queryFn: async () => {
       const response = await client.search.searchMedia({ query });
-      const links = await client.media.generateLinks({
-        containers: response.results.map((result) => ({
-          containerId: result.id,
+      const links = await client.assets.generateLinks({
+        assets: response.results.map((result) => ({
+          assetId: result.id,
           w: 500,
         })),
       });

@@ -19,41 +19,41 @@ export class MediaMetadataListeners {
     }
 
     try {
-      const asset = await this.prismaService.mediaAsset.findUnique({
-        where: { id: payload.mediaAssetId },
+      const variant = await this.prismaService.assetVariant.findUnique({
+        where: { id: payload.assetVariantId },
         select: {
           id: true,
           metadata: true,
         },
       });
 
-      if (!asset) {
+      if (!variant) {
         this.logger.warn(
-          `Media asset ${payload.mediaAssetId} not found for metadata merge`
+          `Asset variant ${payload.assetVariantId} not found for metadata merge`
         );
         return;
       }
 
       const currentMetadata =
-        (asset.metadata as JsonObject | null) ?? ({} as JsonObject);
+        (variant.metadata as JsonObject | null) ?? ({} as JsonObject);
       const mergedMetadata: JsonObject = {
         ...currentMetadata,
         ...(payload.result as JsonObject),
       };
 
-      await this.prismaService.mediaAsset.update({
-        where: { id: payload.mediaAssetId },
+      await this.prismaService.assetVariant.update({
+        where: { id: payload.assetVariantId },
         data: {
           metadata: mergedMetadata,
         },
       });
 
       this.logger.debug(
-        `Merged metadata from classifier "${payload.classifierName}" into asset ${payload.mediaAssetId}`
+        `Merged metadata from classifier "${payload.classifierName}" into variant ${payload.assetVariantId}`
       );
     } catch (error) {
       this.logger.error(
-        `Error merging metadata for asset ${payload.mediaAssetId}:`,
+        `Error merging metadata for variant ${payload.assetVariantId}:`,
         error
       );
     }

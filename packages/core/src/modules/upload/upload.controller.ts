@@ -3,28 +3,28 @@ import { SdkTag } from '@/shared/types/swagger.types';
 import { Controller, Param, Put, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { type Request } from 'express';
-import { ApiMediaContainerNotFoundResponse } from '../media/media.errors';
+import { ApiAssetNotFoundResponse } from '../media/media.errors';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { UploadService } from './upload.service';
 
-@Controller('media/containers')
-@ApiSdkTag(SdkTag.Media)
+@Controller('assets')
+@ApiSdkTag(SdkTag.Assets)
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  @Put(':containerId/upload')
+  @Put(':assetId/upload')
   @Public()
   @ApiOperation({
-    summary: 'Upload an asset to a media container',
+    summary: 'Upload an asset variant',
     operationId: 'upload',
   })
-  @ApiOkResponse({ description: 'The asset was uploaded' })
-  @ApiMediaContainerNotFoundResponse()
+  @ApiOkResponse({ description: 'The variant was uploaded' })
+  @ApiAssetNotFoundResponse()
   async upload(
-    @Param('containerId') containerId: string,
+    @Param('assetId') assetId: string,
     @Query() query: UploadAssetQueryDto,
     @Req() req: Request
   ) {
-    return this.uploadService.upload(containerId, query, req);
+    return this.uploadService.upload(assetId, query, req);
   }
 }
