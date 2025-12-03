@@ -9,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from '@longpoint/ui/components/table';
-import { MediaTableRow } from './media-table-row';
+import { AssetTableRow } from './asset-table-row';
 
-export interface MediaTableProps {
+export interface AssetTableProps {
   items: components['schemas']['AssetSummary'][];
   isLoading?: boolean;
   links: Record<string, string>;
@@ -20,14 +20,14 @@ export interface MediaTableProps {
   onSelectionChange?: (selectedIds: Set<string>) => void;
 }
 
-export function MediaTable({
+export function AssetTable({
   items,
   isLoading,
   links,
   multiSelect = false,
   selectedIds = new Set(),
   onSelectionChange,
-}: MediaTableProps) {
+}: AssetTableProps) {
   const allSelected =
     items.length > 0 && items.every((item) => selectedIds.has(item.id));
 
@@ -119,7 +119,7 @@ export function MediaTable({
       </TableHeader>
       <TableBody>
         {items.map((item) => (
-          <MediaTableRow
+          <AssetTableRow
             key={item.id}
             item={item}
             thumbnailLink={item.type === 'IMAGE' ? links[item.id] : undefined}

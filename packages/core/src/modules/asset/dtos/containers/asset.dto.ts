@@ -4,8 +4,8 @@ import {
   AssetVariantStatus,
   AssetVariantType,
 } from '@/database';
+import { type SelectedAsset } from '@/modules/asset/asset.selectors';
 import { CollectionReferenceDto } from '@/modules/collection';
-import { type SelectedAsset } from '@/modules/media/media.selectors';
 import { SupportedMimeType } from '@longpoint/types';
 import { IsValidAssetName } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';

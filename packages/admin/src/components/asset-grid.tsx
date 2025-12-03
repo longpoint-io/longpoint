@@ -1,8 +1,8 @@
 import { components } from '@longpoint/sdk';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
-import { MediaGridItem } from './media-grid-item';
+import { AssetGridItem } from './asset-grid-item';
 
-export interface MediaGridProps {
+export interface AssetGridProps {
   items: components['schemas']['AssetSummary'][];
   isLoading?: boolean;
   links: Record<string, string>;
@@ -11,14 +11,14 @@ export interface MediaGridProps {
   onSelectionChange?: (selectedIds: Set<string>) => void;
 }
 
-export function MediaGrid({
+export function AssetGrid({
   items,
   isLoading,
   links,
   multiSelect = false,
   selectedIds = new Set(),
   onSelectionChange,
-}: MediaGridProps) {
+}: AssetGridProps) {
   const handleItemSelectionChange = (itemId: string, selected: boolean) => {
     if (!onSelectionChange) return;
     const newSelection = new Set(selectedIds);
@@ -51,7 +51,7 @@ export function MediaGrid({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
       {items.map((item) => (
-        <MediaGridItem
+        <AssetGridItem
           key={item.id}
           item={item}
           thumbnailLink={item.type === 'IMAGE' ? links[item.id] : undefined}

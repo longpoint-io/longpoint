@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { AssetVariantReadyEventPayload } from '../asset';
 import { PrismaService } from '../common/services';
 import { HandleEvent } from '../event';
-import type { AssetVariantReadyEventPayload } from '../media';
 import { ClassifierService } from './classifier.service';
 
 @Injectable()

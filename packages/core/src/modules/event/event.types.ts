@@ -1,6 +1,6 @@
 import { JsonObject } from '@longpoint/types';
+import { AssetEventPayloads } from '../asset';
 import { ClassifierEventPayloads } from '../classifier';
-import { AssetEventPayloads } from '../media';
 
 // Base event payload type
 export type EventPayload = JsonObject;

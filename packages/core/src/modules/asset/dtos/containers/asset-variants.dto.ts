@@ -1,6 +1,6 @@
 import { AssetVariantType } from '@/database';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { type SelectedAsset } from '../../media.selectors';
+import { type SelectedAsset } from '../../asset.selectors';
 import { AssetVariantDto } from './asset-variant.dto';
 
 export type AssetVariantsParams = SelectedAsset['variants'];

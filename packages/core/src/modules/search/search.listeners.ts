@@ -1,11 +1,11 @@
 import { DebounceTaskExecutor } from '@/shared/utils/debounce-task.executor';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import type { ClassifierRunCompleteEventPayload } from '../classifier';
-import { HandleEvent } from '../event';
 import {
   type AssetDeletedEventPayload,
   type AssetReadyEventPayload,
-} from '../media';
+} from '../asset';
+import type { ClassifierRunCompleteEventPayload } from '../classifier';
+import { HandleEvent } from '../event';
 import { SearchIndexService } from './services/search-index.service';
 
 @Injectable()
@@ -36,9 +36,7 @@ export class SearchListeners implements OnModuleDestroy {
   }
 
   @HandleEvent('asset.deleted')
-  async handleAssetDeleted(
-    payload: AssetDeletedEventPayload
-  ) {
+  async handleAssetDeleted(payload: AssetDeletedEventPayload) {
     await this.indexExecutor.requestRun();
   }
 

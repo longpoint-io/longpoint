@@ -6,7 +6,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { GenerateMediaLinksDto } from '../dtos/generate-links.dto';
 import { AssetLinkGeneratorService } from '../services/asset-link-generator.service';
 
-@Controller('links')
+@Controller('asset-links')
 @ApiSdkTag(SdkTag.Assets)
 @ApiBearerAuth()
 export class AssetLinkGeneratorController {

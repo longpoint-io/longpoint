@@ -1,5 +1,5 @@
-import { MediaGrid } from '@/components/media-grid';
-import { MediaTable } from '@/components/media-table';
+import { AssetGrid } from '@/components/asset-grid';
+import { AssetTable } from '@/components/asset-table';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
@@ -405,7 +405,7 @@ export function CollectionDetail() {
             </Empty>
           </div>
         ) : viewType === 'grid' ? (
-          <MediaGrid
+          <AssetGrid
             items={assets}
             links={links}
             isLoading={false}
@@ -414,7 +414,7 @@ export function CollectionDetail() {
             onSelectionChange={setSelectedAssetIds}
           />
         ) : (
-          <MediaTable
+          <AssetTable
             items={assets}
             links={links}
             isLoading={false}

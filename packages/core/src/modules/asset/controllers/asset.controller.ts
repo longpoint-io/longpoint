@@ -18,6 +18,10 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import {
+  ApiAssetAlreadyExistsResponse,
+  ApiAssetNotFoundResponse,
+} from '../asset.errors';
+import {
   AssetDto,
   CreateAssetDto,
   CreateAssetResponseDto,
@@ -26,10 +30,6 @@ import {
   ListAssetsResponseDto,
   UpdateAssetDto,
 } from '../dtos';
-import {
-  ApiAssetAlreadyExistsResponse,
-  ApiAssetNotFoundResponse,
-} from '../media.errors';
 import { AssetService } from '../services/asset.service';
 
 @Controller('assets')

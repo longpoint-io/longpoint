@@ -3,7 +3,7 @@ import { SdkTag } from '@/shared/types/swagger.types';
 import { Controller, Param, Put, Query, Req } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { type Request } from 'express';
-import { ApiAssetNotFoundResponse } from '../media/media.errors';
+import { ApiAssetNotFoundResponse } from '../asset/asset.errors';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { UploadService } from './upload.service';
 

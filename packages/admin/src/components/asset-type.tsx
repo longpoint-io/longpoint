@@ -3,20 +3,20 @@ import { cn } from '@longpoint/ui/lib/utils';
 import { enumToTitleCase } from '@longpoint/utils/string';
 import { ImageIcon } from 'lucide-react';
 
-export interface MediaTypeProps {
+export interface AssetTypeProps {
   type: components['schemas']['Asset']['type'];
   className?: string;
   showText?: boolean;
   showIcon?: boolean;
 }
 
-export function MediaType({
+export function AssetType({
   type,
   className,
   showText = true,
   showIcon = true,
-}: MediaTypeProps) {
-  const mediaType = enumToTitleCase(type);
+}: AssetTypeProps) {
+  const assetType = enumToTitleCase(type);
 
   let icon = null;
   switch (type) {
@@ -30,7 +30,7 @@ export function MediaType({
   return (
     <div className={cn('flex items-center gap-2', className)}>
       {showIcon && icon}
-      {showText && <span className="text-sm capitalize">{mediaType}</span>}
+      {showText && <span className="text-sm capitalize">{assetType}</span>}
     </div>
   );
 }

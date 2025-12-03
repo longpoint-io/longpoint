@@ -1,6 +1,6 @@
 import { AssetVariantStatus } from '@/database';
+import { type SelectedAssetVariant } from '@/modules/asset/asset.selectors';
 import { ClassifierRunDto } from '@/modules/classifier/dtos';
-import { type SelectedAssetVariant } from '@/modules/media/media.selectors';
 import { JsonObject } from '@/shared/types/object.types';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';

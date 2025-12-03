@@ -16,15 +16,15 @@ import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery';
 import { StorageUnitEntity } from '../../storage/entities/storage-unit.entity';
-import { AssetSummaryDto, AssetVariantsDto, UpdateAssetDto } from '../dtos';
-import { AssetDto } from '../dtos/containers/asset.dto';
 import {
   AssetAlreadyDeleted,
   AssetAlreadyExists,
   AssetNotEmbeddable,
   AssetNotFound,
-} from '../media.errors';
-import { SelectedAsset, selectAsset } from '../media.selectors';
+} from '../asset.errors';
+import { SelectedAsset, selectAsset } from '../asset.selectors';
+import { AssetSummaryDto, AssetVariantsDto, UpdateAssetDto } from '../dtos';
+import { AssetDto } from '../dtos/containers/asset.dto';
 
 export interface AssetEntityArgs extends SelectedAsset {
   storageUnit: StorageUnitEntity;

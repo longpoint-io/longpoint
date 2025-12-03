@@ -1,6 +1,6 @@
 import { Prisma } from '@/database';
+import { AssetService } from '@/modules/asset';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
-import { AssetService } from '@/modules/media';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateSearchIndexDto } from '../dtos';

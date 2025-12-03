@@ -1,7 +1,7 @@
 import { ClassifierRun, ClassifierRunStatus } from '@/database';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { type SelectedClassifierRun } from '../../../shared/selectors/classifier.selectors';
 import { JsonObject } from '../../../shared/types/object.types';
+import { type SelectedClassifierRun } from '../classifier.selectors';
 import {
   ClassifierShortDto,
   ClassifierShortParams,

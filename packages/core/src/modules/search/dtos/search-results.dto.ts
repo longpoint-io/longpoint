@@ -1,4 +1,4 @@
-import { AssetSummaryDto } from '@/modules/media/dtos/containers/asset-summary.dto';
+import { AssetSummaryDto } from '@/modules/asset/dtos/containers/asset-summary.dto';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({ name: 'SearchResults' })

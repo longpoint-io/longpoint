@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AssetModule } from '../asset';
 import { EventModule } from '../event';
-import { AssetModule } from '../media';
 import {
   SearchController,
   SearchIndexController,

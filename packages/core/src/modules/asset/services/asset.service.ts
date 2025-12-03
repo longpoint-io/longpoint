@@ -10,9 +10,9 @@ import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery/services/url-signing.service';
 import { StorageUnitService } from '../../storage/services/storage-unit.service';
+import { AssetNotFound, AssetVariantNotFound } from '../asset.errors';
+import { selectAsset, selectAssetSummary } from '../asset.selectors';
 import { CreateAssetDto, ListAssetsQueryDto } from '../dtos';
-import { AssetNotFound, AssetVariantNotFound } from '../media.errors';
-import { selectAsset, selectAssetSummary } from '../media.selectors';
 
 export interface CreateAssetParams {
   path: string;

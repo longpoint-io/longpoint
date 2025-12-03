@@ -1,4 +1,4 @@
-import { MediaType } from '@/components/media-type';
+import { AssetType } from '@/components/asset-type';
 import { useClient } from '@/hooks/common';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { components } from '@longpoint/sdk';
@@ -602,7 +602,7 @@ export function MediaDetail() {
                 <Field>
                   <FieldLabel>Type</FieldLabel>
                   <div className="flex items-center gap-2">
-                    <MediaType type={media.type} />
+                    <AssetType type={media.type} />
                   </div>
                 </Field>
                 <Field>

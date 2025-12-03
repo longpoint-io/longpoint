@@ -1,10 +1,10 @@
+import { AssetNotFound } from '@/modules/asset';
 import { ConfigService, PrismaService } from '@/modules/common/services';
-import { AssetNotFound } from '@/modules/media';
 import { StorageUnitService } from '@/modules/storage';
 import { StorageProviderEntity } from '@/modules/storage/entities';
 import {
-  getContentType,
   getAssetPath,
+  getContentType,
   getMimeType,
 } from '@longpoint/utils/media';
 import { Injectable, NotFoundException } from '@nestjs/common';

@@ -1,5 +1,5 @@
 import { Prisma } from '@/database';
-import { selectClassifierRun } from '../../shared/selectors/classifier.selectors';
+import { selectClassifierRun } from '@/modules/classifier';
 
 export const selectAssetSummary = () => {
   return {

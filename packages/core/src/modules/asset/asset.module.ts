@@ -3,9 +3,9 @@ import { MediaProbeService } from '../common/services/media-probe/media-probe.se
 import { EventModule } from '../event';
 import { FileDeliveryModule } from '../file-delivery';
 import { StorageModule } from '../storage';
+import { MediaMetadataListeners } from './asset.listeners';
 import { AssetLinkGeneratorController } from './controllers/asset-link-generator.controller';
 import { AssetController } from './controllers/asset.controller';
-import { MediaMetadataListeners } from './listeners/media-metadata.listeners';
 import { AssetLinkGeneratorService } from './services/asset-link-generator.service';
 import { AssetService } from './services/asset.service';
 

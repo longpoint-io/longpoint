@@ -1,10 +1,10 @@
+export { AssetModule as MediaModule } from './asset';
 export { AuthModule } from './auth';
 export { ClassifierModule } from './classifier';
 export { CollectionModule } from './collection';
 export { CommonModule } from './common';
 export { FileDeliveryModule } from './file-delivery';
 export { LoggerModule } from './logger';
-export { AssetModule as MediaModule } from './media';
 export { PluginModule } from './plugin';
 export { SearchModule } from './search';
 export { StorageModule } from './storage';

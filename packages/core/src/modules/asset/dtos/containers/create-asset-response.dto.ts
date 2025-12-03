@@ -1,4 +1,4 @@
-import { SelectedAsset } from '@/modules/media/media.selectors';
+import { SelectedAsset } from '@/modules/asset/asset.selectors';
 import { ApiProperty, ApiSchema, PickType } from '@nestjs/swagger';
 import { AssetDto } from './asset.dto';
 

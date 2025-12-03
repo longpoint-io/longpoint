@@ -6,7 +6,7 @@ import { cn } from '@longpoint/ui/utils';
 import { ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface MediaGridItemProps {
+interface AssetGridItemProps {
   item: components['schemas']['AssetSummary'];
   thumbnailLink?: string;
   selected?: boolean;
@@ -14,13 +14,13 @@ interface MediaGridItemProps {
   multiSelect?: boolean;
 }
 
-export function MediaGridItem({
+export function AssetGridItem({
   item,
   thumbnailLink,
   selected = false,
   onSelectChange,
   multiSelect = false,
-}: MediaGridItemProps) {
+}: AssetGridItemProps) {
   const { id, name, status } = item;
   const isReady = status === 'READY';
 

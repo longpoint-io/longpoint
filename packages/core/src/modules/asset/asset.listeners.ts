@@ -1,8 +1,8 @@
 import { JsonObject } from '@/shared/types/object.types';
 import { Injectable, Logger } from '@nestjs/common';
-import type { ClassifierRunCompleteEventPayload } from '../../classifier';
-import { PrismaService } from '../../common/services';
-import { HandleEvent } from '../../event';
+import type { ClassifierRunCompleteEventPayload } from '../classifier';
+import { PrismaService } from '../common/services';
+import { HandleEvent } from '../event';
 
 @Injectable()
 export class MediaMetadataListeners {

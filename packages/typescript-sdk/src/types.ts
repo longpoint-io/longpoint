@@ -58,6 +58,23 @@ export interface paths {
         patch: operations["updateClassifier"];
         trace?: never;
     };
+    "/asset-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate links for assets */
+        post: operations["generateLinks"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/assets": {
         parameters: {
             query?: never;
@@ -174,23 +191,6 @@ export interface paths {
         post: operations["addAssetsToCollection"];
         /** Remove assets from a collection */
         delete: operations["removeAssetsFromCollection"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/links": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Generate links for assets */
-        post: operations["generateLinks"];
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -477,7 +477,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-03T17:39:42.776Z
+             * @example 2025-12-03T17:56:08.460Z
              */
             createdAt: string;
             /**
@@ -530,7 +530,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-03T17:39:42.776Z
+             * @example 2025-12-03T17:56:08.460Z
              */
             createdAt: string;
             /**
@@ -1890,6 +1890,32 @@ export interface operations {
             };
         };
     };
+    generateLinks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateMediaLinks"];
+            };
+        };
+        responses: {
+            /** @description The generated links */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
     listAssets: {
         parameters: {
             query?: {
@@ -2336,32 +2362,6 @@ export interface operations {
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    generateLinks: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GenerateMediaLinks"];
-            };
-        };
-        responses: {
-            /** @description The generated links */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: string;
                     };
                 };
             };

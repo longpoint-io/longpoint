@@ -1,9 +1,9 @@
 import { Classifier, ClassifierRunStatus, Prisma } from '@/database';
+import { AssetService, AssetVariantDto } from '@/modules/asset';
+import { selectClassifier } from '@/modules/classifier/classifier.selectors';
 import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
-import { AssetVariantDto, AssetService } from '@/modules/media';
 import { Unexpected } from '@/shared/errors';
-import { selectClassifier } from '@/shared/selectors/classifier.selectors';
 import { ConfigValues } from '@longpoint/config-schema';
 import { toBase64DataUri } from '@longpoint/utils/string';
 import { Logger } from '@nestjs/common';
@@ -64,10 +64,9 @@ export class ClassifierEntity {
    * @returns The result of the classifier run.
    */
   async run(assetVariantId: string) {
-    const asset =
-      await this.assetService.getAssetByVariantIdOrThrow(
-        assetVariantId
-      );
+    const asset = await this.assetService.getAssetByVariantIdOrThrow(
+      assetVariantId
+    );
     const assetId = asset.id;
     const serialized = await asset.toDto();
     const variant = serialized.variants.primary;

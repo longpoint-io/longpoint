@@ -1,6 +1,6 @@
 import { SearchIndexItemStatus } from '@/database';
+import { AssetService, AssetSummaryDto } from '@/modules/asset';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
-import { AssetService, AssetSummaryDto } from '@/modules/media';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
 import { SearchIndexDto } from '../dtos';

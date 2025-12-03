@@ -3,9 +3,9 @@ import { Checkbox } from '@longpoint/ui/components/checkbox';
 import { TableCell, TableRow } from '@longpoint/ui/components/table';
 import { ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { MediaType } from './media-type';
+import { AssetType } from './asset-type';
 
-interface MediaTableRowProps {
+interface AssetTableRowProps {
   item: components['schemas']['AssetSummary'];
   thumbnailLink?: string;
   selected?: boolean;
@@ -13,13 +13,13 @@ interface MediaTableRowProps {
   multiSelect?: boolean;
 }
 
-export function MediaTableRow({
+export function AssetTableRow({
   item,
   thumbnailLink,
   selected = false,
   onSelectChange,
   multiSelect = false,
-}: MediaTableRowProps) {
+}: AssetTableRowProps) {
   const navigate = useNavigate();
 
   const { id, name, createdAt, updatedAt, type } = item;
@@ -69,7 +69,7 @@ export function MediaTableRow({
         </div>
       </TableCell>
       <TableCell>
-        <MediaType type={type} />
+        <AssetType type={type} />
       </TableCell>
       <TableCell className="text-muted-foreground text-sm">
         {updatedAt ? new Date(updatedAt).toLocaleString() : '-'}

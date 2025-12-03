@@ -1,10 +1,10 @@
 import { ConfigValues } from '@longpoint/config-schema';
-import { Injectable } from '@nestjs/common';
-import { selectClassifier } from '../../shared/selectors/classifier.selectors';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { AssetService } from '../asset';
 import { PrismaService } from '../common/services';
 import { EventPublisher } from '../event';
-import { AssetService } from '../media';
 import { ClassifierNotFound } from './classifier.errors';
+import { selectClassifier } from './classifier.selectors';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { ClassifierEntity } from './entities';
 import { ClassificationProviderService } from './services/classification-provider.service';
@@ -14,6 +14,7 @@ export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly classificationProviderService: ClassificationProviderService,
+    @Inject(forwardRef(() => AssetService))
     private readonly assetService: AssetService,
     private readonly eventPublisher: EventPublisher
   ) {}

@@ -1,5 +1,5 @@
-import { MediaGrid } from '@/components/media-grid';
-import { MediaTable } from '@/components/media-table';
+import { AssetGrid } from '@/components/asset-grid';
+import { AssetTable } from '@/components/asset-table';
 import { useUploadContext } from '@/contexts/upload-context';
 import { useClient } from '@/hooks/common/use-client';
 import { Button } from '@longpoint/ui/components/button';
@@ -149,13 +149,13 @@ export function Browser() {
               </div>
             </div>
             {viewType === 'grid' ? (
-              <MediaGrid
+              <AssetGrid
                 items={items}
                 links={data?.links || {}}
                 isLoading={isLoading}
               />
             ) : (
-              <MediaTable
+              <AssetTable
                 items={items}
                 links={data?.links || {}}
                 isLoading={isLoading}
