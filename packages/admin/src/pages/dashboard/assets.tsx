@@ -18,7 +18,7 @@ import { useEffect, useState } from 'react';
 
 const VIEW_TYPE_STORAGE_KEY = 'browser-view-type';
 
-export function Browser() {
+export function Assets() {
   const { openDialog } = useUploadContext();
   const client = useClient();
   const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
@@ -56,7 +56,7 @@ export function Browser() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">Browser</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Assets</h1>
       </div>
 
       {error && (
@@ -101,12 +101,9 @@ export function Browser() {
         ) : (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold">All Items</h2>
-                <p className="text-sm text-muted-foreground">
-                  {items.length} {items.length === 1 ? 'item' : 'items'}
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                {items.length} {items.length === 1 ? 'item' : 'items'}
+              </p>
               <div
                 role="radiogroup"
                 aria-label="View type"

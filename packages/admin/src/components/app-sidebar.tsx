@@ -28,7 +28,7 @@ import {
   BookmarkIcon,
   ChevronDown,
   HomeIcon,
-  ImagePlayIcon,
+  ImagesIcon,
   LogOutIcon,
   PlugIcon,
   ScanSearchIcon,
@@ -45,8 +45,8 @@ const sidebarItems = [
   },
   {
     label: 'Assets',
-    url: '/browser',
-    icon: ImagePlayIcon,
+    url: '/assets',
+    icon: ImagesIcon,
   },
   {
     label: 'Collections',
