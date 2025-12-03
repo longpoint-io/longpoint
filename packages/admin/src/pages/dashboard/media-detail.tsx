@@ -272,7 +272,7 @@ function AddToCollectionCombobox({
   );
 }
 
-export function MediaDetail() {
+export function AssetDetail() {
   const { id } = useParams<{ id: string }>();
   const client = useClient();
   const navigate = useNavigate();
@@ -318,12 +318,12 @@ export function MediaDetail() {
     mutationFn: () =>
       client.assets.deleteAsset(id!, { permanently: permanentlyDelete }),
     onSuccess: () => {
-      toast.success('Media deleted successfully');
+      toast.success('Asset deleted');
       queryClient.invalidateQueries({ queryKey: ['assets'] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setDeleteDialogOpen(false);
       setPermanentlyDelete(false);
-      navigate('/browser');
+      navigate('/assets');
     },
     onError: (error) => {
       toast.error('Failed to delete media', {

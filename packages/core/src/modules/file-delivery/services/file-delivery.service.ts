@@ -27,12 +27,12 @@ export class FileDeliveryService {
   ) {}
 
   async serveFile(req: Request, res: Response, query: SignedUrlParamsDto) {
-    const requestPath = req.path.replace(/^\/m\/?/, '');
+    const requestPath = req.path.replace(/^\/a\/?/, '');
     const pathPrefix = this.configService.get('storage.pathPrefix');
 
     const pathParts = requestPath.split('/').filter(Boolean);
 
-    // Path format: /m/{assetId}/{filename}
+    // Path format: /a/{assetId}/{filename}
     if (pathParts.length !== 2) {
       throw new InvalidFilePath(requestPath);
     }

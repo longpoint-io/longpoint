@@ -5,6 +5,7 @@ import { Checkbox } from '@longpoint/ui/components/checkbox';
 import { cn } from '@longpoint/ui/utils';
 import { ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AssetType } from './asset-type';
 
 interface AssetGridItemProps {
   item: components['schemas']['AssetSummary'];
@@ -21,7 +22,7 @@ export function AssetGridItem({
   onSelectChange,
   multiSelect = false,
 }: AssetGridItemProps) {
-  const { id, name, status } = item;
+  const { id, name, status, type } = item;
   const isReady = status === 'READY';
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
@@ -76,14 +77,16 @@ export function AssetGridItem({
             )}
           </div>
           <div className="p-4 border-t">
-            <div className="text-center space-y-1">
+            <div className="text-center space-y-2 flex flex-col items-center justify-center">
               <p
                 className="text-sm font-semibold truncate group-hover:text-gray-900 transition-colors"
                 title={name}
               >
                 {name}
               </p>
-              <p className="text-xs text-muted-foreground">Media</p>
+              <p className="text-xs text-muted-foreground">
+                <AssetType type={type} />
+              </p>
             </div>
           </div>
         </div>
@@ -92,7 +95,7 @@ export function AssetGridItem({
   );
 
   return (
-    <Link to={`/media/${id}`} className="block">
+    <Link to={`/assets/${id}`} className="block">
       {content}
     </Link>
   );

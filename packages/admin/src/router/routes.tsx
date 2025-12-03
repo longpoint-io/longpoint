@@ -9,7 +9,7 @@ import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
 import { Collections } from '../pages/dashboard/collections';
 import { CollectionDetail } from '../pages/dashboard/collections/detail';
 import { DashboardHome } from '../pages/dashboard/home';
-import { MediaDetail } from '../pages/dashboard/media-detail';
+import { AssetDetail } from '../pages/dashboard/media-detail';
 import { PluginDetail } from '../pages/dashboard/plugins/detail';
 import { Plugins } from '../pages/dashboard/plugins/index';
 import { SearchResults } from '../pages/dashboard/search-results';
@@ -85,12 +85,12 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/media/:id"
+        path="/assets/:id"
         element={
           <SetupGuard>
             <AuthGuard>
               <DashboardLayout>
-                <MediaDetail />
+                <AssetDetail />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

@@ -89,7 +89,7 @@ export class UrlSigningService {
       urlParams.set('fit', fit);
     }
 
-    const finalPath = `/m/${assetId}/${filename}?${urlParams.toString()}`;
+    const finalPath = `/a/${assetId}/${filename}?${urlParams.toString()}`;
     const url = new URL(finalPath, this.configService.get('server.baseUrl'))
       .href;
     return url;

@@ -32,7 +32,7 @@ export function AssetTableRow({
   return (
     <TableRow
       className="cursor-pointer hover:bg-muted/50"
-      onClick={() => navigate(`/media/${id}`)}
+      onClick={() => navigate(`/assets/${id}`)}
     >
       {multiSelect && (
         <TableCell onClick={handleCheckboxClick}>
