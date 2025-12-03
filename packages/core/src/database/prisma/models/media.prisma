@@ -9,39 +9,39 @@ model Collection {
   // parentId    String?
   // parent     Collection?                @relation("CollectionHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   // children   Collection[]               @relation("CollectionHierarchy")
-  containers MediaContainerCollection[]
+  assets AssetCollection[]
 
   // @@index([parentId])
 }
 
-model MediaContainerCollection {
-  containerId  String
-  container    MediaContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+model AssetCollection {
+  assetId      String
+  asset        Asset      @relation(fields: [assetId], references: [id], onDelete: Cascade)
   collectionId String
-  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  createdAt    DateTime       @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 
-  @@unique([containerId, collectionId])
+  @@unique([assetId, collectionId])
   @@index([collectionId])
-  @@index([containerId])
+  @@index([assetId])
 }
 
-model MediaContainer {
-  id        String               @id @default(cuid(2))
+model Asset {
+  id        String      @id @default(cuid(2))
   name      String
-  status    MediaContainerStatus
-  /// The primary media type hosted by the container
-  type      MediaType
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
+  status    AssetStatus
+  /// The primary media type hosted by the asset
+  type      AssetType
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   deletedAt DateTime?
 
   storageUnitId String
   storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id])
 
-  assets           MediaAsset[]
+  variants         AssetVariant[]
   searchIndexItems SearchIndexItem[]
-  collections      MediaContainerCollection[]
+  collections      AssetCollection[]
 
   @@index([status])
   @@index([storageUnitId])
@@ -53,16 +53,16 @@ model UploadToken {
   createdAt DateTime @default(now())
   expiresAt DateTime
 
-  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
-  mediaAssetId String     @unique
+  assetVariant   AssetVariant @relation(fields: [assetVariantId], references: [id], onDelete: Cascade)
+  assetVariantId String       @unique
 
   @@index([expiresAt])
 }
 
-model MediaAsset {
-  id                  String            @id @default(cuid(2))
-  variant             MediaAssetVariant @default(PRIMARY)
-  status              MediaAssetStatus
+model AssetVariant {
+  id                  String             @id @default(cuid(2))
+  variant             AssetVariantType   @default(PRIMARY)
+  status              AssetVariantStatus
   /// Names of the classifiers to run on the uploaded asset after processing
   classifiersOnUpload String[]
 
@@ -78,35 +78,35 @@ model MediaAsset {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  containerId    String
-  container      MediaContainer  @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  assetId        String
+  asset          Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
   uploadToken    UploadToken?
   classifierRuns ClassifierRun[]
 
-  @@index([containerId, status])
+  @@index([assetId, status])
 }
 
-enum MediaAssetVariant {
+enum AssetVariantType {
   PRIMARY
   THUMBNAIL
 }
 
-enum MediaContainerStatus {
-  /// The container is waiting for the original asset to be uploaded
+enum AssetStatus {
+  /// The asset is waiting for the original variant to be uploaded
   WAITING_FOR_UPLOAD
   /// One or more variants are being processed
   PROCESSING
-  /// The entire container is ready for use
+  /// The entire asset is ready for use
   READY
-  /// The original asset failed to upload
+  /// The original variant failed to upload
   FAILED
   /// One or more variants failed to process, but some are ready for use
   PARTIALLY_FAILED
-  /// The container has been soft deleted
+  /// The asset has been soft deleted
   DELETED
 }
 
-enum MediaAssetStatus {
+enum AssetVariantStatus {
   /// The variant is waiting for an asset to be uploaded
   WAITING_FOR_UPLOAD
   /// The variant is being processed
@@ -117,6 +117,6 @@ enum MediaAssetStatus {
   FAILED
 }
 
-enum MediaType {
+enum AssetType {
   IMAGE
 }

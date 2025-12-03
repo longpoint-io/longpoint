@@ -1,18 +1,18 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 export interface SystemStatusParams {
-  totalContainers: number;
+  totalAssets: number;
 }
 
 @ApiSchema({ name: 'SystemStatus' })
 export class SystemStatusDto {
   @ApiProperty({
-    description: 'Total number of ready media containers',
+    description: 'Total number of ready assets',
     example: 150,
   })
-  totalContainers: number;
+  totalAssets: number;
 
   constructor(params: SystemStatusParams) {
-    this.totalContainers = params.totalContainers;
+    this.totalAssets = params.totalAssets;
   }
 }

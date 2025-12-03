@@ -1,5 +1,5 @@
-import { MediaGrid } from '@/components/media-grid';
-import { MediaTable } from '@/components/media-table';
+import { AssetGrid } from '@/components/asset-grid';
+import { AssetTable } from '@/components/asset-table';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
@@ -75,9 +75,8 @@ export function CollectionDetail() {
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [removeContainersDialogOpen, setRemoveContainersDialogOpen] =
-    useState(false);
-  const [selectedContainerIds, setSelectedContainerIds] = useState<Set<string>>(
+  const [removeAssetsDialogOpen, setRemoveAssetsDialogOpen] = useState(false);
+  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(
     new Set()
   );
   const [viewType, setViewType] = useState<'grid' | 'table'>(() => {
@@ -109,16 +108,16 @@ export function CollectionDetail() {
     enabled: !!id,
   });
 
-  const { data: containersData, isLoading: isLoadingContainers } = useQuery({
-    queryKey: ['media-containers', 'collection', id],
+  const { data: assetsData, isLoading: isLoadingAssets } = useQuery({
+    queryKey: ['assets', 'collection', id],
     queryFn: async () => {
-      const results = await client.media.listMediaContainers({
+      const results = await client.assets.listAssets({
         collectionIds: id ? [id] : undefined,
         pageSize: 100,
       });
-      const links = await client.media.generateLinks({
-        containers: results.items.map((item) => ({
-          containerId: item.id,
+      const links = await client.assets.generateLinks({
+        assets: results.items.map((item) => ({
+          assetId: item.id,
           w: 500,
         })),
       });
@@ -177,23 +176,23 @@ export function CollectionDetail() {
     },
   });
 
-  const removeContainersMutation = useMutation({
-    mutationFn: (containerIds: string[]) =>
-      client.collections.removeContainersFromCollection(id!, {
-        containerIds,
+  const removeAssetsMutation = useMutation({
+    mutationFn: (assetIds: string[]) =>
+      client.collections.removeAssetsFromCollection(id!, {
+        assetIds,
       }),
     onSuccess: () => {
-      toast.success('Containers removed from collection successfully');
+      toast.success('Assets removed from collection successfully');
       queryClient.invalidateQueries({ queryKey: ['collection', id] });
       queryClient.invalidateQueries({
-        queryKey: ['media-containers', 'collection', id],
+        queryKey: ['assets', 'collection', id],
       });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
-      setSelectedContainerIds(new Set());
-      setRemoveContainersDialogOpen(false);
+      setSelectedAssetIds(new Set());
+      setRemoveAssetsDialogOpen(false);
     },
     onError: (error) => {
-      toast.error('Failed to remove containers from collection', {
+      toast.error('Failed to remove assets from collection', {
         description:
           error instanceof Error
             ? error.message
@@ -210,8 +209,8 @@ export function CollectionDetail() {
     updateMutation.mutate(data);
   };
 
-  const handleRemoveContainers = () => {
-    removeContainersMutation.mutate(Array.from(selectedContainerIds));
+  const handleRemoveAssets = () => {
+    removeAssetsMutation.mutate(Array.from(selectedAssetIds));
   };
 
   if (isLoading) {
@@ -241,8 +240,8 @@ export function CollectionDetail() {
     );
   }
 
-  const containers = containersData?.results.items || [];
-  const links = containersData?.links || {};
+  const assets = assetsData?.results.items || [];
+  const links = assetsData?.links || {};
 
   return (
     <div className="space-y-6">
@@ -284,7 +283,7 @@ export function CollectionDetail() {
         <div className="h-4 w-px bg-border" />
         <div className="flex items-center gap-2">
           <span className="font-medium">Items:</span>
-          <span>{collection.mediaContainerCount}</span>
+          <span>{collection.assetCount}</span>
         </div>
         <div className="h-4 w-px bg-border" />
         <div className="flex items-center gap-2">
@@ -300,18 +299,18 @@ export function CollectionDetail() {
         </div>
       </div>
 
-      {/* Media Containers Section */}
+      {/* Assets Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {selectedContainerIds.size > 0 && (
+            {selectedAssetIds.size > 0 && (
               <span className="text-sm text-muted-foreground">
-                {selectedContainerIds.size} selected
+                {selectedAssetIds.size} selected
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {selectedContainerIds.size > 0 && (
+            {selectedAssetIds.size > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -321,14 +320,14 @@ export function CollectionDetail() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => setSelectedContainerIds(new Set())}
+                    onClick={() => setSelectedAssetIds(new Set())}
                   >
                     <ListXIcon />
                     Clear Selection
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
-                    onClick={() => setRemoveContainersDialogOpen(true)}
+                    onClick={() => setRemoveAssetsDialogOpen(true)}
                   >
                     <Trash2 className="h-4 w-4" />
                     Remove from collection
@@ -379,7 +378,7 @@ export function CollectionDetail() {
           </div>
         </div>
 
-        {isLoadingContainers ? (
+        {isLoadingAssets ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6">
             {Array.from({ length: 12 }).map((_, index) => (
               <div key={index} className="space-y-3">
@@ -389,7 +388,7 @@ export function CollectionDetail() {
               </div>
             ))}
           </div>
-        ) : containers.length === 0 ? (
+        ) : assets.length === 0 ? (
           <div className="py-12">
             <Empty>
               <EmptyHeader>
@@ -400,28 +399,28 @@ export function CollectionDetail() {
                   No media in this collection
                 </EmptyTitle>
                 <EmptyDescription className="text-base">
-                  This collection doesn't contain any media containers yet.
+                  This collection doesn't contain any assets yet.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           </div>
         ) : viewType === 'grid' ? (
-          <MediaGrid
-            items={containers}
+          <AssetGrid
+            items={assets}
             links={links}
             isLoading={false}
             multiSelect={true}
-            selectedIds={selectedContainerIds}
-            onSelectionChange={setSelectedContainerIds}
+            selectedIds={selectedAssetIds}
+            onSelectionChange={setSelectedAssetIds}
           />
         ) : (
-          <MediaTable
-            items={containers}
+          <AssetTable
+            items={assets}
             links={links}
             isLoading={false}
             multiSelect={true}
-            selectedIds={selectedContainerIds}
-            onSelectionChange={setSelectedContainerIds}
+            selectedIds={selectedAssetIds}
+            onSelectionChange={setSelectedAssetIds}
           />
         )}
       </div>
@@ -529,37 +528,36 @@ export function CollectionDetail() {
       </Dialog>
 
       <Dialog
-        open={removeContainersDialogOpen}
-        onOpenChange={setRemoveContainersDialogOpen}
+        open={removeAssetsDialogOpen}
+        onOpenChange={setRemoveAssetsDialogOpen}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove Containers from Collection</DialogTitle>
+            <DialogTitle>Remove Assets from Collection</DialogTitle>
             <DialogDescription>
               Are you sure you want to remove{' '}
               <span className="font-semibold">
-                {selectedContainerIds.size} container
-                {selectedContainerIds.size !== 1 ? 's' : ''}
+                {selectedAssetIds.size} asset
+                {selectedAssetIds.size !== 1 ? 's' : ''}
               </span>{' '}
               from the collection{' '}
               <span className="font-semibold">{collection.name}</span>? This
-              will not delete the containers, only remove them from this
-              collection.
+              will not delete the assets, only remove them from this collection.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setRemoveContainersDialogOpen(false)}
-              disabled={removeContainersMutation.isPending}
+              onClick={() => setRemoveAssetsDialogOpen(false)}
+              disabled={removeAssetsMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={handleRemoveContainers}
-              disabled={removeContainersMutation.isPending}
-              isLoading={removeContainersMutation.isPending}
+              onClick={handleRemoveAssets}
+              disabled={removeAssetsMutation.isPending}
+              isLoading={removeAssetsMutation.isPending}
             >
               Remove
             </Button>

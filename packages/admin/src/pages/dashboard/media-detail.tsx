@@ -1,4 +1,4 @@
-import { MediaType } from '@/components/media-type';
+import { AssetType } from '@/components/asset-type';
 import { useClient } from '@/hooks/common';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { components } from '@longpoint/sdk';
@@ -68,14 +68,14 @@ import * as z from 'zod';
 
 type AddToCollectionComboboxProps = {
   client: Longpoint;
-  media: components['schemas']['MediaContainer'] | undefined;
+  asset: components['schemas']['Asset'] | undefined;
   onApply: (collectionIds: string[]) => void;
   onClose: () => void;
 };
 
 function AddToCollectionCombobox({
   client,
-  media,
+  asset,
   onApply,
   onClose,
 }: AddToCollectionComboboxProps) {
@@ -89,15 +89,15 @@ function AddToCollectionCombobox({
   >(new Set());
 
   const currentCollectionIds = new Set(
-    media?.collections?.map((c) => c.id) || []
+    asset?.collections?.map((c) => c.id) || []
   );
 
   // Initialize selected collections with current ones
   useEffect(() => {
-    if (media?.collections) {
-      setSelectedCollectionIds(new Set(media.collections.map((c) => c.id)));
+    if (asset?.collections) {
+      setSelectedCollectionIds(new Set(asset.collections.map((c) => c.id)));
     }
-  }, [media]);
+  }, [asset]);
 
   // Get current collections (the ones the container is already in)
   const currentCollections = collections.filter((collection) =>
@@ -300,8 +300,8 @@ export function MediaDetail() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['media', id],
-    queryFn: () => client.media.getMedia(id!),
+    queryKey: ['assets', id],
+    queryFn: () => client.assets.getAsset(id!),
     enabled: !!id,
   });
 
@@ -316,10 +316,10 @@ export function MediaDetail() {
 
   const deleteMutation = useMutation({
     mutationFn: () =>
-      client.media.deleteMedia(id!, { permanently: permanentlyDelete }),
+      client.assets.deleteAsset(id!, { permanently: permanentlyDelete }),
     onSuccess: () => {
       toast.success('Media deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['media-containers'] });
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setDeleteDialogOpen(false);
       setPermanentlyDelete(false);
@@ -337,11 +337,11 @@ export function MediaDetail() {
 
   const renameMutation = useMutation({
     mutationFn: (data: RenameFormData) =>
-      client.media.updateMedia(id!, { name: data.name }),
+      client.assets.updateAsset(id!, { name: data.name }),
     onSuccess: () => {
       toast.success('Media renamed successfully');
-      queryClient.invalidateQueries({ queryKey: ['media', id] });
-      queryClient.invalidateQueries({ queryKey: ['media-containers'] });
+      queryClient.invalidateQueries({ queryKey: ['assets', id] });
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
       setRenameDialogOpen(false);
     },
     onError: (error) => {
@@ -356,12 +356,12 @@ export function MediaDetail() {
 
   const updateCollectionsMutation = useMutation({
     mutationFn: (collectionIds: string[]) => {
-      return client.media.updateMedia(id!, { collectionIds });
+      return client.assets.updateAsset(id!, { collectionIds });
     },
     onSuccess: () => {
       toast.success('Collections updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['media', id] });
-      queryClient.invalidateQueries({ queryKey: ['media-containers'] });
+      queryClient.invalidateQueries({ queryKey: ['assets', id] });
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setAddToCollectionOpen(false);
     },
@@ -507,7 +507,7 @@ export function MediaDetail() {
             <PopoverContent className="w-[300px] p-0" align="end">
               <AddToCollectionCombobox
                 client={client}
-                media={media}
+                asset={media}
                 onApply={(collectionIds) => {
                   updateCollectionsMutation.mutate(collectionIds);
                 }}
@@ -602,7 +602,7 @@ export function MediaDetail() {
                 <Field>
                   <FieldLabel>Type</FieldLabel>
                   <div className="flex items-center gap-2">
-                    <MediaType type={media.type} />
+                    <AssetType type={media.type} />
                   </div>
                 </Field>
                 <Field>

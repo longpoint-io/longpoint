@@ -1,10 +1,10 @@
+import { AssetNotFound } from '@/modules/asset';
 import { ConfigService, PrismaService } from '@/modules/common/services';
-import { MediaContainerNotFound } from '@/modules/media';
 import { StorageUnitService } from '@/modules/storage';
 import { StorageProviderEntity } from '@/modules/storage/entities';
 import {
+  getAssetPath,
   getContentType,
-  getMediaContainerPath,
   getMimeType,
 } from '@longpoint/utils/media';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -32,38 +32,38 @@ export class FileDeliveryService {
 
     const pathParts = requestPath.split('/').filter(Boolean);
 
-    // Path format: /m/{mediaContainerId}/{filename}
+    // Path format: /m/{assetId}/{filename}
     if (pathParts.length !== 2) {
       throw new InvalidFilePath(requestPath);
     }
 
-    const containerId = pathParts[0];
+    const assetId = pathParts[0];
     const filename = pathParts[1];
 
-    const pathForSignature = `${containerId}/${filename}`;
+    const pathForSignature = `${assetId}/${filename}`;
     this.urlSigningService.verifySignature(pathForSignature, query);
 
-    const container = await this.prismaService.mediaContainer.findUnique({
+    const asset = await this.prismaService.asset.findUnique({
       where: {
-        id: containerId,
+        id: assetId,
       },
       select: {
         storageUnitId: true,
       },
     });
 
-    if (!container) {
-      throw new MediaContainerNotFound(containerId);
+    if (!asset) {
+      throw new AssetNotFound(assetId);
     }
 
     const storageUnit = await this.storageUnitService.getStorageUnitById(
-      container.storageUnitId
+      asset.storageUnitId
     );
 
     const provider = await storageUnit.getProvider();
 
-    const originalPath = getMediaContainerPath(containerId, {
-      storageUnitId: container.storageUnitId,
+    const originalPath = getAssetPath(assetId, {
+      storageUnitId: asset.storageUnitId,
       prefix: pathPrefix,
       suffix: filename,
     });
@@ -109,8 +109,8 @@ export class FileDeliveryService {
       const outputExt = outputFormat;
 
       const cachePath = await this.getCachePath(
-        containerId,
-        container.storageUnitId,
+        assetId,
+        asset.storageUnitId,
         recipeHash,
         outputExt
       );
@@ -193,12 +193,12 @@ export class FileDeliveryService {
   }
 
   private async getCachePath(
-    containerId: string,
+    assetId: string,
     storageUnitId: string,
     recipeHash: string,
     ext: string
   ) {
-    return getMediaContainerPath(containerId, {
+    return getAssetPath(assetId, {
       storageUnitId,
       prefix: this.configService.get('storage.pathPrefix'),
       suffix: `.cache/${recipeHash}.${ext}`,

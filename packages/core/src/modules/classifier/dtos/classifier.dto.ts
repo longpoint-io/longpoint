@@ -1,9 +1,9 @@
+import { SelectedClassifier } from '@/modules/classifier/classifier.selectors';
 import {
   ConfigSchemaItemsDto,
   ConfigSchemaValueDto,
   type ConfigSchemaForDto,
 } from '@/shared/dtos';
-import { SelectedClassifier } from '@/shared/selectors/classifier.selectors';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { IsClassifierName } from '@longpoint/validations';
 import {

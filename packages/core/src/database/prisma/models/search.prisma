@@ -30,15 +30,15 @@ model SearchIndexItem {
   createdAt  DateTime              @default(now())
   updatedAt  DateTime              @updatedAt
 
-  indexId          String
-  index            SearchIndex     @relation(fields: [indexId], references: [id], onDelete: Cascade)
-  mediaContainerId String?
-  mediaContainer   MediaContainer? @relation(fields: [mediaContainerId], references: [id], onDelete: SetNull)
+  indexId   String
+  index     SearchIndex     @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  assetId   String?
+  asset     Asset? @relation(fields: [assetId], references: [id], onDelete: SetNull)
 
-  @@unique([indexId, mediaContainerId])
+  @@unique([indexId, assetId])
   @@index([indexId])
   @@index([status])
-  @@index([mediaContainerId])
+  @@index([assetId])
 }
 
 enum SearchIndexItemStatus {

@@ -1,7 +1,6 @@
 import { Prisma } from '@/database';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
-import LocalStorageConfig from 'longpoint-plugin-local';
 import type { SelectedStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { ConfigService, PrismaService } from '../../common/services';
@@ -84,28 +83,26 @@ export class StorageUnitService {
   }
 
   /**
-   * Get the storage unit entity for a media container.
+   * Get the storage unit entity for an asset.
    *
-   * @param containerId - The media container id
-   * @returns The storage unit entity for the container
+   * @param assetId - The asset id
+   * @returns The storage unit entity for the asset
    */
-  async getStorageUnitByContainerId(
-    containerId: string
-  ): Promise<StorageUnitEntity> {
-    const container = await this.prismaService.mediaContainer.findUnique({
+  async getStorageUnitByAssetId(assetId: string): Promise<StorageUnitEntity> {
+    const asset = await this.prismaService.asset.findUnique({
       where: {
-        id: containerId,
+        id: assetId,
       },
       select: {
         storageUnitId: true,
       },
     });
 
-    if (!container) {
-      throw new Error(`Media container with id ${containerId} not found`);
+    if (!asset) {
+      throw new Error(`Asset with id ${assetId} not found`);
     }
 
-    return this.getStorageUnitById(container.storageUnitId);
+    return this.getStorageUnitById(asset.storageUnitId);
   }
 
   /**
@@ -164,15 +161,10 @@ export class StorageUnitService {
    */
   private async createDefaultStorageUnit(): Promise<SelectedStorageUnit> {
     const providerId = 'storage-local';
-    const config: ConfigValues<
-      typeof LocalStorageConfig.manifest.configSchema
-    > = {};
 
-    // Create a default config first
     const defaultConfig = await this.storageProviderConfigService.createConfig({
       name: 'Default Config',
       providerId,
-      config,
     });
 
     const storageUnit = await this.prismaService.storageUnit.create({
@@ -233,7 +225,7 @@ export class StorageUnitService {
       take: 100,
       skip: 0,
       cursor: undefined,
-      orderBy: { id: 'desc' },
+      orderBy: [{ id: Prisma.SortOrder.desc }],
     };
 
     const storageUnits = await this.prismaService.storageUnit.findMany({

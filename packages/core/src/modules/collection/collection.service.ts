@@ -1,5 +1,5 @@
 import { Prisma } from '@/database';
-import { selectCollection } from '@/shared/selectors/collection.selectors';
+import { selectCollection } from '@/modules/collection/collection.selectors';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma/prisma.service';
 import { EventPublisher } from '../event';

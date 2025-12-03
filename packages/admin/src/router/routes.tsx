@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { AuthLayout } from '../layouts/auth-layout';
 import { DashboardLayout } from '../layouts/dashboard-layout';
 import { SignIn } from '../pages/auth/sign-in';
-import { Browser } from '../pages/dashboard/browser';
+import { Assets } from '../pages/dashboard/assets';
 import { Classifiers } from '../pages/dashboard/classifiers';
 import { CreateClassifier } from '../pages/dashboard/classifiers/create';
 import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
@@ -61,12 +61,12 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/browser"
+        path="/assets"
         element={
           <SetupGuard>
             <AuthGuard>
               <DashboardLayout>
-                <Browser />
+                <Assets />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

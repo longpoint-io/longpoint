@@ -4,19 +4,16 @@
   "include": [],
   "references": [
     {
-      "path": "../plugins/storage-local"
+      "path": "../devkit"
     },
     {
       "path": "../validations"
     },
     {
-      "path": "../utils"
-    },
-    {
       "path": "../config-schema"
     },
     {
-      "path": "../devkit"
+      "path": "../utils"
     },
     {
       "path": "../types"

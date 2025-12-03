@@ -9,8 +9,8 @@ export type ClassifierEvents =
   (typeof ClassifierEvents)[keyof typeof ClassifierEvents];
 
 export interface ClassifierRunCompleteEventPayload extends EventPayload {
-  mediaContainerId: string;
-  mediaAssetId: string;
+  assetId: string;
+  assetVariantId: string;
   classifierId: string;
   classifierName: string;
   result: JsonObject | null;

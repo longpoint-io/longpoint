@@ -1,14 +1,14 @@
 import { SupportedMimeType } from '@longpoint/types';
 import { join } from 'path';
 
-type MediaType = 'IMAGE';
+type AssetType = 'IMAGE';
 
 /**
- * Parses the mime type into a media type
+ * Parses the mime type into an asset type
  * @param mimeType
- * @returns the media type
+ * @returns the asset type
  */
-export function mimeTypeToMediaType(mimeType: string): MediaType {
+export function mimeTypeToAssetType(mimeType: string): AssetType {
   if (mimeType.startsWith('image/')) {
     return 'IMAGE';
   }
@@ -16,7 +16,7 @@ export function mimeTypeToMediaType(mimeType: string): MediaType {
   throw new Error(`Unsupported media type: ${mimeType}`);
 }
 
-export interface GetMediaContainerPathOptions {
+export interface GetAssetPathOptions {
   /**
    * The storage unit ID to use in the path
    */
@@ -26,7 +26,7 @@ export interface GetMediaContainerPathOptions {
    * @default "units"
    * @example
    * ```
-   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', prefix: 'units' });
+   * getAssetPath('123', { storageUnitId: 'unit-abc', prefix: 'units' });
    * // returns 'units/unit-abc/123'
    * ```
    */
@@ -35,7 +35,7 @@ export interface GetMediaContainerPathOptions {
    * The suffix to add to the path
    * @example
    * ```
-   * getMediaContainerPath('123', { storageUnitId: 'unit-abc', suffix: 'primary.jpg' });
+   * getAssetPath('123', { storageUnitId: 'unit-abc', suffix: 'primary.jpg' });
    * // returns 'units/unit-abc/123/primary.jpg'
    * ```
    */
@@ -43,17 +43,14 @@ export interface GetMediaContainerPathOptions {
 }
 
 /**
- * Gets the storage path for a media container
- * @param containerId The id of the media container
+ * Gets the storage path for an asset
+ * @param assetId The id of the asset
  * @param options The options for the path, including storageUnitId
- * @returns The path in format: {prefix}/{storageUnitId}/{containerId}/{suffix}
+ * @returns The path in format: {prefix}/{storageUnitId}/{assetId}/{suffix}
  */
-export function getMediaContainerPath(
-  containerId: string,
-  options: GetMediaContainerPathOptions
-) {
+export function getAssetPath(assetId: string, options: GetAssetPathOptions) {
   const { storageUnitId, prefix = 'units', suffix = '' } = options;
-  return join(prefix, storageUnitId, containerId, suffix);
+  return join(prefix, storageUnitId, assetId, suffix);
 }
 
 /**

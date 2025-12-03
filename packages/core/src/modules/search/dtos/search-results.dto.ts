@@ -1,13 +1,13 @@
-import { MediaContainerSummaryDto } from '@/modules/media/dtos/containers/media-container-summary.dto';
+import { AssetSummaryDto } from '@/modules/asset/dtos/containers/asset-summary.dto';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({ name: 'SearchResults' })
 export class SearchResultsDto {
   @ApiProperty({
     description: 'The search results',
-    type: [MediaContainerSummaryDto],
+    type: [AssetSummaryDto],
   })
-  results: MediaContainerSummaryDto[];
+  results: AssetSummaryDto[];
 
   @ApiProperty({
     description: 'Total number of results',
@@ -15,7 +15,7 @@ export class SearchResultsDto {
   })
   total: number;
 
-  constructor(results: MediaContainerSummaryDto[]) {
+  constructor(results: AssetSummaryDto[]) {
     this.results = results;
     this.total = results.length;
   }

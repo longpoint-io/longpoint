@@ -90,14 +90,14 @@ export function UploadProvider({ children }: UploadProviderProps) {
 
         const uploadPromises = supportedFiles.map(async (file) => {
           try {
-            const container = await client.media.createMedia({
+            const asset = await client.assets.createAsset({
               mimeType: file.type as SupportedMimeType,
               name: file.name,
               classifiersOnUpload: classifiers,
               storageUnitId,
             });
 
-            await uploadHook.uploadFile(file, container.url);
+            await uploadHook.uploadFile(file, asset.url);
           } catch (error) {
             console.error(`Failed to upload ${file.name}:`, error);
             const errorMessage =

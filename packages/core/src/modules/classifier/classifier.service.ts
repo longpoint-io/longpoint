@@ -1,10 +1,10 @@
 import { ConfigValues } from '@longpoint/config-schema';
-import { Injectable } from '@nestjs/common';
-import { selectClassifier } from '../../shared/selectors/classifier.selectors';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { AssetService } from '../asset';
 import { PrismaService } from '../common/services';
 import { EventPublisher } from '../event';
-import { MediaContainerService } from '../media';
 import { ClassifierNotFound } from './classifier.errors';
+import { selectClassifier } from './classifier.selectors';
 import { CreateClassifierDto } from './dtos/create-classifier.dto';
 import { ClassifierEntity } from './entities';
 import { ClassificationProviderService } from './services/classification-provider.service';
@@ -14,7 +14,8 @@ export class ClassifierService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly classificationProviderService: ClassificationProviderService,
-    private readonly mediaContainerService: MediaContainerService,
+    @Inject(forwardRef(() => AssetService))
+    private readonly assetService: AssetService,
     private readonly eventPublisher: EventPublisher
   ) {}
 
@@ -47,7 +48,7 @@ export class ClassifierService {
       modelInput: processedModelInput,
       prismaService: this.prismaService,
       classificationProviderService: this.classificationProviderService,
-      mediaContainerService: this.mediaContainerService,
+      assetService: this.assetService,
       eventPublisher: this.eventPublisher,
     });
 
@@ -77,7 +78,7 @@ export class ClassifierService {
       prismaService: this.prismaService,
       classificationProviderService: this.classificationProviderService,
       modelInput: classifier.modelInput as ConfigValues,
-      mediaContainerService: this.mediaContainerService,
+      assetService: this.assetService,
       eventPublisher: this.eventPublisher,
     });
   }
@@ -106,7 +107,7 @@ export class ClassifierService {
           classificationProvider,
           prismaService: this.prismaService,
           classificationProviderService: this.classificationProviderService,
-          mediaContainerService: this.mediaContainerService,
+          assetService: this.assetService,
           eventPublisher: this.eventPublisher,
         });
       })

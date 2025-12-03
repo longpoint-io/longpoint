@@ -20,7 +20,7 @@ model StorageUnit {
 
   storageProviderConfigId String
   storageProviderConfig   StorageProviderConfig @relation(fields: [storageProviderConfigId], references: [id], onDelete: Cascade)
-  mediaContainers         MediaContainer[]
+  assets                  Asset[]
 
   @@unique([storageProviderConfigId, name])
   @@index([isDefault])

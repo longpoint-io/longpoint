@@ -58,6 +58,83 @@ export interface paths {
         patch: operations["updateClassifier"];
         trace?: never;
     };
+    "/asset-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate links for assets */
+        post: operations["generateLinks"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List assets */
+        get: operations["listAssets"];
+        put?: never;
+        /**
+         * Create an asset
+         * @description Creates an empty asset that is ready to receive an upload.
+         */
+        post: operations["createAsset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/assets/{assetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an asset */
+        get: operations["getAsset"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete an asset
+         * @description All associated variants will be deleted.
+         */
+        delete: operations["deleteAsset"];
+        options?: never;
+        head?: never;
+        /** Update an asset */
+        patch: operations["updateAsset"];
+        trace?: never;
+    };
+    "/assets/{assetId}/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Upload an asset variant */
+        put: operations["upload"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/collections": {
         parameters: {
             query?: never;
@@ -101,7 +178,7 @@ export interface paths {
         patch: operations["updateCollection"];
         trace?: never;
     };
-    "/collections/{id}/containers": {
+    "/collections/{id}/assets": {
         parameters: {
             query?: never;
             header?: never;
@@ -110,87 +187,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Add media containers to a collection */
-        post: operations["addContainersToCollection"];
-        /** Remove media containers from a collection */
-        delete: operations["removeContainersFromCollection"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/media/containers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List media containers */
-        get: operations["listMediaContainers"];
-        put?: never;
-        /**
-         * Create a media container
-         * @description Creates an empty container that is ready to receive an upload.
-         */
-        post: operations["createMedia"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/media/containers/{containerId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a media container */
-        get: operations["getMedia"];
-        put?: never;
-        post?: never;
-        /**
-         * Delete a media container
-         * @description All associated assets will be deleted.
-         */
-        delete: operations["deleteMedia"];
-        options?: never;
-        head?: never;
-        /** Update a media container */
-        patch: operations["updateMedia"];
-        trace?: never;
-    };
-    "/media/containers/{containerId}/upload": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Upload an asset to a media container */
-        put: operations["upload"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/media/links": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Generate links for media containers */
-        post: operations["generateLinks"];
-        delete?: never;
+        /** Add assets to a collection */
+        post: operations["addAssetsToCollection"];
+        /** Remove assets from a collection */
+        delete: operations["removeAssetsFromCollection"];
         options?: never;
         head?: never;
         patch?: never;
@@ -462,14 +462,170 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        AddContainersToCollection: {
+        AddAssetsToCollection: {
             /**
-             * @description The IDs of the media containers to add to the collection
+             * @description The IDs of the assets to add to the collection
              * @example [
              *       "mbjq36xe6397dsi6x9nq4ghc"
              *     ]
              */
-            containerIds: string[];
+            assetIds: string[];
+        };
+        Asset: {
+            /** @description Collections this asset belongs to */
+            collections: components["schemas"]["CollectionReference"][];
+            /**
+             * Format: date-time
+             * @description When the asset was created
+             * @example 2025-12-03T17:56:08.460Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the asset
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description A descriptive name for the underlying asset
+             * @example Blissful Fields
+             */
+            name: string;
+            /**
+             * @description The status of the asset
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /**
+             * @description The primary asset type.
+             * @example IMAGE
+             * @enum {string}
+             */
+            type: "IMAGE";
+            /**
+             * Format: date-time
+             * @description When the asset was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
+            /**
+             * @description The accessible asset variants
+             * @example {
+             *       "primary": {
+             *         "id": "okie3r17vhfswyyp38v9lrsl",
+             *         "variant": "PRIMARY",
+             *         "status": "READY",
+             *         "mimeType": "image/jpeg",
+             *         "width": 1920,
+             *         "height": 1080,
+             *         "size": 950120,
+             *         "aspectRatio": 1.777777,
+             *         "url": "https://longpoint.example.com/storage/default/abc123/original.jpg"
+             *       }
+             *     }
+             */
+            variants: components["schemas"]["AssetVariants"];
+        };
+        AssetSummary: {
+            /**
+             * Format: date-time
+             * @description When the asset was created
+             * @example 2025-12-03T17:56:08.460Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the asset
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description A descriptive name for the underlying asset
+             * @example Blissful Fields
+             */
+            name: string;
+            /**
+             * @description The status of the asset
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /**
+             * @description The primary asset type.
+             * @example IMAGE
+             * @enum {string}
+             */
+            type: "IMAGE";
+            /**
+             * Format: date-time
+             * @description When the asset was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
+        };
+        AssetVariant: {
+            /**
+             * @description The aspect ratio of the asset variant, if applicable
+             * @example 1.777777
+             */
+            aspectRatio: number | null;
+            /** @description The classifier runs for the asset variant */
+            classifierRuns: components["schemas"]["ClassifierRun"][];
+            /**
+             * @description The height of the asset variant in pixels, if applicable
+             * @example 100
+             */
+            height: number | null;
+            /**
+             * @description The ID of the asset variant
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description Freeform metadata that can be populated by classifiers or manually edited
+             * @example {
+             *       "my-classifier": {
+             *         "tags": [
+             *           "person",
+             *           "car",
+             *           "tree"
+             *         ]
+             *       }
+             *     }
+             */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * @description The MIME type of the asset variant
+             * @example image/jpeg
+             * @enum {string}
+             */
+            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+            /**
+             * @description The size of the asset variant in bytes
+             * @example 100
+             */
+            size: number | null;
+            /**
+             * @description The status of the asset variant
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED";
+            /**
+             * @description The URL of the asset variant
+             * @example https://longpoint.example.com/storage/default/abc123/original.jpg
+             */
+            url: string | null;
+            /**
+             * @description The width of the asset variant in pixels, if applicable
+             * @example 100
+             */
+            width: number | null;
+        };
+        AssetVariants: {
+            /** @description The primary asset variant */
+            primary: components["schemas"]["AssetVariant"];
         };
         ClassificationProvider: {
             /** @description The schema for classifier input */
@@ -686,6 +842,11 @@ export interface components {
         };
         Collection: {
             /**
+             * @description The number of assets in the collection
+             * @example 42
+             */
+            assetCount: number;
+            /**
              * Format: date-time
              * @description When the collection was created
              * @example 2025-11-30T04:25:50.489Z
@@ -696,11 +857,6 @@ export interface components {
              * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
-            /**
-             * @description The number of media containers in the collection
-             * @example 42
-             */
-            mediaContainerCount: number;
             /**
              * @description The name of the collection
              * @example 2025 Highlights
@@ -714,6 +870,11 @@ export interface components {
             updatedAt: string;
         };
         CollectionDetails: {
+            /**
+             * @description The number of assets in the collection
+             * @example 42
+             */
+            assetCount: number;
             /**
              * Format: date-time
              * @description When the collection was created
@@ -730,11 +891,6 @@ export interface components {
              * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
-            /**
-             * @description The number of media containers in the collection
-             * @example 42
-             */
-            mediaContainerCount: number;
             /**
              * @description The name of the collection
              * @example 2025 Highlights
@@ -827,6 +983,67 @@ export interface components {
              */
             type: string;
         };
+        CreateAsset: {
+            /**
+             * @description Names of classifiers to run on the uploaded variant after processing
+             * @example [
+             *       "general-tagging"
+             *     ]
+             */
+            classifiersOnUpload?: string[];
+            /**
+             * @description IDs of collections the asset is a member of.
+             * @example [
+             *       "mbjq36xe6397dsi6x9nq4ghc"
+             *     ]
+             */
+            collectionIds?: string[];
+            /**
+             * @description The MIME type of the primary variant
+             * @example image/jpeg
+             * @enum {string}
+             */
+            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+            /**
+             * @description A descriptive name for the underlying asset
+             * @example Blissful Fields
+             */
+            name?: string;
+            /**
+             * @description The ID of the storage unit to use. If not provided, the default storage unit will be used.
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            storageUnitId?: string;
+        };
+        CreateAssetResponse: {
+            /**
+             * Format: date-time
+             * @description The date and time the upload URL expires.
+             * @example 2025-11-14T23:09:41.289Z
+             */
+            expiresAt: string;
+            /**
+             * @description The ID of the asset
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description A descriptive name for the underlying asset
+             * @example Blissful Fields
+             */
+            name: string;
+            /**
+             * @description The status of the asset
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /**
+             * @description The signed URL to upload the variant with.
+             * @example https://longpoint.example.com/api/assets/containers/abc123/upload?token=abcdefghijklmnopqrst
+             */
+            url: string;
+        };
         CreateClassifier: {
             /**
              * @description A brief description of the classifier
@@ -862,67 +1079,6 @@ export interface components {
              * @example 2025 Highlights
              */
             name: string;
-        };
-        CreateMediaContainer: {
-            /**
-             * @description Names of classifiers to run on the uploaded asset after processing
-             * @example [
-             *       "general-tagging"
-             *     ]
-             */
-            classifiersOnUpload?: string[];
-            /**
-             * @description IDs of collections the container is a member of.
-             * @example [
-             *       "mbjq36xe6397dsi6x9nq4ghc"
-             *     ]
-             */
-            collectionIds?: string[];
-            /**
-             * @description The MIME type of the primary asset
-             * @example image/jpeg
-             * @enum {string}
-             */
-            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-            /**
-             * @description A descriptive name for the underlying media
-             * @example Blissful Fields
-             */
-            name?: string;
-            /**
-             * @description The ID of the storage unit to use. If not provided, the default storage unit will be used.
-             * @example mbjq36xe6397dsi6x9nq4ghc
-             */
-            storageUnitId?: string;
-        };
-        CreateMediaContainerResponse: {
-            /**
-             * Format: date-time
-             * @description The date and time the upload URL expires.
-             * @example 2025-11-14T23:09:41.289Z
-             */
-            expiresAt: string;
-            /**
-             * @description The ID of the media container
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description A descriptive name for the underlying media
-             * @example Blissful Fields
-             */
-            name: string;
-            /**
-             * @description The status of the media container
-             * @example WAITING_FOR_UPLOAD
-             * @enum {string}
-             */
-            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /**
-             * @description The signed URL to upload the asset with.
-             * @example https://longpoint.example.com/api/media/abc123/upload?token=abcdefghijklmnopqrst
-             */
-            url: string;
         };
         CreateSearchIndex: {
             /**
@@ -987,20 +1143,20 @@ export interface components {
              */
             storageConfigId: string;
         };
-        DeleteMediaContainer: {
+        DeleteAsset: {
             /**
-             * @description Whether to permanently delete the media container
+             * @description Whether to permanently delete the asset
              * @default false
              * @example false
              */
             permanently: boolean;
         };
-        GenerateContainerLink: {
+        GenerateAssetLink: {
             /**
-             * @description The ID of the media container
+             * @description The ID of the asset
              * @example r2qwyd76nvd98cu6ewg8ync2
              */
-            containerId: string;
+            assetId: string;
             /**
              * @description The output format of the transformed image
              * @example webp
@@ -1030,18 +1186,18 @@ export interface components {
             w?: number;
         };
         GenerateMediaLinks: {
-            /** @description The containers to generate links for */
-            containers: components["schemas"]["GenerateContainerLink"][];
+            /** @description The assets to generate links for */
+            assets: components["schemas"]["GenerateAssetLink"][];
+        };
+        ListAssetsResponse: {
+            /** @description The assets in the response */
+            items: components["schemas"]["AssetSummary"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
         };
         ListCollectionsResponse: {
             /** @description The collections in the response */
             items: components["schemas"]["Collection"][];
-            /** @description The metadata for pagination */
-            metadata: components["schemas"]["PaginationMetadata"];
-        };
-        ListMediaContainersResponse: {
-            /** @description The media containers in the response */
-            items: components["schemas"]["MediaContainerSummary"][];
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
@@ -1050,162 +1206,6 @@ export interface components {
             items: components["schemas"]["StorageUnitSummary"][];
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
-        };
-        MediaAsset: {
-            /**
-             * @description The aspect ratio of the media asset, if applicable
-             * @example 1.777777
-             */
-            aspectRatio: number | null;
-            /** @description The classifier runs for the media asset */
-            classifierRuns: components["schemas"]["ClassifierRun"][];
-            /**
-             * @description The height of the media asset in pixels, if applicable
-             * @example 100
-             */
-            height: number | null;
-            /**
-             * @description The ID of the media asset
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description Freeform metadata that can be populated by classifiers or manually edited
-             * @example {
-             *       "my-classifier": {
-             *         "tags": [
-             *           "person",
-             *           "car",
-             *           "tree"
-             *         ]
-             *       }
-             *     }
-             */
-            metadata: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * @description The MIME type of the media asset
-             * @example image/jpeg
-             * @enum {string}
-             */
-            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-            /**
-             * @description The size of the media asset in bytes
-             * @example 100
-             */
-            size: number | null;
-            /**
-             * @description The status of the media asset
-             * @example WAITING_FOR_UPLOAD
-             * @enum {string}
-             */
-            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED";
-            /**
-             * @description The URL of the media asset
-             * @example https://longpoint.example.com/storage/default/abc123/original.jpg
-             */
-            url: string | null;
-            /**
-             * @description The width of the media asset in pixels, if applicable
-             * @example 100
-             */
-            width: number | null;
-        };
-        MediaAssetVariants: {
-            /** @description The primary media asset */
-            primary: components["schemas"]["MediaAsset"];
-        };
-        MediaContainer: {
-            /** @description Collections this container belongs to */
-            collections: components["schemas"]["CollectionReference"][];
-            /**
-             * Format: date-time
-             * @description When the media container was created
-             * @example 2025-12-02T22:11:59.314Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the media container
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description A descriptive name for the underlying media
-             * @example Blissful Fields
-             */
-            name: string;
-            /**
-             * @description The status of the media container
-             * @example WAITING_FOR_UPLOAD
-             * @enum {string}
-             */
-            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /**
-             * @description The primary media type.
-             * @example IMAGE
-             * @enum {string}
-             */
-            type: "IMAGE";
-            /**
-             * Format: date-time
-             * @description When the media container was last updated
-             * @example 2025-11-28T06:05:39.257Z
-             */
-            updatedAt: string;
-            /**
-             * @description The accessible media assets in the container
-             * @example {
-             *       "primary": {
-             *         "id": "okie3r17vhfswyyp38v9lrsl",
-             *         "variant": "PRIMARY",
-             *         "status": "READY",
-             *         "mimeType": "image/jpeg",
-             *         "width": 1920,
-             *         "height": 1080,
-             *         "size": 950120,
-             *         "aspectRatio": 1.777777,
-             *         "url": "https://longpoint.example.com/storage/default/abc123/original.jpg"
-             *       }
-             *     }
-             */
-            variants: components["schemas"]["MediaAssetVariants"];
-        };
-        MediaContainerSummary: {
-            /**
-             * Format: date-time
-             * @description When the media container was created
-             * @example 2025-12-02T22:11:59.314Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the media container
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description A descriptive name for the underlying media
-             * @example Blissful Fields
-             */
-            name: string;
-            /**
-             * @description The status of the media container
-             * @example WAITING_FOR_UPLOAD
-             * @enum {string}
-             */
-            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /**
-             * @description The primary media type.
-             * @example IMAGE
-             * @enum {string}
-             */
-            type: "IMAGE";
-            /**
-             * Format: date-time
-             * @description When the media container was last updated
-             * @example 2025-11-28T06:05:39.257Z
-             */
-            updatedAt: string;
         };
         PaginationMetadata: {
             /**
@@ -1279,14 +1279,14 @@ export interface components {
              */
             id: string;
         };
-        RemoveContainersFromCollection: {
+        RemoveAssetsFromCollection: {
             /**
-             * @description The IDs of the media containers to remove from the collection
+             * @description The IDs of the assets to remove from the collection
              * @example [
              *       "mbjq36xe6397dsi6x9nq4ghc"
              *     ]
              */
-            containerIds: string[];
+            assetIds: string[];
         };
         SearchIndex: {
             /**
@@ -1295,6 +1295,11 @@ export interface components {
              * @example true
              */
             active: boolean;
+            /**
+             * @description The number of assets indexed
+             * @example 100
+             */
+            assetsIndexed: number;
             /** @description The configuration values for the index */
             config: {
                 [key: string]: unknown;
@@ -1314,11 +1319,6 @@ export interface components {
              * @example 2025-01-01T00:00:00.000Z
              */
             lastIndexedAt: string | null;
-            /**
-             * @description The number of media items indexed
-             * @example 100
-             */
-            mediaIndexed: number;
             /**
              * @description The name of the index
              * @example my-index
@@ -1343,7 +1343,7 @@ export interface components {
         };
         SearchResults: {
             /** @description The search results */
-            results: components["schemas"]["MediaContainerSummary"][];
+            results: components["schemas"]["AssetSummary"][];
             /**
              * @description Total number of results
              * @example 5
@@ -1534,10 +1534,24 @@ export interface components {
         };
         SystemStatus: {
             /**
-             * @description Total number of ready media containers
+             * @description Total number of ready assets
              * @example 150
              */
-            totalContainers: number;
+            totalAssets: number;
+        };
+        UpdateAsset: {
+            /**
+             * @description IDs of collections the asset is a member of.
+             * @example [
+             *       "mbjq36xe6397dsi6x9nq4ghc"
+             *     ]
+             */
+            collectionIds?: string[];
+            /**
+             * @description A descriptive name for the underlying asset
+             * @example Blissful Fields
+             */
+            name?: string;
         };
         UpdateClassifier: {
             /**
@@ -1572,20 +1586,6 @@ export interface components {
             /**
              * @description The name of the collection
              * @example 2025 Highlights
-             */
-            name?: string;
-        };
-        UpdateMediaContainer: {
-            /**
-             * @description IDs of collections the container is a member of.
-             * @example [
-             *       "mbjq36xe6397dsi6x9nq4ghc"
-             *     ]
-             */
-            collectionIds?: string[];
-            /**
-             * @description A descriptive name for the underlying media
-             * @example Blissful Fields
              */
             name?: string;
         };
@@ -1890,6 +1890,247 @@ export interface operations {
             };
         };
     };
+    generateLinks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateMediaLinks"];
+            };
+        };
+        responses: {
+            /** @description The generated links */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    listAssets: {
+        parameters: {
+            query?: {
+                /** @description Filter assets by collection IDs */
+                collectionIds?: string[];
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListAssetsResponse"];
+                };
+            };
+        };
+    };
+    createAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAsset"];
+            };
+        };
+        responses: {
+            /** @description Use the returned signed url to upload the original variant. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateAssetResponse"];
+                };
+            };
+        };
+    };
+    getAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Asset"];
+                };
+            };
+            /** @description Asset not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Asset with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAsset"];
+            };
+        };
+        responses: {
+            /** @description The asset was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAsset"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Asset"];
+                };
+            };
+            /** @description Asset not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Asset with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+            /** @description The asset already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_ALREADY_EXISTS",
+                     *       "messages": [
+                     *         "Asset with name \"My Asset\" already exists"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    upload: {
+        parameters: {
+            query: {
+                /** @description The token used to upload the asset */
+                token: string;
+            };
+            header?: never;
+            path: {
+                assetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The variant was uploaded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Asset not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Asset with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
     listCollections: {
         parameters: {
             query?: {
@@ -2042,7 +2283,7 @@ export interface operations {
             };
         };
     };
-    addContainersToCollection: {
+    addAssetsToCollection: {
         parameters: {
             query?: never;
             header?: never;
@@ -2053,11 +2294,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AddContainersToCollection"];
+                "application/json": components["schemas"]["AddAssetsToCollection"];
             };
         };
         responses: {
-            /** @description The media containers were added to the collection */
+            /** @description The assets were added to the collection */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2084,7 +2325,7 @@ export interface operations {
             };
         };
     };
-    removeContainersFromCollection: {
+    removeAssetsFromCollection: {
         parameters: {
             query?: never;
             header?: never;
@@ -2095,11 +2336,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RemoveContainersFromCollection"];
+                "application/json": components["schemas"]["RemoveAssetsFromCollection"];
             };
         };
         responses: {
-            /** @description The media containers were removed from the collection */
+            /** @description The assets were removed from the collection */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2121,247 +2362,6 @@ export interface operations {
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    listMediaContainers: {
-        parameters: {
-            query?: {
-                /** @description Filter containers by collection IDs */
-                collectionIds?: string[];
-                /** @description The cursor to the next page */
-                cursor?: string;
-                /** @description The number of items per page */
-                pageSize?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListMediaContainersResponse"];
-                };
-            };
-        };
-    };
-    createMedia: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateMediaContainer"];
-            };
-        };
-        responses: {
-            /** @description Use the returned signed url to upload the original asset. */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreateMediaContainerResponse"];
-                };
-            };
-        };
-    };
-    getMedia: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                containerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MediaContainer"];
-                };
-            };
-            /** @description Media container not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "Media container with id mbjq36xe6397dsi6x9nq4ghc not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    deleteMedia: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                containerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DeleteMediaContainer"];
-            };
-        };
-        responses: {
-            /** @description The media container was deleted */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    updateMedia: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                containerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateMediaContainer"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MediaContainer"];
-                };
-            };
-            /** @description Media container not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "Media container with id mbjq36xe6397dsi6x9nq4ghc not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-            /** @description The media container already exists */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_ALREADY_EXISTS",
-                     *       "messages": [
-                     *         "Media container with name \"My Container\" already exists"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    upload: {
-        parameters: {
-            query: {
-                /** @description The token used to upload the asset */
-                token: string;
-            };
-            header?: never;
-            path: {
-                containerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The asset was uploaded */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Media container not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "Media container with id mbjq36xe6397dsi6x9nq4ghc not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    generateLinks: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GenerateMediaLinks"];
-            };
-        };
-        responses: {
-            /** @description The generated links */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: string;
                     };
                 };
             };

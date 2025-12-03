@@ -148,7 +148,7 @@ export class S3StorageProvider extends StorageProvider {
 
   /**
    * Normalize a path to an S3 object key.
-   * The path parameter should be in format: {prefix}/{storageUnitId}/{containerId}/...
+   * The path parameter should be in format: {prefix}/{storageUnitId}/{assetId}/...
    * We normalize leading slashes and use the full path as the S3 key.
    */
   private normalizeS3Key(path: string): string {

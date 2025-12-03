@@ -37,7 +37,7 @@ export class LocalStorageProvider extends StorageProvider {
 
   /**
    * Construct the full path for a file.
-   * The path parameter should be in format: {prefix}/{storageUnitId}/{containerId}/...
+   * The path parameter should be in format: {prefix}/{storageUnitId}/{assetId}/...
    * We prepend LOCAL_STORAGE_ROOT to the full path.
    */
   private getFullPath(path: string): string {

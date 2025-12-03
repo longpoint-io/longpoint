@@ -20,13 +20,13 @@ model ClassifierRun {
   startedAt    DateTime?
   completedAt  DateTime?
 
-  classifierId String
-  classifier   Classifier @relation(fields: [classifierId], references: [id], onDelete: Cascade)
-  mediaAssetId String
-  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  classifierId   String
+  classifier     Classifier   @relation(fields: [classifierId], references: [id], onDelete: Cascade)
+  assetVariantId String
+  assetVariant   AssetVariant @relation(fields: [assetVariantId], references: [id], onDelete: Cascade)
 
   @@index([classifierId])
-  @@index([mediaAssetId])
+  @@index([assetVariantId])
   @@index([createdAt])
 }
 

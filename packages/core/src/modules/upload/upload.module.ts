@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
+import { AssetModule } from '../asset';
 import { ClassifierModule } from '../classifier';
 import { EventModule } from '../event';
 import { FileDeliveryModule } from '../file-delivery';
-import { MediaModule } from '../media';
 import { StorageModule } from '../storage';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
@@ -10,7 +10,7 @@ import { UploadService } from './upload.service';
 @Module({
   imports: [
     ClassifierModule,
-    MediaModule,
+    AssetModule,
     FileDeliveryModule,
     StorageModule,
     EventModule,

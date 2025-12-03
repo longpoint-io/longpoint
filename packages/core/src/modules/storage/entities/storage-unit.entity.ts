@@ -152,9 +152,9 @@ export class StorageUnitEntity {
     }
 
     try {
-      // Delete all media containers for this storage unit
-      // Prisma cascade will handle MediaAssets, UploadTokens, and other related records
-      await this.prismaService.mediaContainer.deleteMany({
+      // Delete all assets for this storage unit
+      // Cascade will handle AssetVariants, UploadTokens, and other related records
+      await this.prismaService.asset.deleteMany({
         where: {
           storageUnitId: this.id,
         },
@@ -165,7 +165,6 @@ export class StorageUnitEntity {
       const storageUnitPath = join(this.pathPrefix, this.id);
       await provider.deleteDirectory(storageUnitPath);
 
-      // Delete the storage unit from the database
       await this.prismaService.storageUnit.delete({
         where: { id: this.id },
       });
