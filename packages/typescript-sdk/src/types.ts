@@ -247,6 +247,43 @@ export interface paths {
         patch: operations["updatePluginSettings"];
         trace?: never;
     };
+    "/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List available user roles */
+        get: operations["listRoles"];
+        put?: never;
+        /** Create a user role */
+        post: operations["createRole"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a user role */
+        get: operations["getRole"];
+        put?: never;
+        post?: never;
+        /** Delete a user role */
+        delete: operations["deleteRole"];
+        options?: never;
+        head?: never;
+        /** Update a user role */
+        patch: operations["updateRole"];
+        trace?: never;
+    };
     "/search": {
         parameters: {
             query?: never;
@@ -477,7 +514,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-03T17:56:08.460Z
+             * @example 2025-12-03T20:29:36.626Z
              */
             createdAt: string;
             /**
@@ -530,7 +567,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-03T17:56:08.460Z
+             * @example 2025-12-03T20:29:36.626Z
              */
             createdAt: string;
             /**
@@ -1080,6 +1117,28 @@ export interface components {
              */
             name: string;
         };
+        CreateRole: {
+            /**
+             * @description The description of the role
+             * @example General asset manager
+             */
+            description?: string;
+            /**
+             * @description The name of the role
+             * @example Manager
+             */
+            name: string;
+            /**
+             * @description The permissions the role has
+             * @example [
+             *       "asset:read",
+             *       "asset:update",
+             *       "asset:delete"
+             *     ]
+             * @enum {string}
+             */
+            permissions: "asset:create" | "asset:read" | "asset:update" | "asset:delete" | "classifier:create" | "classifier:read" | "classifier:update" | "classifier:delete" | "collection:create" | "collection:read" | "collection:update" | "collection:delete" | "role:create" | "role:read" | "role:update" | "role:delete" | "search-index:create" | "search-index:read" | "search-index:delete" | "settings-page:read" | "storage-unit:create" | "storage-unit:read" | "storage-unit:update" | "storage-unit:delete" | "super";
+        };
         CreateSearchIndex: {
             /**
              * @description Whether to make the new index the active index.
@@ -1287,6 +1346,62 @@ export interface components {
              *     ]
              */
             assetIds: string[];
+        };
+        Role: {
+            /**
+             * @description The description of the role
+             * @example Manage assets
+             */
+            description: Record<string, never> | null;
+            /**
+             * @description The ID of the role
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The name of the role
+             * @example Manager
+             */
+            name: string;
+        };
+        RoleDetailsDto: {
+            /**
+             * Format: date-time
+             * @description When the role was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The description of the role
+             * @example Manage assets
+             */
+            description: Record<string, never> | null;
+            /**
+             * @description The ID of the role
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The name of the role
+             * @example Manager
+             */
+            name: string;
+            /**
+             * @description The permissions the role has
+             * @example [
+             *       "classifier:create",
+             *       "classifier:read",
+             *       "classifier:update",
+             *       "classifier:delete"
+             *     ]
+             */
+            permissions: ("asset:create" | "asset:read" | "asset:update" | "asset:delete" | "classifier:create" | "classifier:read" | "classifier:update" | "classifier:delete" | "collection:create" | "collection:read" | "collection:update" | "collection:delete" | "role:create" | "role:read" | "role:update" | "role:delete" | "search-index:create" | "search-index:read" | "search-index:delete" | "settings-page:read" | "storage-unit:create" | "storage-unit:read" | "storage-unit:update" | "storage-unit:delete" | "super")[];
+            /**
+             * Format: date-time
+             * @description When the role was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
         };
         SearchIndex: {
             /**
@@ -1599,6 +1714,28 @@ export interface components {
             config: {
                 [key: string]: unknown;
             };
+        };
+        UpdateRole: {
+            /**
+             * @description The description of the role
+             * @example General asset manager
+             */
+            description?: string;
+            /**
+             * @description The name of the role
+             * @example Manager
+             */
+            name?: string;
+            /**
+             * @description The permissions the role has
+             * @example [
+             *       "asset:read",
+             *       "asset:update",
+             *       "asset:delete"
+             *     ]
+             * @enum {string}
+             */
+            permissions?: "asset:create" | "asset:read" | "asset:update" | "asset:delete" | "classifier:create" | "classifier:read" | "classifier:update" | "classifier:delete" | "collection:create" | "collection:read" | "collection:update" | "collection:delete" | "role:create" | "role:read" | "role:update" | "role:delete" | "search-index:create" | "search-index:read" | "search-index:delete" | "settings-page:read" | "storage-unit:create" | "storage-unit:read" | "storage-unit:update" | "storage-unit:delete" | "super";
         };
         UpdateStorageConfig: {
             /**
@@ -2458,6 +2595,203 @@ export interface operations {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Plugin with id example-plugin-id not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    listRoles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Role"][];
+                };
+            };
+        };
+    };
+    createRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRole"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleDetailsDto"];
+                };
+            };
+            /** @description Role already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_ALREADY_EXISTS",
+                     *       "messages": [
+                     *         "Role with name 'My Role' already exists"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    getRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleDetailsDto"];
+                };
+            };
+            /** @description Role not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Role with id r2qwyd76nvd98cu6ewg8ync2 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Role not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Role with id r2qwyd76nvd98cu6ewg8ync2 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRole"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleDetailsDto"];
+                };
+            };
+            /** @description Role not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Role with id r2qwyd76nvd98cu6ewg8ync2 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+            /** @description Role already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_ALREADY_EXISTS",
+                     *       "messages": [
+                     *         "Role with name 'My Role' already exists"
                      *       ]
                      *     } */
                     "application/json": {

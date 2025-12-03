@@ -6,6 +6,7 @@ export { CommonModule } from './common';
 export { FileDeliveryModule } from './file-delivery';
 export { LoggerModule } from './logger';
 export { PluginModule } from './plugin';
+export { RoleModule } from './role';
 export { SearchModule } from './search';
 export { StorageModule } from './storage';
 export { SystemModule } from './system';

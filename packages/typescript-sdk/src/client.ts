@@ -14,6 +14,7 @@ export class Longpoint {
   assets: AssetsClient;
   storage: StorageClient;
   collections: CollectionsClient;
+  users: UsersClient;
   search: SearchClient;
   system: SystemClient;
 
@@ -31,6 +32,7 @@ export class Longpoint {
     this.assets = new AssetsClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.collections = new CollectionsClient(this.httpClient);
+    this.users = new UsersClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
   }
@@ -425,6 +427,55 @@ class CollectionsClient {
     async removeAssetsFromCollection(id: string, data: components['schemas']['RemoveAssetsFromCollection']): Promise<void> {
         const url = `collections/${encodeURIComponent(String(id))}/assets`;
         const response = await this.httpClient.delete(url, { data });
+        return response.data;
+  }
+}
+
+class UsersClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Create a user role
+   */
+    async createRole(data: components['schemas']['CreateRole']): Promise<components['schemas']['RoleDetailsDto']> {
+        const url = `roles`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List available user roles
+   */
+    async listRoles(): Promise<components['schemas']['Role'][]> {
+        const url = `roles`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a user role
+   */
+    async getRole(id: string): Promise<components['schemas']['RoleDetailsDto']> {
+        const url = `roles/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a user role
+   */
+    async updateRole(id: string, data: components['schemas']['UpdateRole']): Promise<components['schemas']['RoleDetailsDto']> {
+        const url = `roles/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a user role
+   */
+    async deleteRole(id: string): Promise<void> {
+        const url = `roles/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
         return response.data;
   }
 }
