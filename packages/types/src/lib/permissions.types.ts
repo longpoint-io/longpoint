@@ -41,6 +41,7 @@ const MANAGER = {
   [Permission.COLLECTIONS_READ]: true,
   [Permission.COLLECTIONS_UPDATE]: true,
   [Permission.COLLECTIONS_DELETE]: true,
+  [Permission.STORAGE_UNITS_READ]: true,
 } as const;
 
 const ADMIN = {

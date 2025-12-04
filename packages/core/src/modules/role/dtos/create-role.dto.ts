@@ -30,6 +30,7 @@ export class CreateRoleDto {
   @ApiProperty({
     description: 'The permissions the role has',
     enum: Permission,
+    isArray: true,
     example: [
       Permission.ASSETS_READ,
       Permission.ASSETS_UPDATE,

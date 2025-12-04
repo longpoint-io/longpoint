@@ -34,6 +34,7 @@ import {
   ScanSearchIcon,
   Settings2Icon,
   SettingsIcon,
+  UsersIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -62,6 +63,25 @@ const sidebarItems = [
     label: 'Plugins',
     url: '/plugins',
     icon: PlugIcon,
+  },
+  {
+    label: 'Users',
+    url: '/users',
+    icon: UsersIcon,
+    subItems: [
+      {
+        label: 'Users',
+        url: '/users',
+      },
+      {
+        label: 'Roles',
+        url: '/users/roles',
+      },
+      {
+        label: 'Registrations',
+        url: '/users/registrations',
+      },
+    ],
   },
   {
     label: 'Settings',

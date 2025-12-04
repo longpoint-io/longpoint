@@ -1,3 +1,4 @@
+import { Unexpected } from '@/shared/errors';
 import { DEFAULT_ROLES } from '@longpoint/types';
 import { Injectable, Logger } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
@@ -68,12 +69,6 @@ export class AuthService {
         throw new InvalidRegistrationToken();
       }
 
-      await tx.userRegistration.delete({
-        where: {
-          id: userRegistration.id,
-        },
-      });
-
       const tokenExpired = isAfter(new Date(), userRegistration.expiresAt);
       if (tokenExpired) {
         this.logger.log('Registration token expired', {
@@ -124,6 +119,43 @@ export class AuthService {
                 id: superAdminRole.id,
               },
             },
+          },
+        });
+      } else {
+        const registration = await tx.userRegistration.findUnique({
+          where: {
+            email: ctx.body.email,
+          },
+          select: {
+            id: true,
+            roles: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        });
+
+        if (!registration) {
+          throw new Unexpected(
+            'Expected a registration for the user, but none was found'
+          );
+        }
+
+        await tx.user.update({
+          where: {
+            id: newSession.user.id,
+          },
+          data: {
+            roles: {
+              connect: registration.roles.map((role) => ({ id: role.id })),
+            },
+          },
+        });
+
+        await tx.userRegistration.delete({
+          where: {
+            id: registration.id,
           },
         });
       }

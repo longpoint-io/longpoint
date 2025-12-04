@@ -54,9 +54,9 @@ export class ResourceGuard implements CanActivate {
     const rolePermission = await this.prismaService.rolePermission.findFirst({
       where: {
         role: {
-          userRoles: {
+          users: {
             some: {
-              userId,
+              id: userId,
             },
           },
         },

@@ -35,6 +35,7 @@ export class RoleDto extends RoleReferenceDto {
   @ApiProperty({
     description: 'The description of the role',
     example: 'Manage assets',
+    type: String,
     nullable: true,
   })
   description: string | null;

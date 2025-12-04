@@ -482,7 +482,7 @@ class UsersClient {
     /**
    * List users
    */
-    async listUsers(options?: { cursor?: string; pageSize?: number }): Promise<void> {
+    async listUsers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListUsersResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {

@@ -608,7 +608,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T18:02:21.577Z
+             * @example 2025-12-04T18:30:12.298Z
              */
             createdAt: string;
             /**
@@ -661,7 +661,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T18:02:21.577Z
+             * @example 2025-12-04T18:30:12.298Z
              */
             createdAt: string;
             /**
@@ -1229,9 +1229,8 @@ export interface components {
              *       "assets:update",
              *       "assets:delete"
              *     ]
-             * @enum {string}
              */
-            permissions: "assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete";
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         CreateSearchIndex: {
             /**
@@ -1387,6 +1386,12 @@ export interface components {
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
+        ListUsersResponse: {
+            /** @description The users in the response */
+            items: components["schemas"]["User"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
         PaginationMetadata: {
             /**
              * @description The cursor to the next page
@@ -1473,7 +1478,7 @@ export interface components {
              * @description The description of the role
              * @example Manage assets
              */
-            description: Record<string, never> | null;
+            description: string | null;
             /**
              * @description The ID of the role
              * @example sajl1kih6emtwozh8y0zenkj
@@ -1496,7 +1501,7 @@ export interface components {
              * @description The description of the role
              * @example Manage assets
              */
-            description: Record<string, never> | null;
+            description: string | null;
             /**
              * @description The ID of the role
              * @example sajl1kih6emtwozh8y0zenkj
@@ -1866,9 +1871,8 @@ export interface components {
              *       "assets:update",
              *       "assets:delete"
              *     ]
-             * @enum {string}
              */
-            permissions?: "assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete";
+            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         UpdateStorageConfig: {
             /**
@@ -3692,7 +3696,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ListUsersResponse"];
+                };
             };
         };
     };

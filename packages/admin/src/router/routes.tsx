@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { AuthLayout } from '../layouts/auth-layout';
 import { DashboardLayout } from '../layouts/dashboard-layout';
 import { SignIn } from '../pages/auth/sign-in';
+import { SignUp } from '../pages/auth/sign-up';
 import { Assets } from '../pages/dashboard/assets';
 import { Classifiers } from '../pages/dashboard/classifiers';
 import { CreateClassifier } from '../pages/dashboard/classifiers/create';
@@ -15,6 +16,9 @@ import { Plugins } from '../pages/dashboard/plugins/index';
 import { SearchResults } from '../pages/dashboard/search-results';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
+import { Users } from '../pages/dashboard/users';
+import { Registrations } from '../pages/dashboard/users/registrations';
+import { Roles } from '../pages/dashboard/users/roles';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
   AuthGuard,
@@ -45,6 +49,16 @@ export function AppRoutes() {
                 <SignIn />
               </AuthLayout>
             </SetupGuard>
+          </AuthenticatedGuard>
+        }
+      />
+      <Route
+        path="/sign-up"
+        element={
+          <AuthenticatedGuard>
+            <AuthLayout>
+              <SignUp />
+            </AuthLayout>
           </AuthenticatedGuard>
         }
       />
@@ -199,6 +213,42 @@ export function AppRoutes() {
             <AuthGuard>
               <DashboardLayout>
                 <CollectionDetail />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <Users />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/users/roles"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <Roles />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/users/registrations"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <Registrations />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

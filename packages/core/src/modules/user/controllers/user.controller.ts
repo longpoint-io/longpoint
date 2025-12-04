@@ -28,6 +28,7 @@ export class UserController {
     summary: 'List users',
     operationId: 'listUsers',
   })
+  @ApiOkResponse({ type: ListUsersResponseDto })
   async listUsers(@Query() query: ListUsersQueryDto) {
     const users = await this.userService.listUsers(query);
     return new ListUsersResponseDto({
