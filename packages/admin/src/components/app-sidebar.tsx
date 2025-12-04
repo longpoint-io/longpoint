@@ -65,23 +65,9 @@ const sidebarItems = [
     icon: PlugIcon,
   },
   {
-    label: 'Users',
+    label: 'Users & Roles',
     url: '/users',
     icon: UsersIcon,
-    subItems: [
-      {
-        label: 'Users',
-        url: '/users',
-      },
-      {
-        label: 'Roles',
-        url: '/users/roles',
-      },
-      {
-        label: 'Registrations',
-        url: '/users/registrations',
-      },
-    ],
   },
   {
     label: 'Settings',

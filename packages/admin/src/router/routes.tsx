@@ -16,9 +16,7 @@ import { Plugins } from '../pages/dashboard/plugins/index';
 import { SearchResults } from '../pages/dashboard/search-results';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
-import { Users } from '../pages/dashboard/users';
-import { Registrations } from '../pages/dashboard/users/registrations';
-import { Roles } from '../pages/dashboard/users/roles';
+import { UsersAndRoles } from '../pages/dashboard/users/users-and-roles';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
   AuthGuard,
@@ -224,7 +222,7 @@ export function AppRoutes() {
           <SetupGuard>
             <AuthGuard>
               <DashboardLayout>
-                <Users />
+                <UsersAndRoles />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>
@@ -236,19 +234,19 @@ export function AppRoutes() {
           <SetupGuard>
             <AuthGuard>
               <DashboardLayout>
-                <Roles />
+                <UsersAndRoles />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>
         }
       />
       <Route
-        path="/users/registrations"
+        path="/users/pending"
         element={
           <SetupGuard>
             <AuthGuard>
               <DashboardLayout>
-                <Registrations />
+                <UsersAndRoles />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

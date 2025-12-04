@@ -1,6 +1,6 @@
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Permission } from '@longpoint/types';
+import { DEFAULT_ROLES, Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
@@ -43,7 +43,13 @@ import {
 } from '@longpoint/ui/components/table';
 import { Textarea } from '@longpoint/ui/components/textarea';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Plus, ShieldIcon, TrashIcon } from 'lucide-react';
+import {
+  MoreVertical,
+  PencilIcon,
+  Plus,
+  ShieldIcon,
+  TrashIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -65,7 +71,9 @@ const updateRoleSchema = createRoleSchema.partial().extend({
 
 type UpdateRoleFormData = z.infer<typeof updateRoleSchema>;
 
-const ALL_PERMISSIONS = Object.values(Permission).sort();
+const ALL_PERMISSIONS = Object.values(Permission)
+  .filter((permission) => permission !== Permission.SUPER)
+  .sort();
 
 export function Roles() {
   const client = useClient();
@@ -223,13 +231,11 @@ export function Roles() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold">Roles</h2>
-            <p className="text-muted-foreground mt-2">
-              Manage user roles and permissions
-            </p>
-          </div>
+        <div className="flex items-center justify-end">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Create Role
+          </Button>
         </div>
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -243,13 +249,11 @@ export function Roles() {
   if (error) {
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold">Roles</h2>
-            <p className="text-muted-foreground mt-2">
-              Manage user roles and permissions
-            </p>
-          </div>
+        <div className="flex items-center justify-end">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Create Role
+          </Button>
         </div>
         <div className="text-center py-12">
           <p className="text-destructive">Failed to load roles</p>
@@ -263,13 +267,7 @@ export function Roles() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold">Roles</h2>
-          <p className="text-muted-foreground mt-2">
-            Manage user roles and permissions
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           Create Role
@@ -303,7 +301,6 @@ export function Roles() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Permissions</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -314,11 +311,14 @@ export function Roles() {
                   <TableCell className="text-muted-foreground">
                     {role.description || '-'}
                   </TableCell>
-                  <TableCell>-</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={role.name === DEFAULT_ROLES.superAdmin.name}
+                        >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -328,15 +328,16 @@ export function Roles() {
                             handleEdit({ id: role.id, name: role.name })
                           }
                         >
+                          <PencilIcon />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
                             handleDelete({ id: role.id, name: role.name })
                           }
-                          className="text-destructive"
+                          variant="destructive"
                         >
-                          <TrashIcon className="h-4 w-4" />
+                          <TrashIcon />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>

@@ -1,3 +1,4 @@
+import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
@@ -41,11 +42,19 @@ import {
 } from '@longpoint/ui/components/table';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { MoreVertical, TrashIcon, UsersIcon } from 'lucide-react';
+import {
+  Copy,
+  MoreVertical,
+  PencilIcon,
+  Plus,
+  TrashIcon,
+  UsersIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
+import { CreateRegistrationDialog } from './create-registration-dialog';
 
 const updateUserSchema = z.object({
   email: z.string().email('Please enter a valid email address').optional(),
@@ -56,10 +65,14 @@ type UpdateUserFormData = z.infer<typeof updateUserSchema>;
 
 export function Users() {
   const client = useClient();
+  const { session } = useAuth();
   const queryClient = useQueryClient();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [createRegistrationDialogOpen, setCreateRegistrationDialogOpen] =
+    useState(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [registrationUrl, setRegistrationUrl] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<{
     id: string;
     name: string;
@@ -164,27 +177,6 @@ export function Users() {
     }
   };
 
-  const handleView = async (userId: string) => {
-    try {
-      const user = await client.users.getUser(userId);
-      setSelectedUser({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        roles: user.roles || [],
-        createdAt: user.createdAt,
-      });
-      setViewDialogOpen(true);
-    } catch (error) {
-      toast.error('Failed to load user details', {
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
-      });
-    }
-  };
-
   const handleDelete = (user: { id: string; name: string }) => {
     setSelectedUser({
       id: user.id,
@@ -202,38 +194,18 @@ export function Users() {
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold">Users</h2>
-            <p className="text-muted-foreground mt-2">
-              Manage users and their roles
-            </p>
-          </div>
-        </div>
-        <div className="space-y-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
-        </div>
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold">Users</h2>
-            <p className="text-muted-foreground mt-2">
-              Manage users and their roles
-            </p>
-          </div>
-        </div>
-        <div className="text-center py-12">
-          <p className="text-destructive">Failed to load users</p>
-        </div>
+      <div className="text-center py-12">
+        <p className="text-destructive">Failed to load users</p>
       </div>
     );
   }
@@ -243,13 +215,11 @@ export function Users() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold">Users</h2>
-          <p className="text-muted-foreground mt-2">
-            Manage users and their roles
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
+        <Button onClick={() => setCreateRegistrationDialogOpen(true)}>
+          <Plus className="h-4 w-4" />
+          Add User
+        </Button>
       </div>
 
       {isEmpty ? (
@@ -299,21 +269,21 @@ export function Users() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleView(user.id)}>
-                          View
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEdit(user.id)}>
+                          <PencilIcon />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleDelete({ id: user.id, name: user.name })
-                          }
-                          className="text-destructive"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
+                        {user.id !== session?.user.id && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleDelete({ id: user.id, name: user.name })
+                            }
+                            variant="destructive"
+                          >
+                            <TrashIcon />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -323,49 +293,6 @@ export function Users() {
           </Table>
         </div>
       )}
-
-      {/* View User Dialog */}
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-            <DialogDescription>
-              View user information and roles
-            </DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div>
-                <FieldLabel>Name</FieldLabel>
-                <p className="text-sm mt-1">{selectedUser.name}</p>
-              </div>
-              <div>
-                <FieldLabel>Email</FieldLabel>
-                <p className="text-sm mt-1">{selectedUser.email}</p>
-              </div>
-              <div>
-                <FieldLabel>Roles</FieldLabel>
-                <p className="text-sm mt-1">
-                  {selectedUser.roles.length > 0
-                    ? selectedUser.roles.map((r) => r.name).join(', ')
-                    : 'No roles assigned'}
-                </p>
-              </div>
-              <div>
-                <FieldLabel>Created At</FieldLabel>
-                <p className="text-sm mt-1">
-                  {format(new Date(selectedUser.createdAt), 'PPpp')}
-                </p>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -490,6 +417,54 @@ export function Users() {
               isLoading={deleteMutation.isPending}
             >
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Registration Dialog */}
+      <CreateRegistrationDialog
+        open={createRegistrationDialogOpen}
+        onOpenChange={setCreateRegistrationDialogOpen}
+        onSuccess={(url) => {
+          setRegistrationUrl(url);
+          setSuccessDialogOpen(true);
+        }}
+      />
+
+      {/* Success Dialog with Registration URL */}
+      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registration Created</DialogTitle>
+            <DialogDescription>
+              Share this registration link with the user
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex-1 font-mono text-sm bg-muted border border-border rounded-md p-3 break-all select-all">
+                {registrationUrl}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(registrationUrl);
+                  toast.success('Registration URL copied to clipboard');
+                }}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSuccessDialogOpen(false)}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
