@@ -1,9 +1,9 @@
+import { useAuth } from '@/auth';
 import { AssetGrid } from '@/components/asset-grid';
 import { AssetTable } from '@/components/asset-table';
-import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
-import { Permission } from '@longpoint/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Dialog,
@@ -264,7 +264,10 @@ export function CollectionDetail() {
             {canUpdate && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="icon" onClick={() => setEditDialogOpen(true)}>
+                  <Button
+                    variant="icon"
+                    onClick={() => setEditDialogOpen(true)}
+                  >
                     <EditIcon />
                   </Button>
                 </TooltipTrigger>
@@ -274,7 +277,10 @@ export function CollectionDetail() {
             {canDelete && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
+                  <Button
+                    variant="icon"
+                    onClick={() => setDeleteDialogOpen(true)}
+                  >
                     <Trash2 className="text-destructive" />
                   </Button>
                 </TooltipTrigger>

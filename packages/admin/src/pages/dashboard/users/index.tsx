@@ -1,7 +1,7 @@
 import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
-import { Permission } from '@longpoint/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
@@ -216,6 +216,7 @@ export function Users() {
 
   const users = usersResponse?.items || [];
   const isEmpty = users.length === 0;
+  const hasAnyActions = canUpdate || canDelete;
 
   return (
     <div className="space-y-8">
@@ -251,7 +252,9 @@ export function Users() {
                 <TableHead>Email</TableHead>
                 <TableHead>Roles</TableHead>
                 <TableHead>Created At</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+                {hasAnyActions && (
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -267,34 +270,38 @@ export function Users() {
                       ? format(new Date(user.createdAt), 'MMM d, yyyy')
                       : '-'}
                   </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {canUpdate && (
-                          <DropdownMenuItem onClick={() => handleEdit(user.id)}>
-                            <PencilIcon />
-                            Edit
-                          </DropdownMenuItem>
-                        )}
-                        {canDelete && user.id !== session?.user.id && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleDelete({ id: user.id, name: user.name })
-                            }
-                            variant="destructive"
-                          >
-                            <TrashIcon />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+                  {hasAnyActions && (
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canUpdate && (
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(user.id)}
+                            >
+                              <PencilIcon />
+                              Edit
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete && user.id !== session?.user.id && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleDelete({ id: user.id, name: user.name })
+                              }
+                              variant="destructive"
+                            >
+                              <TrashIcon />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

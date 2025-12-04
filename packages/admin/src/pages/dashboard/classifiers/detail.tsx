@@ -1,5 +1,5 @@
-import { DeleteClassifierDialog } from '@/components/delete-classifier-dialog';
 import { useAuth } from '@/auth';
+import { DeleteClassifierDialog } from '@/components/delete-classifier-dialog';
 import { useClient } from '@/hooks/common/use-client';
 import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
@@ -92,7 +92,10 @@ export function ClassifierDetail() {
           </div>
         </div>
         {canDelete && (
-          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>

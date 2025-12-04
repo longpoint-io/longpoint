@@ -1,8 +1,8 @@
 import { useAuth } from '@/auth/auth-context';
 import { Permission } from '@longpoint/types';
 import { Spinner } from '@longpoint/ui/components/spinner';
-import { GuardProps } from '../types';
 import { NotFound } from '../../pages/not-found';
+import { GuardProps } from '../types';
 
 interface PermissionGuardProps extends GuardProps {
   permission: Permission;
@@ -12,7 +12,10 @@ interface PermissionGuardProps extends GuardProps {
  * Require a specific permission for a route
  * Shows 404 if permission is missing
  */
-export function PermissionGuard({ children, permission }: PermissionGuardProps) {
+export function PermissionGuard({
+  children,
+  permission,
+}: PermissionGuardProps) {
   const { hasPermission, isLoading } = useAuth();
 
   if (isLoading) {
@@ -31,4 +34,3 @@ export function PermissionGuard({ children, permission }: PermissionGuardProps) 
 
   return <>{children}</>;
 }
-

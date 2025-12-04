@@ -22,7 +22,8 @@ export function NotFound() {
           </EmptyMedia>
           <EmptyTitle className="text-2xl">404 - Page Not Found</EmptyTitle>
           <EmptyDescription className="text-base">
-            The page you're looking for doesn't exist or you don't have permission to access it.
+            The page you're looking for doesn't exist or you don't have
+            permission to access it.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
@@ -34,4 +35,3 @@ export function NotFound() {
     </div>
   );
 }
-

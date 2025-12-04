@@ -382,7 +382,9 @@ export function StorageProviderConfigDetail() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleEditUnit(unit.id, unit.name)}
+                                onClick={() =>
+                                  handleEditUnit(unit.id, unit.name)
+                                }
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -391,7 +393,9 @@ export function StorageProviderConfigDetail() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDeleteUnit(unit.id, unit.name)}
+                                onClick={() =>
+                                  handleDeleteUnit(unit.id, unit.name)
+                                }
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>

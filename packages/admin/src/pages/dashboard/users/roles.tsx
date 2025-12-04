@@ -1,9 +1,9 @@
 import { useAuth } from '@/auth';
+import { PermissionsSelector } from '@/components/permissions-selector';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DEFAULT_ROLES, Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
-import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -70,10 +70,6 @@ const updateRoleSchema = createRoleSchema.partial().extend({
 });
 
 type UpdateRoleFormData = z.infer<typeof updateRoleSchema>;
-
-const ALL_PERMISSIONS = Object.values(Permission)
-  .filter((permission) => permission !== Permission.SUPER)
-  .sort();
 
 export function Roles() {
   const client = useClient();
@@ -272,6 +268,7 @@ export function Roles() {
 
   const rolesList = roles || [];
   const isEmpty = rolesList.length === 0;
+  const hasAnyActions = canUpdate || canDelete;
 
   return (
     <div className="space-y-8">
@@ -310,7 +307,9 @@ export function Roles() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+                {hasAnyActions && (
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -320,42 +319,46 @@ export function Roles() {
                   <TableCell className="text-muted-foreground">
                     {role.description || '-'}
                   </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={role.name === DEFAULT_ROLES.superAdmin.name}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {canUpdate && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleEdit({ id: role.id, name: role.name })
+                  {hasAnyActions && (
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={
+                              role.name === DEFAULT_ROLES.superAdmin.name
                             }
                           >
-                            <PencilIcon />
-                            Edit
-                          </DropdownMenuItem>
-                        )}
-                        {canDelete && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleDelete({ id: role.id, name: role.name })
-                            }
-                            variant="destructive"
-                          >
-                            <TrashIcon />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canUpdate && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleEdit({ id: role.id, name: role.name })
+                              }
+                            >
+                              <PencilIcon />
+                              Edit
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleDelete({ id: role.id, name: role.name })
+                              }
+                              variant="destructive"
+                            >
+                              <TrashIcon />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -424,34 +427,11 @@ export function Roles() {
                     <FieldLabel htmlFor="create-role-permissions" required>
                       Permissions
                     </FieldLabel>
-                    <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
-                      {ALL_PERMISSIONS.map((permission) => (
-                        <div
-                          key={permission}
-                          className="flex items-center gap-2"
-                        >
-                          <Checkbox
-                            id={`permission-${permission}`}
-                            checked={field.value.includes(permission)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                field.onChange([...field.value, permission]);
-                              } else {
-                                field.onChange(
-                                  field.value.filter((p) => p !== permission)
-                                );
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`permission-${permission}`}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {permission}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
+                    <PermissionsSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      idPrefix="create-role"
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -541,35 +521,11 @@ export function Roles() {
                     <FieldLabel htmlFor="edit-role-permissions" required>
                       Permissions
                     </FieldLabel>
-                    <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
-                      {ALL_PERMISSIONS.map((permission) => (
-                        <div
-                          key={permission}
-                          className="flex items-center gap-2"
-                        >
-                          <Checkbox
-                            id={`edit-permission-${permission}`}
-                            checked={field.value?.includes(permission) || false}
-                            onCheckedChange={(checked) => {
-                              const current = field.value || [];
-                              if (checked) {
-                                field.onChange([...current, permission]);
-                              } else {
-                                field.onChange(
-                                  current.filter((p) => p !== permission)
-                                );
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`edit-permission-${permission}`}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {permission}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
+                    <PermissionsSelector
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      idPrefix="edit-role"
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}

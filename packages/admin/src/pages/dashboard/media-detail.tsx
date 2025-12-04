@@ -1,10 +1,10 @@
-import { AssetType } from '@/components/asset-type';
 import { useAuth } from '@/auth';
+import { AssetType } from '@/components/asset-type';
 import { useClient } from '@/hooks/common';
-import { Permission } from '@longpoint/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { components } from '@longpoint/sdk';
 import { Longpoint } from '@longpoint/sdk';
+import { Permission } from '@longpoint/types';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -523,7 +523,10 @@ export function AssetDetail() {
           {canUpdate && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="icon" onClick={() => setRenameDialogOpen(true)}>
+                <Button
+                  variant="icon"
+                  onClick={() => setRenameDialogOpen(true)}
+                >
                   <EditIcon />
                 </Button>
               </TooltipTrigger>
@@ -545,7 +548,10 @@ export function AssetDetail() {
           {canDelete && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
+                <Button
+                  variant="icon"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
                   <Trash2 className="text-destructive" />
                 </Button>
               </TooltipTrigger>

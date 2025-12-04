@@ -32,7 +32,8 @@ export function UsersAndRoles() {
   // Determine current tab from pathname
   const getCurrentTab = (): TabValue => {
     if (location.pathname === '/users/roles' && canReadRoles) return 'roles';
-    if (location.pathname === '/users/pending' && canReadUsers) return 'pending';
+    if (location.pathname === '/users/pending' && canReadUsers)
+      return 'pending';
     if (canReadUsers) return 'users';
     if (canReadRoles) return 'roles';
     return 'users'; // fallback
