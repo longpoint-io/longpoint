@@ -38,7 +38,7 @@ export class StorageUnitController {
   constructor(private readonly storageUnitService: StorageUnitService) {}
 
   @Post()
-  @RequirePermission(Permission.STORAGE_UNIT_CREATE)
+  @RequirePermission(Permission.STORAGE_UNITS_CREATE)
   @ApiOperation({
     summary: 'Create a storage unit',
     operationId: 'createStorageUnit',
@@ -50,7 +50,7 @@ export class StorageUnitController {
   }
 
   @Get()
-  @RequirePermission(Permission.STORAGE_UNIT_READ)
+  @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'List storage units',
     operationId: 'listStorageUnits',
@@ -66,7 +66,7 @@ export class StorageUnitController {
   }
 
   @Get(':storageUnitId')
-  @RequirePermission(Permission.STORAGE_UNIT_READ)
+  @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'Get a storage unit',
     operationId: 'getStorageUnit',
@@ -81,7 +81,7 @@ export class StorageUnitController {
   }
 
   @Patch(':storageUnitId')
-  @RequirePermission(Permission.STORAGE_UNIT_UPDATE)
+  @RequirePermission(Permission.STORAGE_UNITS_UPDATE)
   @ApiOperation({
     summary: 'Update a storage unit',
     operationId: 'updateStorageUnit',
@@ -100,7 +100,7 @@ export class StorageUnitController {
   }
 
   @Delete(':storageUnitId')
-  @RequirePermission(Permission.STORAGE_UNIT_DELETE)
+  @RequirePermission(Permission.STORAGE_UNITS_DELETE)
   @ApiOperation({
     summary: 'Delete a storage unit',
     operationId: 'deleteStorageUnit',

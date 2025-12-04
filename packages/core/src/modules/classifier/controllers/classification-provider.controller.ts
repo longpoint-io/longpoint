@@ -15,7 +15,7 @@ export class ClassificationProviderController {
   ) {}
 
   @Get()
-  @RequirePermission(Permission.CLASSIFIER_READ)
+  @RequirePermission(Permission.CLASSIFIERS_READ)
   @ApiOperation({
     summary: 'List classification providers',
     operationId: 'listClassificationProviders',

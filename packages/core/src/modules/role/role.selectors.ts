@@ -1,5 +1,16 @@
 import { Prisma } from '@/database';
 
+export const selectRoleReference = () => {
+  return {
+    id: true,
+    name: true,
+  } satisfies Prisma.RoleSelect;
+};
+
+export type SelectedRoleReference = Prisma.RoleGetPayload<{
+  select: ReturnType<typeof selectRoleReference>;
+}>;
+
 export const selectRole = () => {
   return {
     id: true,

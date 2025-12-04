@@ -31,7 +31,7 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Post()
-  @RequirePermission(Permission.ROLE_CREATE)
+  @RequirePermission(Permission.ROLES_CREATE)
   @ApiOperation({
     summary: 'Create a user role',
     operationId: 'createRole',
@@ -44,7 +44,7 @@ export class RoleController {
   }
 
   @Get()
-  @RequirePermission(Permission.ROLE_READ)
+  @RequirePermission(Permission.ROLES_READ)
   @ApiOperation({
     summary: 'List available user roles',
     operationId: 'listRoles',
@@ -56,7 +56,7 @@ export class RoleController {
   }
 
   @Get(':id')
-  @RequirePermission(Permission.ROLE_READ)
+  @RequirePermission(Permission.ROLES_READ)
   @ApiOperation({
     summary: 'Get a user role',
     operationId: 'getRole',
@@ -69,7 +69,7 @@ export class RoleController {
   }
 
   @Patch(':id')
-  @RequirePermission(Permission.ROLE_UPDATE)
+  @RequirePermission(Permission.ROLES_UPDATE)
   @ApiOperation({
     summary: 'Update a user role',
     operationId: 'updateRole',
@@ -84,7 +84,7 @@ export class RoleController {
   }
 
   @Delete(':id')
-  @RequirePermission(Permission.ROLE_DELETE)
+  @RequirePermission(Permission.ROLES_DELETE)
   @ApiOperation({
     summary: 'Delete a user role',
     operationId: 'deleteRole',

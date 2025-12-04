@@ -1,4 +1,4 @@
-import { SelectedUser } from '../../../shared/selectors/user.selectors';
+import { SelectedUser } from '@/shared/selectors/user.selectors';
 
 declare module 'express' {
   interface Request {

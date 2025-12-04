@@ -1,10 +1,10 @@
 import { PrismaService } from '@/modules/common/services';
 import { PUBLIC_METADATA_KEY } from '@/shared/decorators';
+import { selectUser } from '@/shared/selectors/user.selectors';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { isAfter } from 'date-fns';
 import { Request } from 'express';
-import { selectUser } from '../../../shared/selectors/user.selectors';
 import { InvalidAuthorization } from '../app.errors';
 
 @Injectable()

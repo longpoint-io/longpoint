@@ -19,7 +19,7 @@ export class SearchIndexController {
   constructor(private readonly searchIndexService: SearchIndexService) {}
 
   @Post()
-  @RequirePermission(Permission.SEARCH_INDEX_CREATE)
+  @RequirePermission(Permission.SEARCH_INDEXES_CREATE)
   @ApiOperation({
     summary: 'Create a search index',
     operationId: 'createSearchIndex',
@@ -31,7 +31,7 @@ export class SearchIndexController {
   }
 
   @Get()
-  @RequirePermission(Permission.SEARCH_INDEX_READ)
+  @RequirePermission(Permission.SEARCH_INDEXES_READ)
   @ApiOperation({
     summary: 'List search indexes',
     operationId: 'listSearchIndexes',
@@ -43,7 +43,7 @@ export class SearchIndexController {
   }
 
   @Delete(':id')
-  @RequirePermission(Permission.SEARCH_INDEX_DELETE)
+  @RequirePermission(Permission.SEARCH_INDEXES_DELETE)
   @ApiOperation({
     summary: 'Delete a search index',
     operationId: 'deleteSearchIndex',

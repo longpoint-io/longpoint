@@ -31,9 +31,9 @@ export class CreateRoleDto {
     description: 'The permissions the role has',
     enum: Permission,
     example: [
-      Permission.ASSET_READ,
-      Permission.ASSET_UPDATE,
-      Permission.ASSET_DELETE,
+      Permission.ASSETS_READ,
+      Permission.ASSETS_UPDATE,
+      Permission.ASSETS_DELETE,
     ],
   })
   permissions!: Permission[];

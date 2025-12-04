@@ -1,11 +1,15 @@
 import { Permission } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { SelectedRole, SelectedRoleDetails } from '../role.selectors';
+import {
+  SelectedRole,
+  SelectedRoleDetails,
+  SelectedRoleReference,
+} from '../role.selectors';
 
-export type RoleParams = SelectedRole;
+export type RoleReferenceParams = SelectedRoleReference;
 
-@ApiSchema({ name: 'Role' })
-export class RoleDto {
+@ApiSchema({ name: 'RoleReference' })
+export class RoleReferenceDto {
   @ApiProperty({
     description: 'The ID of the role',
     example: 'sajl1kih6emtwozh8y0zenkj',
@@ -18,6 +22,16 @@ export class RoleDto {
   })
   name: string;
 
+  constructor(data: RoleReferenceParams) {
+    this.id = data.id;
+    this.name = data.name;
+  }
+}
+
+export type RoleParams = SelectedRole;
+
+@ApiSchema({ name: 'Role' })
+export class RoleDto extends RoleReferenceDto {
   @ApiProperty({
     description: 'The description of the role',
     example: 'Manage assets',
@@ -26,8 +40,7 @@ export class RoleDto {
   description: string | null;
 
   constructor(data: RoleParams) {
-    this.id = data.id;
-    this.name = data.name;
+    super(data);
     this.description = data.description;
   }
 }
@@ -36,6 +49,7 @@ export type RoleDetailsParams = Omit<SelectedRoleDetails, 'permissions'> & {
   permissions: Permission[];
 };
 
+@ApiSchema({ name: 'RoleDetails' })
 export class RoleDetailsDto extends RoleDto {
   @ApiProperty({
     description: 'When the role was created',
@@ -54,10 +68,10 @@ export class RoleDetailsDto extends RoleDto {
     enum: Permission,
     isArray: true,
     example: [
-      Permission.CLASSIFIER_CREATE,
-      Permission.CLASSIFIER_READ,
-      Permission.CLASSIFIER_UPDATE,
-      Permission.CLASSIFIER_DELETE,
+      Permission.CLASSIFIERS_CREATE,
+      Permission.CLASSIFIERS_READ,
+      Permission.CLASSIFIERS_UPDATE,
+      Permission.CLASSIFIERS_DELETE,
     ],
   })
   permissions: Permission[];

@@ -37,7 +37,7 @@ export class CollectionController {
   constructor(private readonly collectionService: CollectionService) {}
 
   @Post()
-  @RequirePermission(Permission.COLLECTION_CREATE)
+  @RequirePermission(Permission.COLLECTIONS_CREATE)
   @ApiOperation({
     summary: 'Create a collection',
     operationId: 'createCollection',
@@ -53,7 +53,7 @@ export class CollectionController {
   }
 
   @Get()
-  @RequirePermission(Permission.COLLECTION_READ)
+  @RequirePermission(Permission.COLLECTIONS_READ)
   @ApiOperation({
     summary: 'List collections',
     operationId: 'listCollections',
@@ -70,7 +70,7 @@ export class CollectionController {
   }
 
   @Get(':id')
-  @RequirePermission(Permission.COLLECTION_READ)
+  @RequirePermission(Permission.COLLECTIONS_READ)
   @ApiOperation({
     summary: 'Get a collection',
     operationId: 'getCollection',
@@ -85,7 +85,7 @@ export class CollectionController {
   }
 
   @Patch(':id')
-  @RequirePermission(Permission.COLLECTION_UPDATE)
+  @RequirePermission(Permission.COLLECTIONS_UPDATE)
   @ApiOperation({
     summary: 'Update a collection',
     operationId: 'updateCollection',
@@ -104,7 +104,7 @@ export class CollectionController {
   }
 
   @Delete(':id')
-  @RequirePermission(Permission.COLLECTION_DELETE)
+  @RequirePermission(Permission.COLLECTIONS_DELETE)
   @ApiOperation({
     summary: 'Delete a collection',
     operationId: 'deleteCollection',
@@ -120,7 +120,7 @@ export class CollectionController {
   }
 
   @Post(':id/assets')
-  @RequirePermission(Permission.COLLECTION_UPDATE)
+  @RequirePermission(Permission.COLLECTIONS_UPDATE)
   @ApiOperation({
     summary: 'Add assets to a collection',
     operationId: 'addAssetsToCollection',
@@ -140,7 +140,7 @@ export class CollectionController {
   }
 
   @Delete(':id/assets')
-  @RequirePermission(Permission.COLLECTION_UPDATE)
+  @RequirePermission(Permission.COLLECTIONS_UPDATE)
   @ApiOperation({
     summary: 'Remove assets from a collection',
     operationId: 'removeAssetsFromCollection',

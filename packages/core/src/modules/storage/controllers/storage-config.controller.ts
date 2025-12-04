@@ -38,7 +38,7 @@ export class StorageConfigController {
   ) {}
 
   @Post()
-  @RequirePermission(Permission.STORAGE_UNIT_CREATE)
+  @RequirePermission(Permission.STORAGE_UNITS_CREATE)
   @ApiOperation({
     summary: 'Create a storage provider config',
     operationId: 'createStorageConfig',
@@ -50,7 +50,7 @@ export class StorageConfigController {
   }
 
   @Get()
-  @RequirePermission(Permission.STORAGE_UNIT_READ)
+  @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'List storage configs',
     operationId: 'listStorageConfigs',
@@ -64,7 +64,7 @@ export class StorageConfigController {
   }
 
   @Get(':id')
-  @RequirePermission(Permission.STORAGE_UNIT_READ)
+  @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'Get a storage config',
     operationId: 'getStorageConfig',
@@ -79,7 +79,7 @@ export class StorageConfigController {
   }
 
   @Patch(':id')
-  @RequirePermission(Permission.STORAGE_UNIT_UPDATE)
+  @RequirePermission(Permission.STORAGE_UNITS_UPDATE)
   @ApiOperation({
     summary: 'Update a storage config',
     operationId: 'updateStorageConfig',
@@ -98,7 +98,7 @@ export class StorageConfigController {
   }
 
   @Delete(':id')
-  @RequirePermission(Permission.STORAGE_UNIT_DELETE)
+  @RequirePermission(Permission.STORAGE_UNITS_DELETE)
   @ApiOperation({
     summary: 'Delete a storage config',
     operationId: 'deleteStorageConfig',
