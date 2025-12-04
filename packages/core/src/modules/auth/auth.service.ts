@@ -162,6 +162,30 @@ export class AuthService {
     });
   }
 
+  private async addPermissionsToSession(ctx: BetterAuthMiddlewareContext) {
+    const user = ctx.context.session?.user;
+    if (user) {
+      const rolePermissions = await this.prismaService.rolePermission.findMany({
+        where: {
+          role: {
+            users: {
+              some: {
+                id: user.id,
+              },
+            },
+          },
+        },
+        select: {
+          permission: true,
+        },
+      });
+      user['permissions'] = rolePermissions.reduce((acc, permission) => {
+        acc[permission.permission] = true;
+        return acc;
+      }, {} as Record<string, boolean>);
+    }
+  }
+
   private initializeBetterAuth() {
     const logger = this.logger;
     return betterAuth({
@@ -184,6 +208,14 @@ export class AuthService {
       //     enabled: true,
       //   },
       // },
+      user: {
+        additionalFields: {
+          something: {
+            type: 'string',
+            input: false,
+          },
+        },
+      },
       advanced: {
         cookiePrefix: 'longpoint',
       },
@@ -198,6 +230,14 @@ export class AuthService {
           const isSignUp = ctx.path.startsWith('/sign-up');
           if (isSignUp) {
             await this.afterSignUp(ctx);
+          }
+
+          const isGetSession = ctx.path.startsWith('/get-session');
+          if (isGetSession) {
+            const user = ctx.context.session?.user;
+            if (user) {
+              await this.addPermissionsToSession(ctx);
+            }
           }
         }),
       },

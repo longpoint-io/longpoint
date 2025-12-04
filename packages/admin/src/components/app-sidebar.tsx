@@ -1,4 +1,5 @@
 import { useAuth } from '@/auth';
+import { Permission } from '@longpoint/types';
 import {
   Avatar,
   AvatarFallback,
@@ -38,62 +39,74 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const sidebarItems = [
-  {
-    label: 'Home',
-    url: '/',
-    icon: HomeIcon,
-  },
-  {
-    label: 'Assets',
-    url: '/assets',
-    icon: ImagesIcon,
-  },
-  {
-    label: 'Collections',
-    url: '/collections',
-    icon: BookmarkIcon,
-  },
-  {
-    label: 'Classifiers',
-    url: '/classifiers',
-    icon: ScanSearchIcon,
-  },
-  {
-    label: 'Plugins',
-    url: '/plugins',
-    icon: PlugIcon,
-  },
-  {
-    label: 'Users & Roles',
-    url: '/users',
-    icon: UsersIcon,
-  },
-  {
-    label: 'Settings',
-    url: '/settings',
-    icon: Settings2Icon,
-    subItems: [
-      {
-        label: 'General',
-        url: '/settings/general',
-      },
-      {
-        label: 'Storage',
-        url: '/settings/storage',
-      },
-      {
-        label: 'Search',
-        url: '/settings/search',
-        // icon: SearchIcon,
-      },
-    ],
-  },
-];
-
 export function AppSidebar() {
-  const { signOut, session } = useAuth();
+  const { signOut, session, hasPermission } = useAuth();
   const user = session?.user;
+
+  const sidebarItems = [
+    {
+      label: 'Home',
+      url: '/',
+      icon: HomeIcon,
+    },
+    {
+      label: 'Assets',
+      url: '/assets',
+      icon: ImagesIcon,
+      visible: () => {
+        return hasPermission(Permission.ASSETS_READ);
+      },
+    },
+    {
+      label: 'Collections',
+      url: '/collections',
+      icon: BookmarkIcon,
+      visible: () => {
+        return hasPermission(Permission.COLLECTIONS_READ);
+      },
+    },
+    {
+      label: 'Classifiers',
+      url: '/classifiers',
+      icon: ScanSearchIcon,
+      visible: () => {
+        return hasPermission(Permission.CLASSIFIERS_READ);
+      },
+    },
+    {
+      label: 'Plugins',
+      url: '/plugins',
+      icon: PlugIcon,
+    },
+    {
+      label: 'Users & Roles',
+      url: '/users',
+      icon: UsersIcon,
+      visible: () => {
+        return hasPermission(Permission.USERS_READ);
+      },
+    },
+    {
+      label: 'Settings',
+      url: '/settings',
+      icon: Settings2Icon,
+      subItems: [
+        {
+          label: 'General',
+          url: '/settings/general',
+        },
+        {
+          label: 'Storage',
+          url: '/settings/storage',
+        },
+        {
+          label: 'Search',
+          url: '/settings/search',
+          // icon: SearchIcon,
+        },
+      ],
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon" variant="floating">
@@ -125,29 +138,31 @@ export function AppSidebar() {
           {/* <SidebarGroupLabel>Dashboard</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
-              {sidebarItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                  {item.subItems && (
-                    <SidebarMenuSub>
-                      {item.subItems.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.label}>
-                          <SidebarMenuSubButton asChild>
-                            <Link to={subItem.url}>
-                              <span>{subItem.label}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  )}
-                </SidebarMenuItem>
-              ))}
+              {sidebarItems
+                .filter((item) => (item.visible ? item.visible() : true))
+                .map((item) => (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton asChild>
+                      <Link to={item.url}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    {item.subItems && (
+                      <SidebarMenuSub>
+                        {item.subItems.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.label}>
+                            <SidebarMenuSubButton asChild>
+                              <Link to={subItem.url}>
+                                <span>{subItem.label}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    )}
+                  </SidebarMenuItem>
+                ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
