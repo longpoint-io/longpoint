@@ -514,7 +514,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-03T20:29:36.626Z
+             * @example 2025-12-04T16:38:35.048Z
              */
             createdAt: string;
             /**
@@ -567,7 +567,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-03T20:29:36.626Z
+             * @example 2025-12-04T16:38:35.048Z
              */
             createdAt: string;
             /**
@@ -1131,13 +1131,13 @@ export interface components {
             /**
              * @description The permissions the role has
              * @example [
-             *       "asset:read",
-             *       "asset:update",
-             *       "asset:delete"
+             *       "assets:read",
+             *       "assets:update",
+             *       "assets:delete"
              *     ]
              * @enum {string}
              */
-            permissions: "asset:create" | "asset:read" | "asset:update" | "asset:delete" | "classifier:create" | "classifier:read" | "classifier:update" | "classifier:delete" | "collection:create" | "collection:read" | "collection:update" | "collection:delete" | "role:create" | "role:read" | "role:update" | "role:delete" | "search-index:create" | "search-index:read" | "search-index:delete" | "settings-page:read" | "storage-unit:create" | "storage-unit:read" | "storage-unit:update" | "storage-unit:delete" | "super";
+            permissions: "assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete";
         };
         CreateSearchIndex: {
             /**
@@ -1364,7 +1364,7 @@ export interface components {
              */
             name: string;
         };
-        RoleDetailsDto: {
+        RoleDetails: {
             /**
              * Format: date-time
              * @description When the role was created
@@ -1389,13 +1389,13 @@ export interface components {
             /**
              * @description The permissions the role has
              * @example [
-             *       "classifier:create",
-             *       "classifier:read",
-             *       "classifier:update",
-             *       "classifier:delete"
+             *       "classifiers:create",
+             *       "classifiers:read",
+             *       "classifiers:update",
+             *       "classifiers:delete"
              *     ]
              */
-            permissions: ("asset:create" | "asset:read" | "asset:update" | "asset:delete" | "classifier:create" | "classifier:read" | "classifier:update" | "classifier:delete" | "collection:create" | "collection:read" | "collection:update" | "collection:delete" | "role:create" | "role:read" | "role:update" | "role:delete" | "search-index:create" | "search-index:read" | "search-index:delete" | "settings-page:read" | "storage-unit:create" | "storage-unit:read" | "storage-unit:update" | "storage-unit:delete" | "super")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
             /**
              * Format: date-time
              * @description When the role was last updated
@@ -1729,13 +1729,13 @@ export interface components {
             /**
              * @description The permissions the role has
              * @example [
-             *       "asset:read",
-             *       "asset:update",
-             *       "asset:delete"
+             *       "assets:read",
+             *       "assets:update",
+             *       "assets:delete"
              *     ]
              * @enum {string}
              */
-            permissions?: "asset:create" | "asset:read" | "asset:update" | "asset:delete" | "classifier:create" | "classifier:read" | "classifier:update" | "classifier:delete" | "collection:create" | "collection:read" | "collection:update" | "collection:delete" | "role:create" | "role:read" | "role:update" | "role:delete" | "search-index:create" | "search-index:read" | "search-index:delete" | "settings-page:read" | "storage-unit:create" | "storage-unit:read" | "storage-unit:update" | "storage-unit:delete" | "super";
+            permissions?: "assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete";
         };
         UpdateStorageConfig: {
             /**
@@ -2642,7 +2642,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RoleDetailsDto"];
+                    "application/json": components["schemas"]["RoleDetails"];
                 };
             };
             /** @description Role already exists */
@@ -2681,7 +2681,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RoleDetailsDto"];
+                    "application/json": components["schemas"]["RoleDetails"];
                 };
             };
             /** @description Role not found */
@@ -2761,7 +2761,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RoleDetailsDto"];
+                    "application/json": components["schemas"]["RoleDetails"];
                 };
             };
             /** @description Role not found */

@@ -437,7 +437,7 @@ class UsersClient {
     /**
    * Create a user role
    */
-    async createRole(data: components['schemas']['CreateRole']): Promise<components['schemas']['RoleDetailsDto']> {
+    async createRole(data: components['schemas']['CreateRole']): Promise<components['schemas']['RoleDetails']> {
         const url = `roles`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -455,7 +455,7 @@ class UsersClient {
     /**
    * Get a user role
    */
-    async getRole(id: string): Promise<components['schemas']['RoleDetailsDto']> {
+    async getRole(id: string): Promise<components['schemas']['RoleDetails']> {
         const url = `roles/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -464,7 +464,7 @@ class UsersClient {
     /**
    * Update a user role
    */
-    async updateRole(id: string, data: components['schemas']['UpdateRole']): Promise<components['schemas']['RoleDetailsDto']> {
+    async updateRole(id: string, data: components['schemas']['UpdateRole']): Promise<components['schemas']['RoleDetails']> {
         const url = `roles/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;

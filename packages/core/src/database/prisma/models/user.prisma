@@ -1,14 +1,14 @@
 model User {
-  id            String     @id
+  id            String    @id
   name          String
   email         String
-  emailVerified Boolean    @default(false)
+  emailVerified Boolean   @default(false)
   image         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @default(now()) @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
-  roles         UserRole[]
+  roles         Role[]
 
   @@unique([email])
 }
@@ -54,13 +54,14 @@ model Verification {
 }
 
 model Role {
-  id          String           @id @default(cuid(2))
-  name        String           @unique
-  description String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @default(now()) @updatedAt
-  userRoles   UserRole[]
-  permissions RolePermission[]
+  id                String             @id @default(cuid(2))
+  name              String             @unique
+  description       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now()) @updatedAt
+  users             User[]
+  permissions       RolePermission[]
+  userRegistrations UserRegistration[]
 }
 
 model RolePermission {
@@ -71,11 +72,11 @@ model RolePermission {
   @@id([roleId, permission])
 }
 
-model UserRole {
-  userId String
-  roleId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@id([userId, roleId])
+model UserRegistration {
+  id        String   @id @default(cuid(2))
+  token     String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  roles     Role[]
 }

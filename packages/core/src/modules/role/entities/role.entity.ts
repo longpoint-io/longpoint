@@ -6,7 +6,7 @@ import {
 } from '@/shared/types/swagger.types';
 import { ErrorCode, Permission } from '@longpoint/types';
 import { HttpStatus } from '@nestjs/common';
-import { RoleDetailsDto, RoleDto } from '../dtos';
+import { RoleDetailsDto, RoleDto, RoleReferenceDto } from '../dtos';
 import { UpdateRoleDto } from '../dtos/update-role.dto';
 import { RoleAlreadyExists, RoleNotFoundError } from '../role.errors';
 import { SelectedRoleDetails, selectRoleDetails } from '../role.selectors';
@@ -104,7 +104,7 @@ export class RoleEntity implements Serializable {
         where: {
           roles: {
             some: {
-              roleId: this.id,
+              id: this.id,
             },
           },
         },
@@ -145,8 +145,13 @@ export class RoleEntity implements Serializable {
     });
   }
 
-  toDto(version?: Omit<SerializableVersion, 'reference'>) {
+  toDto(version?: SerializableVersion) {
     switch (version) {
+      case 'reference':
+        return new RoleReferenceDto({
+          id: this.id,
+          name: this.name,
+        });
       case 'details':
         return new RoleDetailsDto({
           id: this.id,

@@ -14,6 +14,7 @@ import {
   StorageModule,
   SystemModule,
   UploadModule,
+  UserModule,
 } from './modules';
 import { AuthGuard, getStaticModule, HttpExceptionFilter } from './modules/app';
 import { EventModule } from './modules/event';
@@ -37,6 +38,7 @@ import { EventModule } from './modules/event';
     SystemModule,
     StorageModule,
     UploadModule,
+    UserModule,
   ],
   providers: [
     {

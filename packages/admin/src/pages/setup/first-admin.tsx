@@ -56,6 +56,11 @@ export function FirstAdminSetup() {
         email: data.email,
         name: data.name,
         password: data.password,
+        fetchOptions: {
+          query: {
+            registrationToken: '1234567890',
+          },
+        },
       });
 
       if (result.error) {

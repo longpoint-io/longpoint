@@ -11,3 +11,4 @@ export { SearchModule } from './search';
 export { StorageModule } from './storage';
 export { SystemModule } from './system';
 export { UploadModule } from './upload';
+export { UserModule } from './user';

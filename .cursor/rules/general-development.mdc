@@ -8,6 +8,9 @@ alwaysApply: true
 * Use kebab-case for react component file names. E.g. "my-component.tsx"
 * Use the cn utility to join classes together (import { cn } from "@longpoint/ui/utils")
 
+## Guidelines for core API
+* When creating "update" counterparts to "create" dtos, try to use the PartialType utility
+
 ## Fullstack considerations
 * When creating/updating API endpoints, run `npx nx build @longpoint/sdk` to regenerate the typescript client. You may then use the regenerated client when building Admin UI.
 * If changing database schema, you may need to push the schema and regenerate types. Ask for confirmation to run `npx nx db:push core`
