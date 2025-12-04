@@ -70,7 +70,7 @@ export class RoleEntity implements Serializable {
             name: newName,
             description: newDescription,
             permissions: {
-              deleteMany: {},
+              deleteMany: newPermissions ? {} : undefined,
               createMany: newPermissions
                 ? {
                     data: newPermissions.map((permission) => ({
