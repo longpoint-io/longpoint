@@ -9,10 +9,12 @@ import {
   LoggerModule,
   MediaModule,
   PluginModule,
+  RoleModule,
   SearchModule,
   StorageModule,
   SystemModule,
   UploadModule,
+  UserModule,
 } from './modules';
 import { AuthGuard, getStaticModule, HttpExceptionFilter } from './modules/app';
 import { EventModule } from './modules/event';
@@ -31,10 +33,12 @@ import { EventModule } from './modules/event';
     CollectionModule,
     FileDeliveryModule,
     MediaModule,
+    RoleModule,
     SearchModule,
     SystemModule,
     StorageModule,
     UploadModule,
+    UserModule,
   ],
   providers: [
     {

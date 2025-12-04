@@ -1,3 +1,4 @@
+import { DEFAULT_ROLES } from '@longpoint/types';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services';
 import { SetupStatusDto } from './dtos/setup-status.dto';
@@ -8,12 +9,11 @@ export class SystemService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getSetupStatus() {
-    const hasSuperAdmin = await this.prismaService.userRole.findFirst({
+    const hasSuperAdmin = await this.prismaService.user.findFirst({
       where: {
-        role: {
-          name: {
-            equals: 'Super Admin',
-            mode: 'insensitive',
+        roles: {
+          some: {
+            name: DEFAULT_ROLES.superAdmin.name,
           },
         },
       },

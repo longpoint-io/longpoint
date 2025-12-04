@@ -39,7 +39,7 @@ export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 
   @Get()
-  @RequirePermission(Permission.ASSET_READ)
+  @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
     summary: 'List assets',
     operationId: 'listAssets',
@@ -55,7 +55,7 @@ export class AssetController {
   }
 
   @Post()
-  @RequirePermission(Permission.ASSET_CREATE)
+  @RequirePermission(Permission.ASSETS_CREATE)
   @ApiOperation({
     summary: 'Create an asset',
     operationId: 'createAsset',
@@ -79,7 +79,7 @@ export class AssetController {
   }
 
   @Get(':assetId')
-  @RequirePermission(Permission.ASSET_READ)
+  @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
     summary: 'Get an asset',
     operationId: 'getAsset',
@@ -92,7 +92,7 @@ export class AssetController {
   }
 
   @Patch(':assetId')
-  @RequirePermission(Permission.ASSET_UPDATE)
+  @RequirePermission(Permission.ASSETS_UPDATE)
   @ApiOperation({
     summary: 'Update an asset',
     operationId: 'updateAsset',
@@ -110,7 +110,7 @@ export class AssetController {
   }
 
   @Delete(':assetId')
-  @RequirePermission(Permission.ASSET_DELETE)
+  @RequirePermission(Permission.ASSETS_DELETE)
   @ApiOperation({
     summary: 'Delete an asset',
     operationId: 'deleteAsset',

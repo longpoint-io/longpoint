@@ -15,7 +15,7 @@ export class AssetLinkGeneratorController {
   ) {}
 
   @Post()
-  @RequirePermission(Permission.ASSET_READ)
+  @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
     summary: 'Generate links for assets',
     operationId: 'generateLinks',

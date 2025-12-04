@@ -6,7 +6,6 @@ import { Button } from '@longpoint/ui/components/button';
 import {
   Empty,
   EmptyContent,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -83,12 +82,8 @@ export function Assets() {
                   <UploadIcon className="h-12 w-12" />
                 </EmptyMedia>
                 <EmptyTitle className="text-2xl">
-                  No media in your library
+                  No assets uploaded yet
                 </EmptyTitle>
-                <EmptyDescription className="text-base">
-                  Get started by uploading your first media files to organize
-                  and manage your content.
-                </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
                 <Button onClick={handleUpload} size="lg">

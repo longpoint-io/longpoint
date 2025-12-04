@@ -1,3 +1,4 @@
+import { Permission } from '@longpoint/types';
 import { createContext, useContext, type ReactNode } from 'react';
 import { authClient } from './auth-client';
 
@@ -7,6 +8,7 @@ interface AuthContextValue {
   error: ReturnType<typeof authClient.useSession>['error'];
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  hasPermission: (permission: Permission) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -22,6 +24,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await refetch();
   };
 
+  const hasPermission = (permission: Permission) => {
+    const user = session?.user;
+    if (user) {
+      if ('permissions' in user) {
+        const permissions = user.permissions as Record<Permission, boolean>;
+        return permissions[permission] || permissions[Permission.SUPER];
+      }
+    }
+    return false;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -30,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         signOut,
         refreshSession,
+        hasPermission,
       }}
     >
       {children}

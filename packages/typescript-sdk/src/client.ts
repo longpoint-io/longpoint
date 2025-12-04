@@ -1,5 +1,6 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import type { paths, components } from './types';
+import { LongpointError } from './error';
 
 export interface ClientConfig {
   baseUrl?: string;
@@ -14,6 +15,7 @@ export class Longpoint {
   assets: AssetsClient;
   storage: StorageClient;
   collections: CollectionsClient;
+  users: UsersClient;
   search: SearchClient;
   system: SystemClient;
 
@@ -26,11 +28,24 @@ export class Longpoint {
         ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` })
       }
     });
+
+    // Add response interceptor to convert AxiosError to LongpointError
+    this.httpClient.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        if (error.response && error.response.status >= 400) {
+          throw LongpointError.fromAxiosError(error);
+        }
+        throw error;
+      }
+    );
+
     this.plugins = new PluginsClient(this.httpClient);
     this.analysis = new AnalysisClient(this.httpClient);
     this.assets = new AssetsClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.collections = new CollectionsClient(this.httpClient);
+    this.users = new UsersClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
   }
@@ -425,6 +440,141 @@ class CollectionsClient {
     async removeAssetsFromCollection(id: string, data: components['schemas']['RemoveAssetsFromCollection']): Promise<void> {
         const url = `collections/${encodeURIComponent(String(id))}/assets`;
         const response = await this.httpClient.delete(url, { data });
+        return response.data;
+  }
+}
+
+class UsersClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Create a user role
+   */
+    async createRole(data: components['schemas']['CreateRole']): Promise<components['schemas']['RoleDetails']> {
+        const url = `roles`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List available user roles
+   */
+    async listRoles(): Promise<components['schemas']['Role'][]> {
+        const url = `roles`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a user role
+   */
+    async getRole(id: string): Promise<components['schemas']['RoleDetails']> {
+        const url = `roles/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a user role
+   */
+    async updateRole(id: string, data: components['schemas']['UpdateRole']): Promise<components['schemas']['RoleDetails']> {
+        const url = `roles/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a user role
+   */
+    async deleteRole(id: string): Promise<void> {
+        const url = `roles/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * List users
+   */
+    async listUsers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListUsersResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `users${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a user
+   */
+    async getUser(userId: string): Promise<components['schemas']['User']> {
+        const url = `users/${encodeURIComponent(String(userId))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a user
+   */
+    async updateUser(userId: string, data: components['schemas']['UpdateUser']): Promise<components['schemas']['User']> {
+        const url = `users/${encodeURIComponent(String(userId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a user
+   */
+    async deleteUser(userId: string): Promise<void> {
+        const url = `users/${encodeURIComponent(String(userId))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * Create a user registration
+   *
+   * Creates a registration token that an external user can use to complete their signup.
+   */
+    async createUserRegistration(data: components['schemas']['CreateUserRegistration']): Promise<components['schemas']['CreateUserRegistrationResponse']> {
+        const url = `user-registrations`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List user registrations
+   */
+    async listUserRegistrations(): Promise<components['schemas']['UserRegistration'][]> {
+        const url = `user-registrations`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Revoke a user registration
+   *
+   * Invalidates the registration token, preventing a user from signing up with it.
+   */
+    async revokeUserRegistration(userRegistrationId: string): Promise<void> {
+        const url = `user-registrations/${encodeURIComponent(String(userRegistrationId))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * Get a user registration
+   */
+    async getUserRegistration(token: string): Promise<components['schemas']['UserRegistration']> {
+        const url = `user-registrations/${encodeURIComponent(String(token))}`;
+        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

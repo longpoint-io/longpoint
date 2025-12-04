@@ -32,7 +32,7 @@ export class ClassifierController {
   constructor(private readonly classifierService: ClassifierService) {}
 
   @Post()
-  @RequirePermission(Permission.CLASSIFIER_CREATE)
+  @RequirePermission(Permission.CLASSIFIERS_CREATE)
   @ApiOperation({
     summary: 'Create a classifier',
     operationId: 'createClassifier',
@@ -44,7 +44,7 @@ export class ClassifierController {
   }
 
   @Get(':classifierId')
-  @RequirePermission(Permission.CLASSIFIER_READ)
+  @RequirePermission(Permission.CLASSIFIERS_READ)
   @ApiOperation({
     summary: 'Get a classifier',
     operationId: 'getClassifier',
@@ -59,7 +59,7 @@ export class ClassifierController {
   }
 
   @Get()
-  @RequirePermission(Permission.CLASSIFIER_READ)
+  @RequirePermission(Permission.CLASSIFIERS_READ)
   @ApiOperation({
     summary: 'List classifiers',
     operationId: 'listClassifiers',
@@ -71,7 +71,7 @@ export class ClassifierController {
   }
 
   @Patch(':classifierId')
-  @RequirePermission(Permission.CLASSIFIER_UPDATE)
+  @RequirePermission(Permission.CLASSIFIERS_UPDATE)
   @ApiOperation({
     summary: 'Update a classifier',
     operationId: 'updateClassifier',
@@ -90,7 +90,7 @@ export class ClassifierController {
   }
 
   @Delete(':classifierId')
-  @RequirePermission(Permission.CLASSIFIER_DELETE)
+  @RequirePermission(Permission.CLASSIFIERS_DELETE)
   @ApiOperation({
     summary: 'Delete a classifier',
     operationId: 'deleteClassifier',

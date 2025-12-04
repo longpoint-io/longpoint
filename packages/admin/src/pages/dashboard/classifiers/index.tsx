@@ -1,10 +1,11 @@
+import { useAuth } from '@/auth';
 import { ClassifierCard } from '@/components/classifier-card';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Empty,
   EmptyContent,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -17,6 +18,8 @@ import { useNavigate } from 'react-router-dom';
 export function Classifiers() {
   const client = useClient();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission(Permission.CLASSIFIERS_CREATE);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['classifiers'],
@@ -79,10 +82,12 @@ export function Classifiers() {
             Automatically analyze your media
           </p>
         </div>
-        <Button onClick={() => navigate('/classifiers/create')}>
-          <Plus className="h-4 w-4" />
-          Create Classifier
-        </Button>
+        {canCreate && (
+          <Button onClick={() => navigate('/classifiers/create')}>
+            <Plus className="h-4 w-4" />
+            Create Classifier
+          </Button>
+        )}
       </div>
 
       {isEmpty ? (
@@ -95,16 +100,18 @@ export function Classifiers() {
               <EmptyTitle className="text-2xl">
                 No classifiers created yet
               </EmptyTitle>
-              <EmptyDescription className="text-base">
-                Get started by creating your first classifier
-              </EmptyDescription>
             </EmptyHeader>
-            <EmptyContent>
-              <Button onClick={() => navigate('/classifiers/create')} size="lg">
-                <Plus className="h-5 w-5" />
-                Create
-              </Button>
-            </EmptyContent>
+            {canCreate && (
+              <EmptyContent>
+                <Button
+                  onClick={() => navigate('/classifiers/create')}
+                  size="lg"
+                >
+                  <Plus className="h-5 w-5" />
+                  Create
+                </Button>
+              </EmptyContent>
+            )}
           </Empty>
         </div>
       ) : (

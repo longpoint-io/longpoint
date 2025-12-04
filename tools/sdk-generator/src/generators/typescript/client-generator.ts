@@ -43,8 +43,9 @@ class TypeScriptClientGenerator {
       this.generateClientInitializations(groupedOps);
     const resourceClasses = this.generateResourceClasses(groupedOps);
 
-    return `import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+    return `import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import type { paths, components } from './types';
+import { LongpointError } from './error';
 
 export interface ClientConfig {
   baseUrl?: string;
@@ -65,6 +66,18 @@ ${clientMethods}
         ...(config.apiKey && { Authorization: \`Bearer \${config.apiKey}\` })
       }
     });
+
+    // Add response interceptor to convert AxiosError to LongpointError
+    this.httpClient.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        if (error.response && error.response.status >= 400) {
+          throw LongpointError.fromAxiosError(error);
+        }
+        throw error;
+      }
+    );
+
 ${clientInitializations}
   }
 }
@@ -81,6 +94,10 @@ export default longpoint;
     return `// Main SDK exports
 export { longpoint, Longpoint } from './client';
 export type { ClientConfig } from './client';
+
+// Export error classes
+export { LongpointError } from './error';
+export type { LongpointErrorResponse } from './error';
 
 // Re-export types from the generated types file
 export type * from './types';

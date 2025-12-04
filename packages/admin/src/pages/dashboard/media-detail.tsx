@@ -1,8 +1,10 @@
+import { useAuth } from '@/auth';
 import { AssetType } from '@/components/asset-type';
 import { useClient } from '@/hooks/common';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { components } from '@longpoint/sdk';
 import { Longpoint } from '@longpoint/sdk';
+import { Permission } from '@longpoint/types';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -276,7 +278,10 @@ export function AssetDetail() {
   const { id } = useParams<{ id: string }>();
   const client = useClient();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
   const queryClient = useQueryClient();
+  const canUpdate = hasPermission(Permission.ASSETS_UPDATE);
+  const canDelete = hasPermission(Permission.ASSETS_DELETE);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [permanentlyDelete, setPermanentlyDelete] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
@@ -515,14 +520,19 @@ export function AssetDetail() {
               />
             </PopoverContent>
           </Popover>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="icon" onClick={() => setRenameDialogOpen(true)}>
-                <EditIcon />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Rename</TooltipContent>
-          </Tooltip>
+          {canUpdate && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="icon"
+                  onClick={() => setRenameDialogOpen(true)}
+                >
+                  <EditIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Rename</TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -535,14 +545,19 @@ export function AssetDetail() {
             </TooltipTrigger>
             <TooltipContent>Download</TooltipContent>
           </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
-                <Trash2 className="text-destructive" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Delete</TooltipContent>
-          </Tooltip>
+          {canDelete && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="icon"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="text-destructive" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Delete</TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </div>
 

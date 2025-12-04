@@ -16,7 +16,7 @@ export class StorageProviderController {
   ) {}
 
   @Get()
-  @RequirePermission(Permission.STORAGE_UNIT_READ)
+  @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'List installed storage providers',
     operationId: 'listStorageProviders',
