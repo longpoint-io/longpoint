@@ -1,4 +1,6 @@
+import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -50,7 +52,11 @@ export function StorageProviderConfigDetail() {
   const { configId } = useParams<{ configId: string }>();
   const client = useClient();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
   const queryClient = useQueryClient();
+  const canCreateUnit = hasPermission(Permission.STORAGE_UNITS_CREATE);
+  const canUpdateUnit = hasPermission(Permission.STORAGE_UNITS_UPDATE);
+  const canDeleteUnit = hasPermission(Permission.STORAGE_UNITS_DELETE);
   const [showConfigDetails, setShowConfigDetails] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -291,10 +297,12 @@ export function StorageProviderConfigDetail() {
                 Storage units using this configuration
               </CardDescription>
             </div>
-            <Button onClick={() => setCreateUnitDialogOpen(true)}>
-              <Plus className="h-4 w-4" />
-              Create Unit
-            </Button>
+            {canCreateUnit && (
+              <Button onClick={() => setCreateUnitDialogOpen(true)}>
+                <Plus className="h-4 w-4" />
+                Create Unit
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -368,22 +376,28 @@ export function StorageProviderConfigDetail() {
                         {new Date(unit.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditUnit(unit.id, unit.name)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteUnit(unit.id, unit.name)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        {(canUpdateUnit || canDeleteUnit) && (
+                          <div className="flex justify-end gap-2">
+                            {canUpdateUnit && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditUnit(unit.id, unit.name)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {canDeleteUnit && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteUnit(unit.id, unit.name)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

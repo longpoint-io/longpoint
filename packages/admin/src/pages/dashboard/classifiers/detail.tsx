@@ -1,5 +1,7 @@
 import { DeleteClassifierDialog } from '@/components/delete-classifier-dialog';
+import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
@@ -24,6 +26,8 @@ export function ClassifierDetail() {
   const { classifierId } = useParams<{ classifierId: string }>();
   const client = useClient();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
+  const canDelete = hasPermission(Permission.CLASSIFIERS_DELETE);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
@@ -87,10 +91,12 @@ export function ClassifierDetail() {
             )}
           </div>
         </div>
-        <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
-        </Button>
+        {canDelete && (
+          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

@@ -1,10 +1,11 @@
+import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import { Card, CardContent, CardHeader } from '@longpoint/ui/components/card';
 import {
   Empty,
   EmptyContent,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -18,6 +19,8 @@ import { StorageProviderConfigCard } from './storage-settings/storage-provider-c
 
 export function StorageSettings() {
   const client = useClient();
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission(Permission.STORAGE_UNITS_CREATE);
   const [createConfigDialogOpen, setCreateConfigDialogOpen] = useState(false);
 
   const {
@@ -43,10 +46,12 @@ export function StorageSettings() {
               Manage storage provider connections
             </p>
           </div>
-          <Button onClick={() => setCreateConfigDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Create Config
-          </Button>
+          {canCreate && (
+            <Button onClick={() => setCreateConfigDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Create Config
+            </Button>
+          )}
         </div>
 
         {isLoadingConfigs ? (
@@ -82,23 +87,20 @@ export function StorageSettings() {
                   <Settings className="h-12 w-12" />
                 </EmptyMedia>
                 <EmptyTitle className="text-2xl">
-                  No storage provider configs created yet
+                  No storage settings created yet
                 </EmptyTitle>
-                <EmptyDescription className="text-base">
-                  Storage provider configs define shared configurations that can
-                  be used by multiple storage units. Get started by creating
-                  your first config.
-                </EmptyDescription>
               </EmptyHeader>
-              <EmptyContent>
-                <Button
-                  onClick={() => setCreateConfigDialogOpen(true)}
-                  size="lg"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create Your First Config
-                </Button>
-              </EmptyContent>
+              {canCreate && (
+                <EmptyContent>
+                  <Button
+                    onClick={() => setCreateConfigDialogOpen(true)}
+                    size="lg"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Create Your First Config
+                  </Button>
+                </EmptyContent>
+              )}
             </Empty>
           </div>
         ) : (

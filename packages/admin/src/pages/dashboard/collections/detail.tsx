@@ -1,6 +1,8 @@
 import { AssetGrid } from '@/components/asset-grid';
 import { AssetTable } from '@/components/asset-table';
+import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -72,7 +74,10 @@ export function CollectionDetail() {
   const { id } = useParams<{ id: string }>();
   const client = useClient();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
   const queryClient = useQueryClient();
+  const canUpdate = hasPermission(Permission.COLLECTIONS_UPDATE);
+  const canDelete = hasPermission(Permission.COLLECTIONS_DELETE);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [removeAssetsDialogOpen, setRemoveAssetsDialogOpen] = useState(false);
@@ -254,24 +259,30 @@ export function CollectionDetail() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="icon" onClick={() => setEditDialogOpen(true)}>
-                <EditIcon />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Edit</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
-                <Trash2 className="text-destructive" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Delete</TooltipContent>
-          </Tooltip>
-        </div>
+        {(canUpdate || canDelete) && (
+          <div className="flex items-center gap-2">
+            {canUpdate && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="icon" onClick={() => setEditDialogOpen(true)}>
+                    <EditIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Edit</TooltipContent>
+              </Tooltip>
+            )}
+            {canDelete && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="icon" onClick={() => setDeleteDialogOpen(true)}>
+                    <Trash2 className="text-destructive" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Details Subheader */}

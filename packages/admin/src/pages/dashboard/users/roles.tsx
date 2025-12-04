@@ -1,3 +1,4 @@
+import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DEFAULT_ROLES, Permission } from '@longpoint/types';
@@ -20,7 +21,6 @@ import {
 import {
   Empty,
   EmptyContent,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -77,7 +77,11 @@ const ALL_PERMISSIONS = Object.values(Permission)
 
 export function Roles() {
   const client = useClient();
+  const { hasPermission } = useAuth();
   const queryClient = useQueryClient();
+  const canCreate = hasPermission(Permission.ROLES_CREATE);
+  const canUpdate = hasPermission(Permission.ROLES_UPDATE);
+  const canDelete = hasPermission(Permission.ROLES_DELETE);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -231,12 +235,14 @@ export function Roles() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-end">
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Create Role
-          </Button>
-        </div>
+        {canCreate && (
+          <div className="flex items-center justify-end">
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Create Role
+            </Button>
+          </div>
+        )}
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full" />
@@ -249,12 +255,14 @@ export function Roles() {
   if (error) {
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-end">
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Create Role
-          </Button>
-        </div>
+        {canCreate && (
+          <div className="flex items-center justify-end">
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Create Role
+            </Button>
+          </div>
+        )}
         <div className="text-center py-12">
           <p className="text-destructive">Failed to load roles</p>
         </div>
@@ -267,12 +275,14 @@ export function Roles() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-end">
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Create Role
-        </Button>
-      </div>
+      {canCreate && (
+        <div className="flex items-center justify-end">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Create Role
+          </Button>
+        </div>
+      )}
 
       {isEmpty ? (
         <div className="py-12">
@@ -282,16 +292,15 @@ export function Roles() {
                 <ShieldIcon className="h-12 w-12" />
               </EmptyMedia>
               <EmptyTitle className="text-2xl">No roles created yet</EmptyTitle>
-              <EmptyDescription className="text-base">
-                Get started by creating your first role
-              </EmptyDescription>
             </EmptyHeader>
-            <EmptyContent>
-              <Button onClick={() => setCreateDialogOpen(true)} size="lg">
-                <Plus className="h-5 w-5" />
-                Create Role
-              </Button>
-            </EmptyContent>
+            {canCreate && (
+              <EmptyContent>
+                <Button onClick={() => setCreateDialogOpen(true)} size="lg">
+                  <Plus className="h-5 w-5" />
+                  Create Role
+                </Button>
+              </EmptyContent>
+            )}
           </Empty>
         </div>
       ) : (
@@ -323,23 +332,27 @@ export function Roles() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleEdit({ id: role.id, name: role.name })
-                          }
-                        >
-                          <PencilIcon />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleDelete({ id: role.id, name: role.name })
-                          }
-                          variant="destructive"
-                        >
-                          <TrashIcon />
-                          Delete
-                        </DropdownMenuItem>
+                        {canUpdate && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleEdit({ id: role.id, name: role.name })
+                            }
+                          >
+                            <PencilIcon />
+                            Edit
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleDelete({ id: role.id, name: role.name })
+                            }
+                            variant="destructive"
+                          >
+                            <TrashIcon />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

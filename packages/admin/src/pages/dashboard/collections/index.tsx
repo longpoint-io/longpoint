@@ -1,10 +1,11 @@
+import { useAuth } from '@/auth';
 import { CollectionCard } from '@/components/collection-card';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Empty,
   EmptyContent,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -19,6 +20,8 @@ import { CreateCollectionDialog } from './create-collection-dialog';
 export function Collections() {
   const client = useClient();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission(Permission.COLLECTIONS_CREATE);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
@@ -82,10 +85,12 @@ export function Collections() {
             Organize assets into collections
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Create Collection
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Create Collection
+          </Button>
+        )}
       </div>
 
       {isEmpty ? (
@@ -98,16 +103,15 @@ export function Collections() {
               <EmptyTitle className="text-2xl">
                 No collections created yet
               </EmptyTitle>
-              <EmptyDescription className="text-base">
-                Get started by creating your first collection
-              </EmptyDescription>
             </EmptyHeader>
-            <EmptyContent>
-              <Button onClick={() => setCreateDialogOpen(true)} size="lg">
-                <Plus className="h-5 w-5" />
-                Create
-              </Button>
-            </EmptyContent>
+            {canCreate && (
+              <EmptyContent>
+                <Button onClick={() => setCreateDialogOpen(true)} size="lg">
+                  <Plus className="h-5 w-5" />
+                  Create
+                </Button>
+              </EmptyContent>
+            )}
           </Empty>
         </div>
       ) : (

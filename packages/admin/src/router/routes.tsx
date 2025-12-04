@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom';
+import { Permission } from '@longpoint/types';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { AuthLayout } from '../layouts/auth-layout';
 import { DashboardLayout } from '../layouts/dashboard-layout';
 import { SignIn } from '../pages/auth/sign-in';
@@ -17,10 +18,12 @@ import { SearchResults } from '../pages/dashboard/search-results';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
 import { UsersAndRoles } from '../pages/dashboard/users/users-and-roles';
+import { NotFound } from '../pages/not-found';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
 import {
   AuthGuard,
   AuthenticatedGuard,
+  PermissionGuard,
   SetupCompleteGuard,
   SetupGuard,
 } from './guards';
@@ -77,9 +80,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <Assets />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.ASSETS_READ}>
+                <DashboardLayout>
+                  <Assets />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -101,21 +106,55 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <AssetDetail />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.ASSETS_READ}>
+                <DashboardLayout>
+                  <AssetDetail />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
       />
       <Route
-        path="/settings/:tab?"
+        path="/settings"
+        element={<Navigate to="/settings/general" replace />}
+      />
+      <Route
+        path="/settings/general"
         element={
           <SetupGuard>
             <AuthGuard>
               <DashboardLayout>
                 <Settings />
               </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/settings/storage"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.STORAGE_UNITS_READ}>
+                <DashboardLayout>
+                  <Settings />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/settings/search"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.SEARCH_INDEXES_READ}>
+                <DashboardLayout>
+                  <Settings />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -137,9 +176,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <Classifiers />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.CLASSIFIERS_READ}>
+                <DashboardLayout>
+                  <Classifiers />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -149,9 +190,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <CreateClassifier />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.CLASSIFIERS_CREATE}>
+                <DashboardLayout>
+                  <CreateClassifier />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -161,9 +204,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <ClassifierDetail />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.CLASSIFIERS_READ}>
+                <DashboardLayout>
+                  <ClassifierDetail />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -197,9 +242,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <Collections />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.COLLECTIONS_READ}>
+                <DashboardLayout>
+                  <Collections />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -209,9 +256,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <CollectionDetail />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.COLLECTIONS_READ}>
+                <DashboardLayout>
+                  <CollectionDetail />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -221,9 +270,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <UsersAndRoles />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.USERS_READ}>
+                <DashboardLayout>
+                  <UsersAndRoles />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -233,9 +284,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <UsersAndRoles />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.ROLES_READ}>
+                <DashboardLayout>
+                  <UsersAndRoles />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }
@@ -245,8 +298,22 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
+              <PermissionGuard permission={Permission.USERS_READ}>
+                <DashboardLayout>
+                  <UsersAndRoles />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="*"
+        element={
+          <SetupGuard>
+            <AuthGuard>
               <DashboardLayout>
-                <UsersAndRoles />
+                <NotFound />
               </DashboardLayout>
             </AuthGuard>
           </SetupGuard>

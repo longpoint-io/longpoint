@@ -1,3 +1,5 @@
+import { useAuth } from '@/auth';
+import { Permission } from '@longpoint/types';
 import {
   Tabs,
   TabsContent,
@@ -23,12 +25,17 @@ const TAB_ROUTES: Record<TabValue, string> = {
 export function UsersAndRoles() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { hasPermission } = useAuth();
+  const canReadUsers = hasPermission(Permission.USERS_READ);
+  const canReadRoles = hasPermission(Permission.ROLES_READ);
 
   // Determine current tab from pathname
   const getCurrentTab = (): TabValue => {
-    if (location.pathname === '/users/roles') return 'roles';
-    if (location.pathname === '/users/pending') return 'pending';
-    return 'users'; // default to users
+    if (location.pathname === '/users/roles' && canReadRoles) return 'roles';
+    if (location.pathname === '/users/pending' && canReadUsers) return 'pending';
+    if (canReadUsers) return 'users';
+    if (canReadRoles) return 'roles';
+    return 'users'; // fallback
   };
 
   const currentTab = getCurrentTab();
@@ -56,28 +63,40 @@ export function UsersAndRoles() {
       <h2 className="text-3xl font-bold">Users & Roles</h2>
       <Tabs value={currentTab} onValueChange={handleTabChange}>
         <TabsList className="mb-6">
-          <TabsTrigger value="users">
-            <UserIcon className="h-4 w-4" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="roles">
-            <ShieldIcon className="h-4 w-4" />
-            Roles
-          </TabsTrigger>
-          <TabsTrigger value="pending">
-            <MailIcon className="h-4 w-4" />
-            Pending Users
-          </TabsTrigger>
+          {canReadUsers && (
+            <TabsTrigger value="users">
+              <UserIcon className="h-4 w-4" />
+              Users
+            </TabsTrigger>
+          )}
+          {canReadRoles && (
+            <TabsTrigger value="roles">
+              <ShieldIcon className="h-4 w-4" />
+              Roles
+            </TabsTrigger>
+          )}
+          {canReadUsers && (
+            <TabsTrigger value="pending">
+              <MailIcon className="h-4 w-4" />
+              Pending Users
+            </TabsTrigger>
+          )}
         </TabsList>
-        <TabsContent value="users">
-          <Users />
-        </TabsContent>
-        <TabsContent value="roles">
-          <Roles />
-        </TabsContent>
-        <TabsContent value="pending">
-          <Registrations />
-        </TabsContent>
+        {canReadUsers && (
+          <TabsContent value="users">
+            <Users />
+          </TabsContent>
+        )}
+        {canReadRoles && (
+          <TabsContent value="roles">
+            <Roles />
+          </TabsContent>
+        )}
+        {canReadUsers && (
+          <TabsContent value="pending">
+            <Registrations />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

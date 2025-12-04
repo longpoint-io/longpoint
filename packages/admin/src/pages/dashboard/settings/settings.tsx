@@ -1,3 +1,5 @@
+import { useAuth } from '@/auth';
+import { Permission } from '@longpoint/types';
 import {
   Tabs,
   TabsContent,
@@ -6,7 +8,7 @@ import {
 } from '@longpoint/ui/components/tabs';
 import { BoxIcon, SearchIcon, SettingsIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { GeneralSettings } from './general-settings';
 import { NotificationSettings } from './notification-settings';
 import { SearchSettings } from './search-settings';
@@ -15,36 +17,42 @@ import { StorageSettings } from './storage-settings';
 const VALID_TABS = ['general', 'storage', 'search'] as const;
 type TabValue = (typeof VALID_TABS)[number];
 
+const TAB_ROUTES: Record<TabValue, string> = {
+  general: '/settings/general',
+  storage: '/settings/storage',
+  search: '/settings/search',
+};
+
 export function Settings() {
-  const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { hasPermission } = useAuth();
 
-  const currentTab: TabValue =
-    tab && VALID_TABS.includes(tab as TabValue) ? (tab as TabValue) : 'general';
+  // Determine current tab from pathname
+  const getCurrentTab = (): TabValue => {
+    const pathname = location.pathname;
+    if (pathname === '/settings/storage') return 'storage';
+    if (pathname === '/settings/search') return 'search';
+    return 'general'; // default to general
+  };
 
+  const currentTab = getCurrentTab();
   const currentTabRef = useRef(currentTab);
 
   useEffect(() => {
-    // Default path when tab is invalid
-    if (!tab || !VALID_TABS.includes(tab as TabValue)) {
-      navigate('/settings/general', { replace: true });
-    }
-  }, [tab, navigate]);
-
-  useEffect(() => {
     // Make sure the current tab stays in sync when navigating back/forward
-    const currentTab = location.pathname.split('/').pop() as TabValue;
-    if (currentTab && VALID_TABS.includes(currentTab)) {
-      currentTabRef.current = currentTab;
+    const tab = getCurrentTab();
+    if (VALID_TABS.includes(tab)) {
+      currentTabRef.current = tab;
     }
   }, [location.pathname]);
 
   const handleTabChange = (value: string) => {
+    const tabValue = value as TabValue;
     // onValueChange triggers on mount, so do this to prevent redundant navigation
-    if (value !== currentTabRef.current) {
-      currentTabRef.current = value as TabValue;
-      navigate(`/settings/${value}`);
+    if (tabValue !== currentTabRef.current && VALID_TABS.includes(tabValue)) {
+      currentTabRef.current = tabValue;
+      navigate(TAB_ROUTES[tabValue]);
     }
   };
 
@@ -57,14 +65,18 @@ export function Settings() {
             <SettingsIcon className="h-4 w-4" />
             General
           </TabsTrigger>
-          <TabsTrigger value="storage">
-            <BoxIcon className="h-4 w-4" />
-            Storage
-          </TabsTrigger>
-          <TabsTrigger value="search">
-            <SearchIcon className="h-4 w-4" />
-            Search
-          </TabsTrigger>
+          {hasPermission(Permission.STORAGE_UNITS_READ) && (
+            <TabsTrigger value="storage">
+              <BoxIcon className="h-4 w-4" />
+              Storage
+            </TabsTrigger>
+          )}
+          {hasPermission(Permission.SEARCH_INDEXES_READ) && (
+            <TabsTrigger value="search">
+              <SearchIcon className="h-4 w-4" />
+              Search
+            </TabsTrigger>
+          )}
           {/* <TabsTrigger value="notifications">
             <BellIcon className="h-4 w-4" />
             Notifications

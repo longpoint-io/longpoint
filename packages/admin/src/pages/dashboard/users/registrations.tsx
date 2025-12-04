@@ -1,4 +1,6 @@
+import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import {
@@ -39,7 +41,9 @@ import { toast } from 'sonner';
 
 export function Registrations() {
   const client = useClient();
+  const { hasPermission } = useAuth();
   const queryClient = useQueryClient();
+  const canDelete = hasPermission(Permission.USERS_DELETE);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRegistration, setSelectedRegistration] = useState<{
     id: string;
@@ -164,18 +168,20 @@ export function Registrations() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleDelete({
-                                id: registration.id,
-                                email: registration.email,
-                              })
-                            }
-                            variant="destructive"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                            Revoke
-                          </DropdownMenuItem>
+                          {canDelete && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleDelete({
+                                  id: registration.id,
+                                  email: registration.email,
+                                })
+                              }
+                              variant="destructive"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                              Revoke
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

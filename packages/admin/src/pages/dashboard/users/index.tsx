@@ -1,5 +1,6 @@
 import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
+import { Permission } from '@longpoint/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
@@ -65,8 +66,11 @@ type UpdateUserFormData = z.infer<typeof updateUserSchema>;
 
 export function Users() {
   const client = useClient();
-  const { session } = useAuth();
+  const { session, hasPermission } = useAuth();
   const queryClient = useQueryClient();
+  const canCreate = hasPermission(Permission.USERS_CREATE);
+  const canUpdate = hasPermission(Permission.USERS_UPDATE);
+  const canDelete = hasPermission(Permission.USERS_DELETE);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [createRegistrationDialogOpen, setCreateRegistrationDialogOpen] =
@@ -215,12 +219,14 @@ export function Users() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-end">
-        <Button onClick={() => setCreateRegistrationDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Add User
-        </Button>
-      </div>
+      {canCreate && (
+        <div className="flex items-center justify-end">
+          <Button onClick={() => setCreateRegistrationDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Add User
+          </Button>
+        </div>
+      )}
 
       {isEmpty ? (
         <div className="py-12">
@@ -269,11 +275,13 @@ export function Users() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(user.id)}>
-                          <PencilIcon />
-                          Edit
-                        </DropdownMenuItem>
-                        {user.id !== session?.user.id && (
+                        {canUpdate && (
+                          <DropdownMenuItem onClick={() => handleEdit(user.id)}>
+                            <PencilIcon />
+                            Edit
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && user.id !== session?.user.id && (
                           <DropdownMenuItem
                             onClick={() =>
                               handleDelete({ id: user.id, name: user.name })

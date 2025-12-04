@@ -88,8 +88,14 @@ export function AppSidebar() {
     },
     {
       label: 'Settings',
-      url: '/settings',
+      url: '/settings/general',
       icon: Settings2Icon,
+      visible: () => {
+        return [
+          Permission.STORAGE_UNITS_READ,
+          Permission.SEARCH_INDEXES_READ,
+        ].some(hasPermission);
+      },
       subItems: [
         {
           label: 'General',
@@ -98,11 +104,17 @@ export function AppSidebar() {
         {
           label: 'Storage',
           url: '/settings/storage',
+          visible: () => {
+            return hasPermission(Permission.STORAGE_UNITS_READ);
+          },
         },
         {
           label: 'Search',
           url: '/settings/search',
           // icon: SearchIcon,
+          visible: () => {
+            return hasPermission(Permission.SEARCH_INDEXES_READ);
+          },
         },
       ],
     },
@@ -150,15 +162,19 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                     {item.subItems && (
                       <SidebarMenuSub>
-                        {item.subItems.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.label}>
-                            <SidebarMenuSubButton asChild>
-                              <Link to={subItem.url}>
-                                <span>{subItem.label}</span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                        {item.subItems
+                          .filter((subItem) =>
+                            subItem.visible ? subItem.visible() : true
+                          )
+                          .map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.label}>
+                              <SidebarMenuSubButton asChild>
+                                <Link to={subItem.url}>
+                                  <span>{subItem.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
                       </SidebarMenuSub>
                     )}
                   </SidebarMenuItem>
