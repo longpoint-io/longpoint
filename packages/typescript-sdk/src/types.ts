@@ -495,6 +495,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/user-registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List user registrations */
+        get: operations["listUserRegistrations"];
+        put?: never;
+        /**
+         * Create a user registration
+         * @description Creates a registration token that an external user can use to complete their signup.
+         */
+        post: operations["createUserRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user-registrations/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a user registration */
+        get: operations["getUserRegistration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user-registrations/{userRegistrationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke a user registration
+         * @description Invalidates the registration token, preventing a user from signing up with it.
+         */
+        delete: operations["revokeUserRegistration"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List users */
+        get: operations["listUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a user */
+        get: operations["getUser"];
+        put?: never;
+        post?: never;
+        /** Delete a user */
+        delete: operations["deleteUser"];
+        options?: never;
+        head?: never;
+        /** Update a user */
+        patch: operations["updateUser"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -514,7 +608,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T16:38:35.048Z
+             * @example 2025-12-04T18:02:21.577Z
              */
             createdAt: string;
             /**
@@ -567,7 +661,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T16:38:35.048Z
+             * @example 2025-12-04T18:02:21.577Z
              */
             createdAt: string;
             /**
@@ -1202,6 +1296,33 @@ export interface components {
              */
             storageConfigId: string;
         };
+        CreateUserRegistration: {
+            /**
+             * @description The email address of the user
+             * @example theo@example.com
+             */
+            email: string;
+            /**
+             * @description One or more role IDs to assign to the user
+             * @example [
+             *       "123",
+             *       "456"
+             *     ]
+             */
+            roleIds: string[];
+        };
+        CreateUserRegistrationResponse: {
+            /**
+             * @description The URL to register the user
+             * @example https://longpoint.example.com/sign-up?token=abcdefghijklmnopqrst
+             */
+            registrationUrl: string;
+            /**
+             * @description The token used to register the user
+             * @example abcdefghijklmnopqrst
+             */
+            token: string;
+        };
         DeleteAsset: {
             /**
              * @description Whether to permanently delete the asset
@@ -1402,6 +1523,18 @@ export interface components {
              * @example 2025-01-01T00:00:00.000Z
              */
             updatedAt: string;
+        };
+        RoleReference: {
+            /**
+             * @description The ID of the role
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The name of the role
+             * @example Manager
+             */
+            name: string;
         };
         SearchIndex: {
             /**
@@ -1772,6 +1905,21 @@ export interface components {
              */
             storageConfigId?: string;
         };
+        UpdateUser: {
+            /**
+             * @description The email address of the user
+             * @example john.doe@example.com
+             */
+            email?: string;
+            /**
+             * @description One or more role IDs to assign to the user
+             * @example [
+             *       "123",
+             *       "456"
+             *     ]
+             */
+            roleIds?: string[];
+        };
         UpdateVectorProviderConfig: {
             /**
              * @description The configuration values for the vector provider
@@ -1780,6 +1928,57 @@ export interface components {
              *     }
              */
             config: Record<string, never>;
+        };
+        User: {
+            /**
+             * Format: date-time
+             * @description When the user was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The email address of the user
+             * @example john.doe@example.com
+             */
+            email: string;
+            /**
+             * @description The ID of the user
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The name of the user
+             * @example John Doe
+             */
+            name: string;
+            /** @description The roles the user has */
+            roles: components["schemas"]["RoleReference"][];
+        };
+        UserRegistration: {
+            /**
+             * Format: date-time
+             * @description The date and time the user registration was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The email address of the user
+             * @example theo@example.com
+             */
+            email: string;
+            /**
+             * Format: date-time
+             * @description The date and time the user registration expires, after which a new registration must be created.
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            expiresAt: string;
+            /**
+             * @description The ID of the user registration
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /** @description The roles the user will be assigned to */
+            roles: components["schemas"]["RoleReference"][];
         };
         VectorProvider: {
             /**
@@ -3352,6 +3551,267 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SystemStatus"];
+                };
+            };
+        };
+    };
+    listUserRegistrations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRegistration"][];
+                };
+            };
+        };
+    };
+    createUserRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUserRegistration"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateUserRegistrationResponse"];
+                };
+            };
+        };
+    };
+    getUserRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRegistration"];
+                };
+            };
+            /** @description User registration not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "User registration with id fjsbfjksbfmsajl1kih6emtwozh not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    revokeUserRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userRegistrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The user registration was revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description User registration not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "User registration with id fjsbfjksbfmsajl1kih6emtwozh not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    listUsers: {
+        parameters: {
+            query?: {
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["User"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "User with id fjsbfjksbfmsajl1kih6emtwozh not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The user was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "User with id fjsbfjksbfmsajl1kih6emtwozh not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUser"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["User"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "User with id fjsbfjksbfmsajl1kih6emtwozh not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
                 };
             };
         };

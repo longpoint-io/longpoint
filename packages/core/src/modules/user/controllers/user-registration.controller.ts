@@ -1,4 +1,4 @@
-import { ApiSdkTag, RequirePermission } from '@/shared/decorators';
+import { ApiSdkTag, Public, RequirePermission } from '@/shared/decorators';
 import { SdkTag } from '@/shared/types/swagger.types';
 import { Permission } from '@longpoint/types';
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
@@ -10,9 +10,10 @@ import { ApiUserRegistrationNotFoundResponse } from '../user.errors';
 
 @Controller('user-registrations')
 @ApiSdkTag(SdkTag.Users)
-@ApiBearerAuth()
 export class UserRegistrationController {
-  constructor(private readonly userService: UserRegistrationService) {}
+  constructor(
+    private readonly userRegistrationService: UserRegistrationService
+  ) {}
 
   @Post()
   @RequirePermission(Permission.USERS_CREATE)
@@ -23,8 +24,11 @@ export class UserRegistrationController {
     operationId: 'createUserRegistration',
   })
   @ApiOkResponse({ type: CreateUserRegistrationResponseDto })
+  @ApiBearerAuth()
   async createUserRegistration(@Body() body: CreateUserRegistrationDto) {
-    const response = await this.userService.createUserRegistration(body);
+    const response = await this.userRegistrationService.createUserRegistration(
+      body
+    );
     return new CreateUserRegistrationResponseDto(response);
   }
 
@@ -35,14 +39,16 @@ export class UserRegistrationController {
     operationId: 'listUserRegistrations',
   })
   @ApiOkResponse({ type: [UserRegistrationDto] })
+  @ApiBearerAuth()
   async listUserRegistrations() {
-    const registrations = await this.userService.listUserRegistrations();
+    const registrations =
+      await this.userRegistrationService.listUserRegistrations();
     return registrations.map(
       (registration) => new UserRegistrationDto(registration)
     );
   }
 
-  @Delete(':id')
+  @Delete(':userRegistrationId')
   @RequirePermission(Permission.USERS_DELETE)
   @ApiOperation({
     summary: 'Revoke a user registration',
@@ -52,7 +58,28 @@ export class UserRegistrationController {
   })
   @ApiOkResponse({ description: 'The user registration was revoked' })
   @ApiUserRegistrationNotFoundResponse()
-  async revokeUserRegistration(@Param('id') id: string) {
-    await this.userService.revokeUserRegistration(id);
+  @ApiBearerAuth()
+  async revokeUserRegistration(
+    @Param('userRegistrationId') userRegistrationId: string
+  ) {
+    await this.userRegistrationService.revokeUserRegistration(
+      userRegistrationId
+    );
+  }
+
+  @Get(':token')
+  @ApiOperation({
+    summary: 'Get a user registration',
+    operationId: 'getUserRegistration',
+  })
+  @ApiOkResponse({ type: UserRegistrationDto })
+  @ApiUserRegistrationNotFoundResponse()
+  @Public()
+  async getUserRegistration(@Param('token') token: string) {
+    const userRegistration =
+      await this.userRegistrationService.getUserRegistrationByTokenOrThrow(
+        token
+      );
+    return new UserRegistrationDto(userRegistration);
   }
 }

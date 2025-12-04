@@ -79,16 +79,28 @@ export class UserRegistrationService {
     });
   }
 
-  async revokeUserRegistration(id: string) {
+  async getUserRegistrationByTokenOrThrow(token: string) {
+    const userRegistration =
+      await this.prismaService.userRegistration.findUnique({
+        where: { token },
+        select: selectUserRegistration(),
+      });
+    if (!userRegistration) {
+      throw new UserRegistrationNotFound(token);
+    }
+    return userRegistration;
+  }
+
+  async revokeUserRegistration(userRegistrationId: string) {
     try {
       await this.prismaService.userRegistration.delete({
         where: {
-          id,
+          id: userRegistrationId,
         },
       });
     } catch (error) {
       if (PrismaService.isNotFoundError(error)) {
-        throw new UserRegistrationNotFound(id);
+        throw new UserRegistrationNotFound(userRegistrationId);
       }
       throw error;
     }

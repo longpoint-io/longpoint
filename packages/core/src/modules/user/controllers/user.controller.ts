@@ -37,7 +37,7 @@ export class UserController {
     });
   }
 
-  @Get(':id')
+  @Get(':userId')
   @RequirePermission(Permission.USERS_READ)
   @ApiOperation({
     summary: 'Get a user',
@@ -45,12 +45,12 @@ export class UserController {
   })
   @ApiOkResponse({ type: UserDto })
   @ApiUserNotFoundResponse()
-  async getUser(@Param('id') id: string) {
-    const user = await this.userService.getUserByIdOrThrow(id);
+  async getUser(@Param('userId') userId: string) {
+    const user = await this.userService.getUserByIdOrThrow(userId);
     return user.toDto();
   }
 
-  @Patch(':id')
+  @Patch(':userId')
   @RequirePermission(Permission.USERS_UPDATE)
   @ApiOperation({
     summary: 'Update a user',
@@ -58,13 +58,16 @@ export class UserController {
   })
   @ApiOkResponse({ type: UserDto })
   @ApiUserNotFoundResponse()
-  async updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    const user = await this.userService.getUserByIdOrThrow(id);
+  async updateUser(
+    @Param('userId') userId: string,
+    @Body() body: UpdateUserDto
+  ) {
+    const user = await this.userService.getUserByIdOrThrow(userId);
     await user.update(body);
     return user.toDto();
   }
 
-  @Delete(':id')
+  @Delete(':userId')
   @RequirePermission(Permission.USERS_DELETE)
   @ApiOperation({
     summary: 'Delete a user',
@@ -72,8 +75,8 @@ export class UserController {
   })
   @ApiOkResponse({ description: 'The user was deleted' })
   @ApiUserNotFoundResponse()
-  async deleteUser(@Param('id') id: string) {
-    const user = await this.userService.getUserByIdOrThrow(id);
+  async deleteUser(@Param('userId') userId: string) {
+    const user = await this.userService.getUserByIdOrThrow(userId);
     await user.delete();
   }
 }

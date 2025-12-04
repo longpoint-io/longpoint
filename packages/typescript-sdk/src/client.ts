@@ -478,6 +478,92 @@ class UsersClient {
         const response = await this.httpClient.delete(url);
         return response.data;
   }
+
+    /**
+   * List users
+   */
+    async listUsers(options?: { cursor?: string; pageSize?: number }): Promise<void> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `users${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a user
+   */
+    async getUser(userId: string): Promise<components['schemas']['User']> {
+        const url = `users/${encodeURIComponent(String(userId))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a user
+   */
+    async updateUser(userId: string, data: components['schemas']['UpdateUser']): Promise<components['schemas']['User']> {
+        const url = `users/${encodeURIComponent(String(userId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a user
+   */
+    async deleteUser(userId: string): Promise<void> {
+        const url = `users/${encodeURIComponent(String(userId))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * Create a user registration
+   *
+   * Creates a registration token that an external user can use to complete their signup.
+   */
+    async createUserRegistration(data: components['schemas']['CreateUserRegistration']): Promise<components['schemas']['CreateUserRegistrationResponse']> {
+        const url = `user-registrations`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List user registrations
+   */
+    async listUserRegistrations(): Promise<components['schemas']['UserRegistration'][]> {
+        const url = `user-registrations`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Revoke a user registration
+   *
+   * Invalidates the registration token, preventing a user from signing up with it.
+   */
+    async revokeUserRegistration(userRegistrationId: string): Promise<void> {
+        const url = `user-registrations/${encodeURIComponent(String(userRegistrationId))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * Get a user registration
+   */
+    async getUserRegistration(token: string): Promise<components['schemas']['UserRegistration']> {
+        const url = `user-registrations/${encodeURIComponent(String(token))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
 }
 
 class SearchClient {
