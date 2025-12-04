@@ -608,7 +608,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T18:30:12.298Z
+             * @example 2025-12-04T20:38:29.105Z
              */
             createdAt: string;
             /**
@@ -661,7 +661,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T18:30:12.298Z
+             * @example 2025-12-04T20:38:29.105Z
              */
             createdAt: string;
             /**

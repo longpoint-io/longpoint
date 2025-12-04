@@ -99,6 +99,14 @@ export class RoleEntity implements Serializable {
   }
 
   async delete() {
+    if (this.permissions.includes(Permission.SUPER)) {
+      throw new BaseError(
+        ErrorCode.OPERATION_NOT_SUPPORTED,
+        'Cannot delete a super role',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
     await this.prismaService.$transaction(async (tx) => {
       const usersWithRole = await tx.user.findMany({
         where: {
@@ -126,7 +134,7 @@ export class RoleEntity implements Serializable {
       if (usersWithOnlyThisRole.length > 0) {
         throw new BaseError(
           ErrorCode.INVALID_INPUT,
-          `Cannot delete role ${this.name} because it is the only role for ${usersWithOnlyThisRole.length} users`,
+          `Cannot delete the role '${this.name}' because it is the only role for ${usersWithOnlyThisRole.length} user(s)`,
           HttpStatus.BAD_REQUEST,
           {
             users: usersWithOnlyThisRole.map((u) => ({
@@ -136,6 +144,12 @@ export class RoleEntity implements Serializable {
           }
         );
       }
+
+      await tx.rolePermission.deleteMany({
+        where: {
+          roleId: this.id,
+        },
+      });
 
       await tx.role.delete({
         where: {

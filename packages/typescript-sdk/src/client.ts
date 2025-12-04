@@ -1,5 +1,6 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import type { paths, components } from './types';
+import { LongpointError } from './error';
 
 export interface ClientConfig {
   baseUrl?: string;
@@ -27,6 +28,18 @@ export class Longpoint {
         ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` })
       }
     });
+
+    // Add response interceptor to convert AxiosError to LongpointError
+    this.httpClient.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        if (error.response && error.response.status >= 400) {
+          throw LongpointError.fromAxiosError(error);
+        }
+        throw error;
+      }
+    );
+
     this.plugins = new PluginsClient(this.httpClient);
     this.analysis = new AnalysisClient(this.httpClient);
     this.assets = new AssetsClient(this.httpClient);

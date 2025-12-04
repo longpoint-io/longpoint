@@ -176,6 +176,7 @@ export function Roles() {
       setSelectedRole(null);
     },
     onError: (error) => {
+      console.error(error);
       toast.error('Failed to delete role', {
         description:
           error instanceof Error
