@@ -210,8 +210,10 @@ export class AuthService {
       // },
       user: {
         additionalFields: {
-          something: {
-            type: 'string',
+          // this does not map to the user model, but is populated in the addPermissionsToSession hook
+          // not sure if this is really necessary tbh.
+          permissions: {
+            type: 'json',
             input: false,
           },
         },
