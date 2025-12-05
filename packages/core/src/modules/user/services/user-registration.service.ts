@@ -65,7 +65,7 @@ export class UserRegistrationService {
     return {
       token: registration.token,
       registrationUrl: `${this.configService.get(
-        'server.origin'
+        'server.dashboardUrl'
       )}/sign-up?token=${registration.token}`,
     };
   }

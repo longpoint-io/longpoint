@@ -59,17 +59,39 @@ const createRoleSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   permissions: z
-    .array(z.string())
-    .min(1, 'At least one permission is required'),
+    .record(z.string(), z.boolean())
+    .refine(
+      (obj) => Object.values(obj).some((v) => v === true),
+      'At least one permission is required'
+    ),
 });
 
 type CreateRoleFormData = z.infer<typeof createRoleSchema>;
 
 const updateRoleSchema = createRoleSchema.partial().extend({
-  permissions: z.array(z.string()).optional(),
+  permissions: z.record(z.string(), z.boolean()).optional(),
 });
 
 type UpdateRoleFormData = z.infer<typeof updateRoleSchema>;
+
+// Helper functions to convert between array and object formats
+function permissionsArrayToObject(
+  permissions: string[]
+): Record<string, boolean> {
+  const obj: Record<string, boolean> = {};
+  permissions.forEach((perm) => {
+    obj[perm] = true;
+  });
+  return obj;
+}
+
+function permissionsObjectToArray(
+  permissions: Record<string, boolean>
+): Permission[] {
+  return Object.entries(permissions)
+    .filter(([, value]) => value === true)
+    .map(([key]) => key as Permission);
+}
 
 export function Roles() {
   const client = useClient();
@@ -102,7 +124,7 @@ export function Roles() {
     defaultValues: {
       name: '',
       description: '',
-      permissions: [],
+      permissions: {},
     },
   });
 
@@ -111,16 +133,20 @@ export function Roles() {
     defaultValues: {
       name: '',
       description: '',
-      permissions: [],
+      permissions: {},
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateRoleFormData) =>
+    mutationFn: (data: {
+      name: string;
+      description?: string;
+      permissions: Permission[];
+    }) =>
       client.users.createRole({
         name: data.name,
         description: data.description || undefined,
-        permissions: data.permissions as Permission[],
+        permissions: data.permissions,
       }),
     onSuccess: () => {
       toast.success('Role created successfully');
@@ -139,12 +165,16 @@ export function Roles() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: UpdateRoleFormData) => {
+    mutationFn: (data: {
+      name?: string;
+      description?: string;
+      permissions?: Permission[];
+    }) => {
       if (!selectedRole) throw new Error('No role selected');
       return client.users.updateRole(selectedRole.id, {
         name: data.name,
         description: data.description,
-        permissions: data.permissions as Permission[] | undefined,
+        permissions: data.permissions,
       });
     },
     onSuccess: () => {
@@ -189,16 +219,17 @@ export function Roles() {
   const handleEdit = async (role: { id: string; name: string }) => {
     try {
       const details = await client.users.getRole(role.id);
+      const permissionsArray = details.permissions || [];
       setSelectedRole({
         id: details.id,
         name: details.name,
         description: details.description || null,
-        permissions: details.permissions || [],
+        permissions: permissionsArray,
       });
       editForm.reset({
         name: details.name,
         description: details.description || '',
-        permissions: details.permissions || [],
+        permissions: permissionsArrayToObject(permissionsArray),
       });
       setEditDialogOpen(true);
     } catch (error) {
@@ -222,11 +253,19 @@ export function Roles() {
   };
 
   const handleCreateSubmit = (data: CreateRoleFormData) => {
-    createMutation.mutate(data);
+    createMutation.mutate({
+      ...data,
+      permissions: permissionsObjectToArray(data.permissions),
+    });
   };
 
   const handleEditSubmit = (data: UpdateRoleFormData) => {
-    updateMutation.mutate(data);
+    updateMutation.mutate({
+      ...data,
+      permissions: data.permissions
+        ? permissionsObjectToArray(data.permissions)
+        : undefined,
+    });
   };
 
   if (isLoading) {
@@ -372,9 +411,6 @@ export function Roles() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Role</DialogTitle>
-            <DialogDescription>
-              Create a new role with specific permissions
-            </DialogDescription>
           </DialogHeader>
           <form onSubmit={createForm.handleSubmit(handleCreateSubmit)}>
             <FieldGroup>
@@ -429,8 +465,12 @@ export function Roles() {
                       Permissions
                     </FieldLabel>
                     <PermissionsSelector
-                      value={field.value}
-                      onChange={field.onChange}
+                      value={permissionsObjectToArray(field.value)}
+                      onChange={(permissionsArray) => {
+                        field.onChange(
+                          permissionsArrayToObject(permissionsArray)
+                        );
+                      }}
                       idPrefix="create-role"
                     />
                     {fieldState.invalid && (
@@ -523,8 +563,14 @@ export function Roles() {
                       Permissions
                     </FieldLabel>
                     <PermissionsSelector
-                      value={field.value || []}
-                      onChange={field.onChange}
+                      value={
+                        field.value ? permissionsObjectToArray(field.value) : []
+                      }
+                      onChange={(permissionsArray) => {
+                        field.onChange(
+                          permissionsArrayToObject(permissionsArray)
+                        );
+                      }}
                       idPrefix="edit-role"
                     />
                     {fieldState.invalid && (
@@ -545,7 +591,9 @@ export function Roles() {
               </Button>
               <Button
                 type="submit"
-                disabled={updateMutation.isPending}
+                disabled={
+                  updateMutation.isPending || !editForm.formState.isDirty
+                }
                 isLoading={updateMutation.isPending}
               >
                 Update

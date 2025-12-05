@@ -6,21 +6,23 @@ import {
   TabsList,
   TabsTrigger,
 } from '@longpoint/ui/components/tabs';
-import { BoxIcon, SearchIcon, SettingsIcon } from 'lucide-react';
+import { BoxIcon, PlugIcon, SearchIcon, SettingsIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { GeneralSettings } from './general-settings';
 import { NotificationSettings } from './notification-settings';
+import { PluginSettings } from './plugins/plugin-settings';
 import { SearchSettings } from './search-settings';
 import { StorageSettings } from './storage-settings';
 
-const VALID_TABS = ['general', 'storage', 'search'] as const;
+const VALID_TABS = ['general', 'storage', 'search', 'plugins'] as const;
 type TabValue = (typeof VALID_TABS)[number];
 
 const TAB_ROUTES: Record<TabValue, string> = {
   general: '/settings/general',
   storage: '/settings/storage',
   search: '/settings/search',
+  plugins: '/settings/plugins',
 };
 
 export function Settings() {
@@ -33,6 +35,7 @@ export function Settings() {
     const pathname = location.pathname;
     if (pathname === '/settings/storage') return 'storage';
     if (pathname === '/settings/search') return 'search';
+    if (pathname.startsWith('/settings/plugins')) return 'plugins';
     return 'general'; // default to general
   };
 
@@ -77,6 +80,10 @@ export function Settings() {
               Search
             </TabsTrigger>
           )}
+          <TabsTrigger value="plugins">
+            <PlugIcon className="h-4 w-4" />
+            Plugins
+          </TabsTrigger>
           {/* <TabsTrigger value="notifications">
             <BellIcon className="h-4 w-4" />
             Notifications
@@ -90,6 +97,9 @@ export function Settings() {
         </TabsContent>
         <TabsContent value="search">
           <SearchSettings />
+        </TabsContent>
+        <TabsContent value="plugins">
+          <PluginSettings />
         </TabsContent>
         <TabsContent value="notifications">
           <NotificationSettings />

@@ -12,9 +12,8 @@ import { Collections } from '../pages/dashboard/collections';
 import { CollectionDetail } from '../pages/dashboard/collections/detail';
 import { DashboardHome } from '../pages/dashboard/home';
 import { AssetDetail } from '../pages/dashboard/media-detail';
-import { PluginDetail } from '../pages/dashboard/plugins/detail';
-import { Plugins } from '../pages/dashboard/plugins/index';
 import { SearchResults } from '../pages/dashboard/search-results';
+import { PluginDetails } from '../pages/dashboard/settings/plugins/plugin-details';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
 import { UsersAndRoles } from '../pages/dashboard/users/users-and-roles';
@@ -160,6 +159,32 @@ export function AppRoutes() {
         }
       />
       <Route
+        path="/settings/plugins"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.PLUGINS_READ}>
+                <DashboardLayout>
+                  <Settings />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/settings/plugins/:pluginId"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <DashboardLayout>
+                <PluginDetails />
+              </DashboardLayout>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
         path="/settings/storage/configs/:configId"
         element={
           <SetupGuard>
@@ -209,30 +234,6 @@ export function AppRoutes() {
                   <ClassifierDetail />
                 </DashboardLayout>
               </PermissionGuard>
-            </AuthGuard>
-          </SetupGuard>
-        }
-      />
-      <Route
-        path="/plugins"
-        element={
-          <SetupGuard>
-            <AuthGuard>
-              <DashboardLayout>
-                <Plugins />
-              </DashboardLayout>
-            </AuthGuard>
-          </SetupGuard>
-        }
-      />
-      <Route
-        path="/plugins/:pluginId"
-        element={
-          <SetupGuard>
-            <AuthGuard>
-              <DashboardLayout>
-                <PluginDetail />
-              </DashboardLayout>
             </AuthGuard>
           </SetupGuard>
         }

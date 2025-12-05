@@ -1,7 +1,6 @@
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@longpoint/ui/components/button';
-import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -17,13 +16,14 @@ import {
   FieldLabel,
 } from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
+import { ItemPickerCombobox } from '@longpoint/ui/components/item-picker-combobox';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
 const createRegistrationSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: z.email('Please enter a valid email address'),
   roleIds: z.array(z.string()).min(1, 'At least one role is required'),
 });
 
@@ -89,9 +89,9 @@ export function CreateRegistrationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create User Registration</DialogTitle>
+          <DialogTitle>Register a new user</DialogTitle>
           <DialogDescription>
-            Create a registration invitation for a new user
+            Send them a registration link to create their own account.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -108,7 +108,7 @@ export function CreateRegistrationDialog({
                     {...field}
                     id="create-registration-email"
                     type="email"
-                    placeholder="Enter email address"
+                    placeholder="someone@example.com"
                     autoComplete="email"
                   />
                   {fieldState.invalid && (
@@ -125,37 +125,15 @@ export function CreateRegistrationDialog({
                   <FieldLabel htmlFor="create-registration-roles" required>
                     Roles
                   </FieldLabel>
-                  <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
-                    {roles?.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No roles available
-                      </p>
-                    ) : (
-                      roles?.map((role) => (
-                        <div key={role.id} className="flex items-center gap-2">
-                          <Checkbox
-                            id={`registration-role-${role.id}`}
-                            checked={field.value.includes(role.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                field.onChange([...field.value, role.id]);
-                              } else {
-                                field.onChange(
-                                  field.value.filter((id) => id !== role.id)
-                                );
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`registration-role-${role.id}`}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {role.name}
-                          </label>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                  <ItemPickerCombobox
+                    items={roles || []}
+                    selectedIds={field.value}
+                    onSelectionChange={field.onChange}
+                    itemLabel="Role"
+                    emptyMessage="No roles available"
+                    searchPlaceholder="Search roles..."
+                    disabled={createMutation.isPending}
+                  />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

@@ -12,8 +12,12 @@ export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async listUsers(query?: ListUsersQueryDto) {
-    const paginationOptions: Prisma.UserFindManyArgs = query?.toPrisma() ?? {
-      orderBy: [{ id: Prisma.SortOrder.desc }],
+    const paginationOptions: Prisma.UserFindManyArgs = {
+      ...query?.toPrisma(),
+      orderBy: [
+        { name: Prisma.SortOrder.asc },
+        { email: Prisma.SortOrder.asc },
+      ],
     };
     const users = await this.prismaService.user.findMany({
       ...paginationOptions,
