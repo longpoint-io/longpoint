@@ -47,9 +47,7 @@ export class AssetAlreadyExists extends ResourceAlreadyExists {
     super(`Asset with name "${name}" already exists`);
   }
 }
-export const assetExistsDoc = apiErrorDoc(
-  new AssetAlreadyExists('My Asset')
-);
+export const assetExistsDoc = apiErrorDoc(new AssetAlreadyExists('My Asset'));
 export const ApiAssetAlreadyExistsResponse = () =>
   applyDecorators(
     ApiConflictResponse({
@@ -63,6 +61,16 @@ export class AssetAlreadyDeleted extends BaseError {
     super(
       ErrorCode.INVALID_INPUT,
       `Asset ${id} already deleted`,
+      HttpStatus.BAD_REQUEST
+    );
+  }
+}
+
+export class AssetNotReady extends BaseError {
+  constructor(id: string) {
+    super(
+      ErrorCode.INVALID_INPUT,
+      `Asset ${id} is not ready for use`,
       HttpStatus.BAD_REQUEST
     );
   }

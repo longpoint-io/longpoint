@@ -461,6 +461,23 @@ export interface paths {
         patch: operations["updateStorageUnit"];
         trace?: never;
     };
+    "/system/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update system settings */
+        patch: operations["updateSystemSettings"];
+        trace?: never;
+    };
     "/system/setup/status": {
         parameters: {
             query?: never;
@@ -1235,7 +1252,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         CreateSearchIndex: {
             /**
@@ -1526,7 +1543,7 @@ export interface components {
              *       "classifiers:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "users:create" | "users:read" | "users:update" | "users:delete")[];
             /**
              * Format: date-time
              * @description When the role was last updated
@@ -1792,6 +1809,16 @@ export interface components {
         };
         SystemStatus: {
             /**
+             * @description The URL of the system logo
+             * @example https://longpoint.example.com/logo.png
+             */
+            logoUrl: string | null;
+            /**
+             * @description The name of the system
+             * @example My Assets
+             */
+            name: string;
+            /**
              * @description Total number of ready assets
              * @example 150
              */
@@ -1877,7 +1904,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         UpdateStorageConfig: {
             /**
@@ -1913,6 +1940,18 @@ export interface components {
              * @example mbjq36xe6397dsi6x9nq4ghc
              */
             storageConfigId?: string;
+        };
+        UpdateSystemSettings: {
+            /**
+             * @description The ID of the image asset to use as the system logo
+             * @example fjeialpj8m1u9h28k4jig182
+             */
+            logoAssetId?: string;
+            /**
+             * @description The name of the system
+             * @example My Assets
+             */
+            name?: string;
         };
         UpdateUser: {
             /**
@@ -3522,6 +3561,29 @@ export interface operations {
                         errorCode?: string;
                         messages?: string[];
                     };
+                };
+            };
+        };
+    };
+    updateSystemSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSystemSettings"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemStatus"];
                 };
             };
         };

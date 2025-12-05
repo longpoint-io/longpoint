@@ -1,4 +1,5 @@
 import { useAuth } from '@/auth';
+import { useClient } from '@/hooks/common/use-client';
 import { Permission } from '@longpoint/types';
 import {
   Avatar,
@@ -25,6 +26,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@longpoint/ui/components/sidebar';
+import { useQuery } from '@tanstack/react-query';
 import {
   BookmarkIcon,
   ChevronDown,
@@ -41,6 +43,12 @@ import { Link } from 'react-router-dom';
 export function AppSidebar() {
   const { signOut, session, hasPermission } = useAuth();
   const user = session?.user;
+  const client = useClient();
+
+  const { data: systemStatus } = useQuery({
+    queryKey: ['system-status'],
+    queryFn: () => client.system.getSystemStatus(),
+  });
 
   const sidebarItems = [
     {
@@ -133,13 +141,17 @@ export function AppSidebar() {
               className="hover:bg-transparent active:bg-transparent"
             >
               <div className="flex items-center gap-2">
-                <Avatar className="rounded-full">
+                <Avatar className="rounded-full border-[0.5px]">
+                  <AvatarImage
+                    src={systemStatus?.logoUrl ?? undefined}
+                    alt="Site logo"
+                  />
                   <AvatarFallback className="rounded-full border">
-                    L
+                    {systemStatus?.name?.charAt(0)?.toUpperCase() || 'L'}
                   </AvatarFallback>
                 </Avatar>
                 <span className=" font-semibold text-sidebar-foreground">
-                  Longpoint Admin
+                  {systemStatus?.name || 'Longpoint Admin'}
                 </span>
               </div>
             </SidebarMenuButton>

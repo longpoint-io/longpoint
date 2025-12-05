@@ -657,6 +657,15 @@ class SystemClient {
         const response = await this.httpClient.get(url);
         return response.data;
   }
+
+    /**
+   * Update system settings
+   */
+    async updateSystemSettings(data: components['schemas']['UpdateSystemSettings']): Promise<components['schemas']['SystemStatus']> {
+        const url = `system/settings`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
 }
 
 // Export default instance
