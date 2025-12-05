@@ -79,7 +79,7 @@ export function ItemPickerCombobox<T extends ItemPickerItem>({
     <div className={cn('space-y-2', className)}>
       <div className="flex flex-wrap gap-2">
         {selectedItems.map((item) => (
-          <Badge key={item.id} className="pr-1">
+          <Badge key={item.id} className="pr-1" variant="secondary">
             {item.name}
             <button
               type="button"

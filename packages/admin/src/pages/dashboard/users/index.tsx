@@ -2,6 +2,7 @@ import { useAuth } from '@/auth';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Permission } from '@longpoint/types';
+import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
@@ -263,7 +264,11 @@ export function Users() {
                   <TableCell className="font-medium">{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    {user.roles?.map((r) => r.name).join(', ') || '-'}
+                    {user.roles.map((r) => (
+                      <Badge variant="secondary" key={r.id} className="mr-2">
+                        {r.name}
+                      </Badge>
+                    ))}
                   </TableCell>
                   <TableCell>
                     {user.createdAt
