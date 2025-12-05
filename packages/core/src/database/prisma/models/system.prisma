@@ -1,0 +1,7 @@
+model SystemSettings {
+  id          String   @id @default(cuid(2))
+  name        String   @default("My Assets")
+  updatedAt   DateTime @updatedAt
+  logoAssetId String?  @unique
+  logoAsset   Asset?   @relation(fields: [logoAssetId], references: [id], onDelete: SetNull)
+}

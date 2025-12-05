@@ -18,6 +18,6 @@ import { AssetService } from './services/asset.service';
     AssetLinkGeneratorService,
     MediaMetadataListeners,
   ],
-  exports: [AssetService],
+  exports: [AssetService, AssetLinkGeneratorService],
 })
 export class AssetModule {}
