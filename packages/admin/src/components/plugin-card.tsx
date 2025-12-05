@@ -39,7 +39,7 @@ export function PluginCard({ plugin }: PluginCardProps) {
         </div>
       </CardHeader>
       <CardContent
-        onClick={() => navigate(`/plugins/${plugin.id}`)}
+        onClick={() => navigate(`/settings/plugins/${plugin.id}`)}
         className="space-y-3"
       >
         {plugin.description && (
@@ -59,7 +59,7 @@ export function PluginCard({ plugin }: PluginCardProps) {
           className="w-full"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/plugins/${plugin.id}`);
+            navigate(`/settings/plugins/${plugin.id}`);
           }}
         >
           View Details

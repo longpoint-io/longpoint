@@ -31,7 +31,6 @@ import {
   HomeIcon,
   ImagesIcon,
   LogOutIcon,
-  PlugIcon,
   ScanSearchIcon,
   Settings2Icon,
   SettingsIcon,
@@ -74,11 +73,6 @@ export function AppSidebar() {
       },
     },
     {
-      label: 'Plugins',
-      url: '/plugins',
-      icon: PlugIcon,
-    },
-    {
       label: 'Users & Roles',
       url: '/users',
       icon: UsersIcon,
@@ -91,10 +85,8 @@ export function AppSidebar() {
       url: '/settings/general',
       icon: Settings2Icon,
       visible: () => {
-        return [
-          Permission.STORAGE_UNITS_READ,
-          Permission.SEARCH_INDEXES_READ,
-        ].some(hasPermission);
+        // Always show settings since plugins are always available
+        return true;
       },
       subItems: [
         {
@@ -115,6 +107,10 @@ export function AppSidebar() {
           visible: () => {
             return hasPermission(Permission.SEARCH_INDEXES_READ);
           },
+        },
+        {
+          label: 'Plugins',
+          url: '/settings/plugins',
         },
       ],
     },

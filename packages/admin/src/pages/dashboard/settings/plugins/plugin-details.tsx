@@ -23,7 +23,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-export function PluginDetail() {
+export function PluginDetails() {
   const { pluginId } = useParams<{ pluginId: string }>();
   const client = useClient();
   const navigate = useNavigate();
@@ -123,7 +123,7 @@ export function PluginDetail() {
   if (error || !plugin) {
     return (
       <div className="space-y-8">
-        <Button variant="ghost" onClick={() => navigate('/plugins')}>
+        <Button variant="ghost" onClick={() => navigate('/settings/plugins')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Plugins
         </Button>
@@ -216,7 +216,7 @@ export function PluginDetail() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/plugins')}
+                  onClick={() => navigate('/settings/plugins')}
                 >
                   Cancel
                 </Button>

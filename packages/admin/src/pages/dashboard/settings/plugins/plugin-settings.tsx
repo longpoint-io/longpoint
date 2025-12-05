@@ -11,7 +11,7 @@ import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { PlugIcon } from 'lucide-react';
 
-export function Plugins() {
+export function PluginSettings() {
   const client = useClient();
 
   const { data, isLoading, error } = useQuery({
@@ -24,9 +24,9 @@ export function Plugins() {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold">Plugins</h2>
+            <h3 className="text-2xl font-semibold">Installed</h3>
             <p className="text-muted-foreground mt-2">
-              Manage installed plugins and their settings
+              Manage plugin configuration
             </p>
           </div>
         </div>
@@ -50,9 +50,9 @@ export function Plugins() {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold">Plugins</h2>
+            <h3 className="text-2xl font-semibold">Installed</h3>
             <p className="text-muted-foreground mt-2">
-              Manage installed plugins and their settings
+              Manage plugin configuration
             </p>
           </div>
         </div>
@@ -70,9 +70,9 @@ export function Plugins() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold">Plugins</h2>
+          <h3 className="text-2xl font-semibold">Installed</h3>
           <p className="text-muted-foreground mt-2">
-            Manage installed plugins and their settings
+            Manage plugin configuration
           </p>
         </div>
       </div>
