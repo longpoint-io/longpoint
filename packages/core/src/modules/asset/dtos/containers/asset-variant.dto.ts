@@ -64,6 +64,14 @@ export class AssetVariantDto {
   aspectRatio: number | null;
 
   @ApiProperty({
+    description: 'The duration of the asset variant in seconds, if applicable',
+    example: 120,
+    type: 'number',
+    nullable: true,
+  })
+  duration: number | null;
+
+  @ApiProperty({
     description:
       'Freeform metadata that can be populated by classifiers or manually edited',
     example: {
@@ -100,6 +108,7 @@ export class AssetVariantDto {
     this.height = data.height;
     this.size = data.size;
     this.aspectRatio = data.aspectRatio;
+    this.duration = data.duration;
     this.metadata = (data.metadata as JsonObject | null) ?? null;
     this.url = data.url ?? null;
     this.classifierRuns = data.classifierRuns.map(

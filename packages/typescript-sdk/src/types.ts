@@ -702,6 +702,11 @@ export interface components {
             /** @description The classifier runs for the asset variant */
             classifierRuns: components["schemas"]["ClassifierRun"][];
             /**
+             * @description The duration of the asset variant in seconds, if applicable
+             * @example 120
+             */
+            duration: number | null;
+            /**
              * @description The height of the asset variant in pixels, if applicable
              * @example 100
              */

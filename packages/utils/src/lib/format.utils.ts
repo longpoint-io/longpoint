@@ -66,3 +66,117 @@ export function parseBytes(sizeString: string): number {
 
   return Math.round(value * multiplier);
 }
+
+/**
+ * Duration formatting styles
+ */
+export type DurationStyle =
+  | 'hhmmss' // Always show hours: "01:02:03"
+  | 'mmss' // Only show hours if > 0: "02:03" or "1:02:03"
+  | 'hmmss' // No leading zero on hours: "1:02:03"
+  | 'mss' // No leading zeros: "2:03" or "1:2:03"
+  | 'compact' // Compact with units: "1h 2m 3s" or "2m 3s"
+  | 'verbose' // Full words: "1 hour 2 minutes 3 seconds"
+  | 'iso' // ISO 8601 duration: "PT1H2M3S"
+  | 'short' // Short units: "1h 2m 3s" (always show all units)
+  | 'long'; // Long units: "1hr 2min 3sec" (always show all units);
+
+/**
+ * Formats a duration in seconds into a human-readable string
+ * @param duration - The duration in seconds
+ * @param style - The formatting style to use (default: 'hhmmss')
+ * @returns A formatted string with appropriate format
+ *
+ * @example
+ * formatDuration(120) // "00:02:00"
+ * formatDuration(120, 'mmss') // "02:00"
+ * formatDuration(3661, 'compact') // "1h 1m 1s"
+ * formatDuration(3661, 'verbose') // "1 hour 1 minute 1 second"
+ * formatDuration(3661, 'iso') // "PT1H1M1S"
+ * formatDuration(90, 'mmss') // "01:30"
+ * formatDuration(90, 'mss') // "1:30"
+ */
+export function formatDuration(
+  duration: number,
+  style: DurationStyle = 'hhmmss'
+): string {
+  if (duration < 0) {
+    duration = 0;
+  }
+
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = Math.floor(duration % 60);
+
+  switch (style) {
+    case 'hhmmss':
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+        2,
+        '0'
+      )}:${String(seconds).padStart(2, '0')}`;
+
+    case 'mmss':
+      if (hours > 0) {
+        return `${hours}:${String(minutes).padStart(2, '0')}:${String(
+          seconds
+        ).padStart(2, '0')}`;
+      }
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(
+        2,
+        '0'
+      )}`;
+
+    case 'hmmss':
+      return `${hours}:${String(minutes).padStart(2, '0')}:${String(
+        seconds
+      ).padStart(2, '0')}`;
+
+    case 'mss':
+      if (hours > 0) {
+        return `${hours}:${minutes}:${String(seconds).padStart(2, '0')}`;
+      }
+      return `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+    case 'compact': {
+      const parts: string[] = [];
+      if (hours > 0) parts.push(`${hours}h`);
+      if (minutes > 0) parts.push(`${minutes}m`);
+      if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+      return parts.join(' ');
+    }
+
+    case 'verbose': {
+      const parts: string[] = [];
+      if (hours > 0) {
+        parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
+      }
+      if (minutes > 0) {
+        parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`);
+      }
+      if (seconds > 0 || parts.length === 0) {
+        parts.push(`${seconds} ${seconds === 1 ? 'second' : 'seconds'}`);
+      }
+      return parts.join(' ');
+    }
+
+    case 'iso': {
+      const parts: string[] = [];
+      if (hours > 0) parts.push(`${hours}H`);
+      if (minutes > 0) parts.push(`${minutes}M`);
+      if (seconds > 0 || parts.length === 0) parts.push(`${seconds}S`);
+      return `PT${parts.join('')}`;
+    }
+
+    case 'short':
+      return `${hours}h ${minutes}m ${seconds}s`;
+
+    case 'long':
+      return `${hours}hr ${minutes}min ${seconds}sec`;
+
+    default:
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+        2,
+        '0'
+      )}:${String(seconds).padStart(2, '0')}`;
+  }
+}

@@ -4,6 +4,7 @@ import { AuthLayout } from '../layouts/auth-layout';
 import { DashboardLayout } from '../layouts/dashboard-layout';
 import { SignIn } from '../pages/auth/sign-in';
 import { SignUp } from '../pages/auth/sign-up';
+import { AssetDetails } from '../pages/dashboard/asset-details';
 import { Assets } from '../pages/dashboard/assets';
 import { Classifiers } from '../pages/dashboard/classifiers';
 import { CreateClassifier } from '../pages/dashboard/classifiers/create';
@@ -11,7 +12,6 @@ import { ClassifierDetail } from '../pages/dashboard/classifiers/detail';
 import { Collections } from '../pages/dashboard/collections';
 import { CollectionDetail } from '../pages/dashboard/collections/detail';
 import { DashboardHome } from '../pages/dashboard/home';
-import { AssetDetail } from '../pages/dashboard/media-detail';
 import { SearchResults } from '../pages/dashboard/search-results';
 import { PluginDetails } from '../pages/dashboard/settings/plugins/plugin-details';
 import { Settings } from '../pages/dashboard/settings/settings';
@@ -107,7 +107,7 @@ export function AppRoutes() {
             <AuthGuard>
               <PermissionGuard permission={Permission.ASSETS_READ}>
                 <DashboardLayout>
-                  <AssetDetail />
+                  <AssetDetails />
                 </DashboardLayout>
               </PermissionGuard>
             </AuthGuard>
