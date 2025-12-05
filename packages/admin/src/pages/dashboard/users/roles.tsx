@@ -372,9 +372,6 @@ export function Roles() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Role</DialogTitle>
-            <DialogDescription>
-              Create a new role with specific permissions
-            </DialogDescription>
           </DialogHeader>
           <form onSubmit={createForm.handleSubmit(handleCreateSubmit)}>
             <FieldGroup>
