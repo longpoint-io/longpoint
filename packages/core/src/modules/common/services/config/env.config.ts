@@ -6,6 +6,7 @@ loadEnvFiles();
 const envSchema = z.object({
   // Server
   BASE_URL: z.string(),
+  DASHBOARD_URL: z.string().optional(),
   PORT: z.string().transform(Number).default(3000),
   NODE_ENV: z
     .string()
@@ -86,6 +87,7 @@ export const createConfig = (env: Env) =>
     server: {
       baseUrl: env.BASE_URL,
       corsOrigins: env.CORS_ORIGINS,
+      dashboardUrl: env.DASHBOARD_URL ?? env.BASE_URL,
       logLevel: env.LOG_LEVEL,
       nodeEnv: env.NODE_ENV,
       origin: new URL(env.BASE_URL).origin,
