@@ -1,5 +1,6 @@
 import { useUploadContext } from '@/contexts/upload-context';
 import { useClient } from '@/hooks/common/use-client';
+import { SupportedMimeType } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Dialog,
@@ -171,9 +172,6 @@ export function UploadDialog() {
               <p className="text-lg font-medium mb-2">
                 Drop files here or click to browse
               </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Supports images (JPG, PNG, GIF, WEBP)
-              </p>
               <Button
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
@@ -184,7 +182,7 @@ export function UploadDialog() {
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                accept={Object.values(SupportedMimeType).join(',')}
                 onChange={handleFileSelect}
                 className="hidden"
               />

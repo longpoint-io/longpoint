@@ -1,7 +1,7 @@
 import { components } from '@longpoint/sdk';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
 import { TableCell, TableRow } from '@longpoint/ui/components/table';
-import { ImageIcon } from 'lucide-react';
+import { ImageIcon, VideoIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AssetType } from './asset-type';
 
@@ -23,6 +23,7 @@ export function AssetTableRow({
   const navigate = useNavigate();
 
   const { id, name, createdAt, updatedAt, type } = item;
+  const isVideo = type === 'VIDEO';
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,7 +47,7 @@ export function AssetTableRow({
       <TableCell>
         <div className="flex items-center gap-3">
           <div className="size-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded overflow-hidden shrink-0">
-            {thumbnailLink ? (
+            {thumbnailLink && !isVideo ? (
               <img
                 src={thumbnailLink}
                 alt={name}
@@ -54,10 +55,17 @@ export function AssetTableRow({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <ImageIcon
-                  className="w-5 h-5 text-gray-400"
-                  strokeWidth={1.5}
-                />
+                {isVideo ? (
+                  <VideoIcon
+                    className="w-5 h-5 text-gray-400"
+                    strokeWidth={1.5}
+                  />
+                ) : (
+                  <ImageIcon
+                    className="w-5 h-5 text-gray-400"
+                    strokeWidth={1.5}
+                  />
+                )}
               </div>
             )}
           </div>

@@ -119,4 +119,5 @@ enum AssetVariantStatus {
 
 enum AssetType {
   IMAGE
+  VIDEO
 }

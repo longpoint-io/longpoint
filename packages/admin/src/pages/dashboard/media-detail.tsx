@@ -61,6 +61,7 @@ import {
   EditIcon,
   ImageIcon,
   Trash2,
+  VideoIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -414,6 +415,7 @@ export function AssetDetail() {
   };
 
   const primaryAsset = media?.variants?.primary;
+  const isVideo = media?.type === 'VIDEO';
 
   if (isLoading) {
     return (
@@ -568,16 +570,30 @@ export function AssetDetail() {
             <CardContent>
               {primaryAsset?.url && primaryAsset.status === 'READY' ? (
                 <div className="relative w-full bg-muted rounded-lg overflow-hidden">
-                  <img
-                    src={primaryAsset.url}
-                    alt={media.name}
-                    className="w-full h-auto max-h-[600px] object-contain mx-auto"
-                  />
+                  {isVideo ? (
+                    <video
+                      src={primaryAsset.url}
+                      controls
+                      className="w-full h-auto max-h-[600px]"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={primaryAsset.url}
+                      alt={media.name}
+                      className="w-full h-auto max-h-[600px] object-contain mx-auto"
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="w-full h-96 bg-muted rounded-lg flex items-center justify-center">
                   <div className="text-center space-y-2">
-                    <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto" />
+                    {isVideo ? (
+                      <VideoIcon className="h-12 w-12 text-muted-foreground mx-auto" />
+                    ) : (
+                      <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto" />
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {primaryAsset?.status === 'PROCESSING'
                         ? 'Processing...'

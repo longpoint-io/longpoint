@@ -608,7 +608,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T20:38:29.105Z
+             * @example 2025-12-05T17:29:36.504Z
              */
             createdAt: string;
             /**
@@ -632,7 +632,7 @@ export interface components {
              * @example IMAGE
              * @enum {string}
              */
-            type: "IMAGE";
+            type: "IMAGE" | "VIDEO";
             /**
              * Format: date-time
              * @description When the asset was last updated
@@ -661,7 +661,7 @@ export interface components {
             /**
              * Format: date-time
              * @description When the asset was created
-             * @example 2025-12-04T20:38:29.105Z
+             * @example 2025-12-05T17:29:36.504Z
              */
             createdAt: string;
             /**
@@ -685,7 +685,7 @@ export interface components {
              * @example IMAGE
              * @enum {string}
              */
-            type: "IMAGE";
+            type: "IMAGE" | "VIDEO";
             /**
              * Format: date-time
              * @description When the asset was last updated
@@ -731,7 +731,7 @@ export interface components {
              * @example image/jpeg
              * @enum {string}
              */
-            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "video/mp4" | "video/webm" | "video/quicktime";
             /**
              * @description The size of the asset variant in bytes
              * @example 100
@@ -1134,7 +1134,7 @@ export interface components {
              * @example image/jpeg
              * @enum {string}
              */
-            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "video/mp4" | "video/webm" | "video/quicktime";
             /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields
@@ -1230,7 +1230,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         CreateSearchIndex: {
             /**
@@ -1521,7 +1521,7 @@ export interface components {
              *       "classifiers:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
             /**
              * Format: date-time
              * @description When the role was last updated
@@ -1872,7 +1872,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         UpdateStorageConfig: {
             /**

@@ -3,7 +3,7 @@ import { Badge } from '@longpoint/ui/components/badge';
 import { Card, CardContent } from '@longpoint/ui/components/card';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
 import { cn } from '@longpoint/ui/utils';
-import { ImageIcon } from 'lucide-react';
+import { ImageIcon, VideoIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AssetType } from './asset-type';
 
@@ -24,6 +24,7 @@ export function AssetGridItem({
 }: AssetGridItemProps) {
   const { id, name, status, type } = item;
   const isReady = status === 'READY';
+  const isVideo = type === 'VIDEO';
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -54,7 +55,7 @@ export function AssetGridItem({
                 />
               </div>
             )}
-            {thumbnailLink ? (
+            {thumbnailLink && !isVideo ? (
               <img
                 src={thumbnailLink}
                 alt={name}
@@ -62,10 +63,17 @@ export function AssetGridItem({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <ImageIcon
-                  className="w-16 h-16 text-gray-400"
-                  strokeWidth={1.5}
-                />
+                {isVideo ? (
+                  <VideoIcon
+                    className="w-16 h-16 text-gray-400"
+                    strokeWidth={1.5}
+                  />
+                ) : (
+                  <ImageIcon
+                    className="w-16 h-16 text-gray-400"
+                    strokeWidth={1.5}
+                  />
+                )}
               </div>
             )}
             {!isReady && (
