@@ -114,6 +114,15 @@ export class UploadService {
           aspectRatio: imageProbe.aspectRatio,
           size: imageProbe.size.bytes,
         };
+      } else if (assetType === 'VIDEO') {
+        const videoProbe = await this.probeService.probeVideo(fullUrl);
+        variantUpdateData = {
+          width: videoProbe.width,
+          height: videoProbe.height,
+          aspectRatio: videoProbe.aspectRatio,
+          size: videoProbe.size,
+          duration: videoProbe.duration,
+        };
       }
 
       await this.updateVariant(variant.id, {

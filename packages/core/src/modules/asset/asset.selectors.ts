@@ -42,6 +42,7 @@ export const selectAssetVariant = () => {
     height: true,
     size: true,
     aspectRatio: true,
+    duration: true,
     metadata: true,
     classifierRuns: {
       select: selectClassifierRun(),

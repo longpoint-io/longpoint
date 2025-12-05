@@ -51,7 +51,7 @@ import {
   TooltipTrigger,
 } from '@longpoint/ui/components/tooltip';
 import { cn } from '@longpoint/ui/lib/utils';
-import { formatBytes } from '@longpoint/utils/format';
+import { formatBytes, formatDuration } from '@longpoint/utils/format';
 import { enumToTitleCase } from '@longpoint/utils/string';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -275,7 +275,7 @@ function AddToCollectionCombobox({
   );
 }
 
-export function AssetDetail() {
+export function AssetDetails() {
   const { id } = useParams<{ id: string }>();
   const client = useClient();
   const navigate = useNavigate();
@@ -681,7 +681,7 @@ export function AssetDetail() {
                         <Field>
                           <FieldLabel>Aspect Ratio</FieldLabel>
                           <p className="text-sm">
-                            {primaryAsset.aspectRatio.toFixed(2)}:1
+                            {primaryAsset.aspectRatio.toFixed(2)}&nbsp;×&nbsp;1
                           </p>
                         </Field>
                       )}
@@ -692,6 +692,14 @@ export function AssetDetail() {
                       <FieldLabel>File Size</FieldLabel>
                       <p className="text-sm">
                         {formatBytes(primaryAsset.size)}
+                      </p>
+                    </Field>
+                  )}
+                  {primaryAsset.duration && (
+                    <Field>
+                      <FieldLabel>Duration</FieldLabel>
+                      <p className="text-sm">
+                        {formatDuration(primaryAsset.duration, 'compact')}
                       </p>
                     </Field>
                   )}

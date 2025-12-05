@@ -47,7 +47,7 @@ export class AssetDto {
 
   @ApiProperty({
     description: 'When the asset was created',
-    example: new Date(),
+    example: '2025-12-05T17:29:36.504Z',
   })
   createdAt: Date;
 

@@ -1,7 +1,7 @@
 import { components } from '@longpoint/sdk';
 import { cn } from '@longpoint/ui/lib/utils';
 import { enumToTitleCase } from '@longpoint/utils/string';
-import { ImageIcon } from 'lucide-react';
+import { ImageIcon, VideoIcon } from 'lucide-react';
 
 export interface AssetTypeProps {
   type: components['schemas']['Asset']['type'];
@@ -22,6 +22,9 @@ export function AssetType({
   switch (type) {
     case 'IMAGE':
       icon = <ImageIcon className="h-4 w-4 text-muted-foreground" />;
+      break;
+    case 'VIDEO':
+      icon = <VideoIcon className="h-4 w-4 text-muted-foreground" />;
       break;
     default:
       icon = null;

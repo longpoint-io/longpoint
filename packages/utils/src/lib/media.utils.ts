@@ -1,7 +1,7 @@
 import { SupportedMimeType } from '@longpoint/types';
 import { join } from 'path';
 
-type AssetType = 'IMAGE';
+type AssetType = 'IMAGE' | 'VIDEO';
 
 /**
  * Parses the mime type into an asset type
@@ -11,6 +11,9 @@ type AssetType = 'IMAGE';
 export function mimeTypeToAssetType(mimeType: string): AssetType {
   if (mimeType.startsWith('image/')) {
     return 'IMAGE';
+  }
+  if (mimeType.startsWith('video/')) {
+    return 'VIDEO';
   }
 
   throw new Error(`Unsupported media type: ${mimeType}`);
@@ -70,6 +73,12 @@ export function mimeTypeToExtension(mimeType: SupportedMimeType) {
       return 'jpg';
     case SupportedMimeType.WEBP:
       return 'webp';
+    case SupportedMimeType.MP4:
+      return 'mp4';
+    case SupportedMimeType.WEBM:
+      return 'webm';
+    case SupportedMimeType.MOV:
+      return 'mov';
     default:
       return 'bin';
   }
@@ -94,6 +103,12 @@ export function getMimeType(extensionOrFormat: string): string {
       return 'image/gif';
     case 'svg':
       return 'image/svg+xml';
+    case 'mp4':
+      return 'video/mp4';
+    case 'webm':
+      return 'video/webm';
+    case 'mov':
+      return 'video/quicktime';
     default:
       return 'application/octet-stream';
   }

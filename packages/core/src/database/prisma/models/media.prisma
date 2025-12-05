@@ -72,6 +72,7 @@ model AssetVariant {
   height      Int?
   size        Int?
   aspectRatio Float?
+  duration    Float?
   /// Freeform metadata that can be populated by classifiers or manually edited
   metadata    Json?
 
@@ -119,4 +120,5 @@ enum AssetVariantStatus {
 
 enum AssetType {
   IMAGE
+  VIDEO
 }
