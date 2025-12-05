@@ -35,6 +35,13 @@ export class ConfigSchemaValueDto {
   description: string | null;
 
   @ApiProperty({
+    description: 'A placeholder for the field',
+    example: 'John Doe',
+    nullable: true,
+  })
+  placeholder: string | null;
+
+  @ApiProperty({
     description:
       'The minimum allowable length of the field, if the field type supports length constraints',
     example: 1,
@@ -80,6 +87,7 @@ export class ConfigSchemaValueDto {
     this.type = data.type;
     this.required = data.required ?? false;
     this.description = data.description ?? null;
+    this.placeholder = data.placeholder ?? null;
     this.minLength = data.minLength ?? null;
     this.maxLength = data.maxLength ?? null;
     this.items = data.items ? new ConfigSchemaItemsDto(data.items) : null;

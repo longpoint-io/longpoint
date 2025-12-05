@@ -10,7 +10,6 @@ import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -129,7 +128,7 @@ export function CreateSearchIndexDialog({
     if (!data.vectorProviderId) {
       form.setError('vectorProviderId', {
         type: 'required',
-        message: 'Vector provider is required',
+        message: 'Provider is required',
       });
       return;
     }
@@ -154,10 +153,6 @@ export function CreateSearchIndexDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Search Index</DialogTitle>
-          <DialogDescription>
-            Create a new search index using a vector provider. Configure the
-            index settings below.
-          </DialogDescription>
         </DialogHeader>
         <form id="create-search-index-form" onSubmit={handleSubmit}>
           <div className="space-y-6 py-4">
@@ -171,7 +166,7 @@ export function CreateSearchIndexDialog({
                 {...form.register('name', {
                   required: 'Name is required',
                 })}
-                placeholder="Enter index name"
+                placeholder="Main"
                 aria-invalid={form.formState.errors.name ? 'true' : 'false'}
               />
               {form.formState.errors.name && (
@@ -181,15 +176,15 @@ export function CreateSearchIndexDialog({
               )}
             </div>
 
-            {/* Vector Provider Select */}
+            {/* Provider Select */}
             <div className="space-y-2">
               <Label htmlFor="vector-provider">
-                Vector Provider <span className="text-destructive">*</span>
+                Provider <span className="text-destructive">*</span>
               </Label>
               <Controller
                 name="vectorProviderId"
                 control={form.control}
-                rules={{ required: 'Vector provider is required' }}
+                rules={{ required: 'Provider is required' }}
                 render={({ field }) => (
                   <Select
                     value={field.value}
@@ -207,7 +202,7 @@ export function CreateSearchIndexDialog({
                           : 'false'
                       }
                     >
-                      <SelectValue placeholder="Select a vector provider" />
+                      <SelectValue placeholder="Select a search provider" />
                     </SelectTrigger>
                     <SelectContent>
                       {providers.map((provider) => (
@@ -238,13 +233,13 @@ export function CreateSearchIndexDialog({
             {/* Index Config Form */}
             {selectedProvider && hasIndexConfigSchema && (
               <div className="space-y-4 border-t pt-6">
-                <div>
+                {/* <div>
                   <h3 className="text-sm font-semibold">Index Configuration</h3>
                   <p className="text-sm text-muted-foreground">
                     Configure settings specific to this index for{' '}
                     {selectedProvider.name}.
                   </p>
-                </div>
+                </div> */}
                 <ConfigSchemaForm
                   schema={indexConfigSchema as any}
                   control={form.control}

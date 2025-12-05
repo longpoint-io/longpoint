@@ -1,10 +1,10 @@
-import { ConfigSchema } from '@longpoint/devkit';
+import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 import { type ConfigSchemaForDto } from './config-schema.types';
 import { toConfigSchemaForDto } from './config-schema.utils';
 
 type ConfigSchemaItemParams = Required<
-  ConfigSchema[keyof ConfigSchema]
+  ConfigSchemaDefinition[keyof ConfigSchemaDefinition]
 >['items'];
 
 @ApiSchema({ name: 'ConfigSchemaItems' })

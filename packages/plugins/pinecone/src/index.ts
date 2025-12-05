@@ -22,7 +22,8 @@ export default {
             type: 'string',
             required: true,
             immutable: true,
-            description: 'The name of the index in Pinecone',
+            placeholder: 'longpoint',
+            description: 'The index name as it appears in Pinecone',
           },
           limit: {
             label: 'Search Limit',

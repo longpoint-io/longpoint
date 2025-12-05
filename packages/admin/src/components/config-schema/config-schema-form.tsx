@@ -69,6 +69,7 @@ export function ConfigSchemaForm({
         const label = value?.label ?? key;
         const description = (value?.description as any) ?? null;
         const required = Boolean(value?.required);
+        const placeholder = value?.placeholder;
         // Only disable immutable fields if we're not allowing them (i.e., in edit mode)
         const immutable = allowImmutableFields
           ? false
@@ -85,6 +86,7 @@ export function ConfigSchemaForm({
             description={description}
             required={required}
             immutable={immutable}
+            placeholder={placeholder}
             allowImmutableFields={allowImmutableFields}
             control={control}
             namePrefix={fieldNamePrefix}

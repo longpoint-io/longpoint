@@ -4,6 +4,7 @@ export interface ConfigSchemaValue {
   required?: boolean;
   description?: string;
   immutable?: boolean;
+  placeholder?: string;
   minLength?: number;
   maxLength?: number;
   items?: {

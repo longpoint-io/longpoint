@@ -18,6 +18,7 @@ interface ConfigSchemaFieldProps {
   description?: string | null;
   required: boolean;
   immutable?: boolean;
+  placeholder?: string;
   allowImmutableFields?: boolean;
   control: Control<any>;
   namePrefix: string;
@@ -30,6 +31,7 @@ export function ConfigSchemaField({
   description,
   required,
   immutable = false,
+  placeholder,
   allowImmutableFields = false,
   control,
   namePrefix,
@@ -120,7 +122,7 @@ export function ConfigSchemaField({
                 field.onChange(val === '' ? '' : Number(val));
               }}
               aria-invalid={fieldState.invalid}
-              placeholder={label}
+              placeholder={placeholder}
               disabled={immutable}
             />
             {description && (
@@ -148,7 +150,7 @@ export function ConfigSchemaField({
               {...field}
               id={fieldId}
               aria-invalid={fieldState.invalid}
-              placeholder={label}
+              placeholder={placeholder}
               disabled={immutable}
             />
             {description && (
@@ -176,7 +178,7 @@ export function ConfigSchemaField({
             {...field}
             id={fieldId}
             aria-invalid={fieldState.invalid}
-            placeholder={label}
+            placeholder={placeholder}
             disabled={immutable}
           />
           {description && (
