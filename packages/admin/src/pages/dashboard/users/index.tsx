@@ -319,7 +319,6 @@ export function Users() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user email and roles</DialogDescription>
           </DialogHeader>
           <form onSubmit={editForm.handleSubmit(handleEditSubmit)}>
             <FieldGroup>
@@ -328,7 +327,9 @@ export function Users() {
                 control={editForm.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="edit-user-email">Email</FieldLabel>
+                    <FieldLabel htmlFor="edit-user-email" required>
+                      Email
+                    </FieldLabel>
                     <Input
                       {...field}
                       id="edit-user-email"
