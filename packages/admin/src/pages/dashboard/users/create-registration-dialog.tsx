@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 import * as z from 'zod';
 
 const createRegistrationSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: z.email('Please enter a valid email address'),
   roleIds: z.array(z.string()).min(1, 'At least one role is required'),
 });
 

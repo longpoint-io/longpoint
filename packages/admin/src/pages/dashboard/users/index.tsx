@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Permission } from '@longpoint/types';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
-import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +32,7 @@ import {
   FieldLabel,
 } from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
+import { ItemPickerCombobox } from '@longpoint/ui/components/item-picker-combobox';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import {
   Table,
@@ -59,8 +59,8 @@ import * as z from 'zod';
 import { CreateRegistrationDialog } from './create-registration-dialog';
 
 const updateUserSchema = z.object({
-  email: z.string().email('Please enter a valid email address').optional(),
-  roleIds: z.array(z.string()).optional(),
+  email: z.email('Please enter a valid email address'),
+  roleIds: z.array(z.string()).min(1, 'At least one role is required'),
 });
 
 type UpdateUserFormData = z.infer<typeof updateUserSchema>;
@@ -347,42 +347,18 @@ export function Users() {
                 control={editForm.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="edit-user-roles">Roles</FieldLabel>
-                    <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
-                      {roles?.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          No roles available
-                        </p>
-                      ) : (
-                        roles?.map((role) => (
-                          <div
-                            key={role.id}
-                            className="flex items-center gap-2"
-                          >
-                            <Checkbox
-                              id={`user-role-${role.id}`}
-                              checked={field.value?.includes(role.id) || false}
-                              onCheckedChange={(checked) => {
-                                const current = field.value || [];
-                                if (checked) {
-                                  field.onChange([...current, role.id]);
-                                } else {
-                                  field.onChange(
-                                    current.filter((id) => id !== role.id)
-                                  );
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor={`user-role-${role.id}`}
-                              className="text-sm cursor-pointer flex-1"
-                            >
-                              {role.name}
-                            </label>
-                          </div>
-                        ))
-                      )}
-                    </div>
+                    <FieldLabel htmlFor="edit-user-roles" required>
+                      Roles
+                    </FieldLabel>
+                    <ItemPickerCombobox
+                      items={roles || []}
+                      selectedIds={field.value}
+                      onSelectionChange={field.onChange}
+                      itemLabel="Role"
+                      emptyMessage="No roles available"
+                      searchPlaceholder="Search roles..."
+                      disabled={updateMutation.isPending}
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -401,7 +377,9 @@ export function Users() {
               </Button>
               <Button
                 type="submit"
-                disabled={updateMutation.isPending}
+                disabled={
+                  updateMutation.isPending || !editForm.formState.isDirty
+                }
                 isLoading={updateMutation.isPending}
               >
                 Update
