@@ -163,9 +163,11 @@ export function AppRoutes() {
         element={
           <SetupGuard>
             <AuthGuard>
-              <DashboardLayout>
-                <Settings />
-              </DashboardLayout>
+              <PermissionGuard permission={Permission.PLUGINS_READ}>
+                <DashboardLayout>
+                  <Settings />
+                </DashboardLayout>
+              </PermissionGuard>
             </AuthGuard>
           </SetupGuard>
         }

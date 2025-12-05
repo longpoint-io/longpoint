@@ -1,5 +1,6 @@
-import { ApiSdkTag } from '@/shared/decorators';
+import { ApiSdkTag, RequirePermission } from '@/shared/decorators';
 import { SdkTag } from '@/shared/types/swagger.types';
+import { Permission } from '@longpoint/types';
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { PluginDto, PluginSummaryDto, UpdatePluginSettingsDto } from './dtos';
@@ -13,6 +14,7 @@ export class PluginController {
   constructor(private readonly pluginService: PluginService) {}
 
   @Get()
+  @RequirePermission(Permission.PLUGINS_READ)
   @ApiOperation({
     summary: 'List all installed plugins',
     operationId: 'listPlugins',
@@ -24,6 +26,7 @@ export class PluginController {
   }
 
   @Get(':pluginId')
+  @RequirePermission(Permission.PLUGINS_READ)
   @ApiOperation({
     summary: 'Get a plugin by ID',
     operationId: 'getPlugin',
@@ -36,6 +39,7 @@ export class PluginController {
   }
 
   @Patch(':pluginId/settings')
+  @RequirePermission(Permission.PLUGINS_UPDATE)
   @ApiOperation({
     summary: 'Update plugin settings',
     operationId: 'updatePluginSettings',

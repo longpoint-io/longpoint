@@ -85,8 +85,11 @@ export function AppSidebar() {
       url: '/settings/general',
       icon: Settings2Icon,
       visible: () => {
-        // Always show settings since plugins are always available
-        return true;
+        return [
+          Permission.STORAGE_UNITS_READ,
+          Permission.SEARCH_INDEXES_READ,
+          Permission.PLUGINS_READ,
+        ].some(hasPermission);
       },
       subItems: [
         {
@@ -111,6 +114,9 @@ export function AppSidebar() {
         {
           label: 'Plugins',
           url: '/settings/plugins',
+          visible: () => {
+            return hasPermission(Permission.PLUGINS_READ);
+          },
         },
       ],
     },

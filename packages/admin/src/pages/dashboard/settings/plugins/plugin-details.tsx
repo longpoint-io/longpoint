@@ -1,9 +1,11 @@
+import { useAuth } from '@/auth';
 import {
   ConfigSchemaForm,
   validateConfigSchemaForm,
 } from '@/components/config-schema';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
@@ -28,6 +30,7 @@ export function PluginDetails() {
   const client = useClient();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { hasPermission } = useAuth();
 
   const {
     data: plugin,
@@ -195,43 +198,45 @@ export function PluginDetails() {
         </Card>
       </div>
 
-      {plugin.hasSettings && plugin.settingsSchema && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Plugin Settings</CardTitle>
-            <CardDescription>
-              Configure settings for this plugin
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(handleSubmit)}>
-              <ConfigSchemaForm
-                schema={plugin.settingsSchema as any}
-                control={form.control}
-                namePrefix="settings"
-                setError={form.setError}
-                allowImmutableFields={false}
-              />
-              <div className="flex justify-end gap-4 mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate('/settings/plugins')}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  isLoading={updateMutation.isPending}
-                  disabled={updateMutation.isPending}
-                >
-                  Save Settings
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+      {plugin.hasSettings &&
+        plugin.settingsSchema &&
+        hasPermission(Permission.PLUGINS_UPDATE) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Plugin Settings</CardTitle>
+              <CardDescription>
+                Configure settings for this plugin
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={form.handleSubmit(handleSubmit)}>
+                <ConfigSchemaForm
+                  schema={plugin.settingsSchema as any}
+                  control={form.control}
+                  namePrefix="settings"
+                  setError={form.setError}
+                  allowImmutableFields={false}
+                />
+                <div className="flex justify-end gap-4 mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/settings/plugins')}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    isLoading={updateMutation.isPending}
+                    disabled={updateMutation.isPending}
+                  >
+                    Save Settings
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }
