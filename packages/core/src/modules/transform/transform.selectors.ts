@@ -1,0 +1,16 @@
+import { Prisma } from '@/database';
+
+export const selectTransformTemplate = () => {
+  return {
+    id: true,
+    name: true,
+    description: true,
+    input: true,
+    createdAt: true,
+    updatedAt: true,
+  } satisfies Prisma.TransformTemplateSelect;
+};
+
+export type SelectedTransformTemplate = Prisma.TransformTemplateGetPayload<{
+  select: ReturnType<typeof selectTransformTemplate>;
+}>;

@@ -6,6 +6,7 @@ export const SdkTag = {
   Search: 'search',
   Storage: 'storage',
   System: 'system',
+  Transform: 'transform',
   Users: 'users',
 } as const;
 

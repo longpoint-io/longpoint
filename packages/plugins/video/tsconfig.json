@@ -4,6 +4,12 @@
   "include": [],
   "references": [
     {
+      "path": "../../config-schema"
+    },
+    {
+      "path": "../../devkit"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {

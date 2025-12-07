@@ -19,6 +19,11 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
+    "@longpoint/devkit": "*",
+    "@longpoint/config-schema": "*",
     "tslib": "^2.3.0"
+  },
+  "nx": {
+    "name": "plugin-video"
   }
 }
