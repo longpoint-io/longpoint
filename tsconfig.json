@@ -59,6 +59,9 @@
     },
     {
       "path": "./packages/plugins/pinecone"
+    },
+    {
+      "path": "./packages/plugins/video"
     }
   ]
 }

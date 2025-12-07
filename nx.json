@@ -148,7 +148,8 @@
       "longpoint-plugin-local",
       "longpoint-plugin-s3",
       "longpoint-plugin-gcp",
-      "longpoint-plugin-pinecone"
+      "longpoint-plugin-pinecone",
+      "longpoint-plugin-video"
     ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --exclude=@longpoint/scaffold"
