@@ -5,7 +5,7 @@ import {
   type ConfigSchemaForDto,
 } from '@/shared/dtos';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import { IsClassifierName } from '@longpoint/validations';
+import { IsResourceName } from '@longpoint/validations/resource-identifiers';
 import {
   ApiExtraModels,
   ApiProperty,
@@ -29,7 +29,7 @@ export class ClassifierDto {
   })
   id: string;
 
-  @IsClassifierName()
+  @IsResourceName('classifier')
   @ApiProperty({
     description: 'The name of the classifier',
     example: 'general-tagging',

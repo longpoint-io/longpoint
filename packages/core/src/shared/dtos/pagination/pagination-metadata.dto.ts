@@ -10,7 +10,7 @@ export interface PaginationMetadataArgs {
 export class PaginationMetadataDto {
   @ApiProperty({
     description: 'The number of items per page',
-    example: 100,
+    example: 1,
     type: 'number',
   })
   pageSize = 100;

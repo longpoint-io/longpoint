@@ -1,4 +1,5 @@
 import { Prisma } from '@/database';
+import { PaginationQueryDto } from '@/shared/dtos';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services';
 import { CreateTransformTemplateDto } from './dtos';
@@ -53,9 +54,10 @@ export class TransformService {
     return transformTemplate;
   }
 
-  async listTransformTemplates() {
+  async listTransformTemplates(query: PaginationQueryDto) {
     const transformTemplates =
       await this.prismaService.transformTemplate.findMany({
+        ...query.toPrisma(),
         select: selectTransformTemplate(),
         orderBy: {
           name: Prisma.SortOrder.asc,

@@ -9,16 +9,18 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
 import {
   CreateTransformTemplateDto,
+  ListTransformTemplatesQueryDto,
+  ListTransformTemplatesResponseDto,
   TransformTemplateDto,
   UpdateTransformTemplateDto,
 } from './dtos';
@@ -65,10 +67,14 @@ export class TransformController {
     summary: 'List transform templates',
     operationId: 'listTransformTemplates',
   })
-  @ApiOkResponse({ type: [TransformTemplateDto] })
-  async listTransformTemplates() {
-    const templates = await this.transformService.listTransformTemplates();
-    return templates.map((template) => template.toDto());
+  @ApiOkResponse({ type: ListTransformTemplatesResponseDto })
+  async listTransformTemplates(@Query() query: ListTransformTemplatesQueryDto) {
+    const templates = await this.transformService.listTransformTemplates(query);
+    return new ListTransformTemplatesResponseDto({
+      query,
+      items: templates.map((template) => template.toDto()),
+      path: '/transform/templates',
+    });
   }
 
   @Patch('templates/:id')
@@ -95,7 +101,7 @@ export class TransformController {
     summary: 'Delete a transform template',
     operationId: 'deleteTransformTemplate',
   })
-  @ApiNoContentResponse()
+  @ApiOkResponse({ description: 'The transform template was deleted' })
   @ApiTransformTemplateNotFoundResponse()
   async deleteTransformTemplate(@Param('id') id: string) {
     const template =

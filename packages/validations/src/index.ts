@@ -1,6 +1,5 @@
 export * from './lib/asset-name.validation.js';
 export * from './lib/asset-path.validation.js';
-export * from './lib/classifier-name.validation.js';
 export * from './lib/generic/slug.validation.js';
 export * from './lib/permission-set.validation.js';
 export * from './lib/role.validation.js';

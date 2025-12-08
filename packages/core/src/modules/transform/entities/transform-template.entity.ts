@@ -15,6 +15,7 @@ export interface TransformTemplateEntityArgs extends SelectedTransformTemplate {
 export class TransformTemplateEntity {
   readonly id: string;
   private _name: string;
+  private _displayName: string | null;
   private _description: string | null;
   private _input: ConfigValues;
   private _createdAt: Date;
@@ -25,6 +26,7 @@ export class TransformTemplateEntity {
   constructor(args: TransformTemplateEntityArgs) {
     this.id = args.id;
     this._name = args.name;
+    this._displayName = args.displayName;
     this._description = args.description;
     this._input = args.input as ConfigValues;
     this._createdAt = args.createdAt;
@@ -72,6 +74,7 @@ export class TransformTemplateEntity {
     return new TransformTemplateDto({
       id: this.id,
       name: this.name,
+      displayName: this.displayName,
       description: this.description,
       input: this.input,
       createdAt: this.createdAt,
@@ -81,6 +84,10 @@ export class TransformTemplateEntity {
 
   get name(): string {
     return this._name;
+  }
+
+  get displayName(): string {
+    return this._displayName ?? this._name;
   }
 
   get description(): string | null {

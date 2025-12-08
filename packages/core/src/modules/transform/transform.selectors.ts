@@ -4,6 +4,7 @@ export const selectTransformTemplate = () => {
   return {
     id: true,
     name: true,
+    displayName: true,
     description: true,
     input: true,
     createdAt: true,
