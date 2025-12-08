@@ -1,5 +1,5 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import { AssetTransformer, AssetTransformerArgs } from './transformer.js';
+import { AssetTransformer, AssetTransformerArgs } from './asset-transformer.js';
 
 export interface TransformerContribution {
   transformer: new (args: AssetTransformerArgs) => AssetTransformer;

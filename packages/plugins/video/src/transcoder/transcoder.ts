@@ -113,7 +113,7 @@ export class VideoTranscoder extends AssetTransformer {
     });
 
     // Write output stream to file operations
-    await this.fileOperations.write(outputPath, outputStream);
+    await args.fileOperations.write(outputPath, outputStream);
 
     // Wait for ffmpeg to complete
     await ffmpegPromise;

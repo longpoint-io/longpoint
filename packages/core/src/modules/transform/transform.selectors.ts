@@ -7,6 +7,7 @@ export const selectTransformTemplate = () => {
     displayName: true,
     description: true,
     input: true,
+    transformerId: true,
     createdAt: true,
     updatedAt: true,
   } satisfies Prisma.TransformTemplateSelect;

@@ -1,6 +1,6 @@
 import { type ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
-import { SelectedTransformTemplate } from '../transform.selectors';
+import { SelectedTransformTemplate } from '../../transform.selectors';
 
 export type TransformTemplateParams = Omit<
   SelectedTransformTemplate,
@@ -38,6 +38,12 @@ export class TransformTemplateDto {
   description: string | null;
 
   @ApiProperty({
+    description: 'The ID of the transformer the template uses',
+    example: 'video/transcoder',
+  })
+  transformerId: string;
+
+  @ApiProperty({
     description: 'The input values passed to the transformer',
     type: 'object',
     additionalProperties: true,
@@ -55,6 +61,7 @@ export class TransformTemplateDto {
     this.name = params.name;
     this.displayName = params.displayName;
     this.description = params.description;
+    this.transformerId = params.transformerId;
     this.input = params.input as ConfigValues;
   }
 }

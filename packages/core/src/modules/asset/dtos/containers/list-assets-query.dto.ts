@@ -1,10 +1,12 @@
-import { PaginationQueryDto } from '@/shared/dtos';
+import { ApiPaginationQueryDto } from '@/shared/dtos';
 import { ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsArray, IsOptional, IsString } from 'class-validator';
 
 @ApiSchema({ name: 'ListAssetsQuery' })
-export class ListAssetsQueryDto extends PaginationQueryDto {
+export class ListAssetsQueryDto extends ApiPaginationQueryDto({
+  defaultPageSize: 100,
+}) {
   @Transform(({ value }) => {
     if (Array.isArray(value)) {
       return value.filter((v) => v && String(v).trim() !== '');

@@ -23,17 +23,17 @@ import {
   ListTransformTemplatesResponseDto,
   TransformTemplateDto,
   UpdateTransformTemplateDto,
-} from './dtos';
-import { ApiTransformTemplateNotFoundResponse } from './transform.errors';
-import { TransformService } from './transform.service';
+} from '../dtos';
+import { TransformTemplateService } from '../services/transform-template.service';
+import { ApiTransformTemplateNotFoundResponse } from '../transform.errors';
 
-@Controller('transform')
+@Controller('transform-templates')
 @ApiSdkTag(SdkTag.Transform)
 @ApiBearerAuth()
 export class TransformController {
-  constructor(private readonly transformService: TransformService) {}
+  constructor(private readonly transformService: TransformTemplateService) {}
 
-  @Post('templates')
+  @Post()
   @RequirePermission(Permission.TRANSFORM_TEMPLATES_CREATE)
   @ApiOperation({
     summary: 'Create a transform template',
@@ -47,7 +47,7 @@ export class TransformController {
     return transformTemplate.toDto();
   }
 
-  @Get('templates/:id')
+  @Get(':templateId')
   @RequirePermission(Permission.TRANSFORM_TEMPLATES_READ)
   @ApiOperation({
     summary: 'Get a transform template',
@@ -55,13 +55,13 @@ export class TransformController {
   })
   @ApiOkResponse({ type: TransformTemplateDto })
   @ApiTransformTemplateNotFoundResponse()
-  async getTransformTemplate(@Param('id') id: string) {
+  async getTransformTemplate(@Param('templateId') templateId: string) {
     const template =
-      await this.transformService.getTransformTemplateByIdOrThrow(id);
+      await this.transformService.getTransformTemplateByIdOrThrow(templateId);
     return template.toDto();
   }
 
-  @Get('templates')
+  @Get()
   @RequirePermission(Permission.TRANSFORM_TEMPLATES_READ)
   @ApiOperation({
     summary: 'List transform templates',
@@ -72,12 +72,12 @@ export class TransformController {
     const templates = await this.transformService.listTransformTemplates(query);
     return new ListTransformTemplatesResponseDto({
       query,
-      items: templates.map((template) => template.toDto()),
+      items: await Promise.all(templates.map((template) => template.toDto())),
       path: '/transform/templates',
     });
   }
 
-  @Patch('templates/:id')
+  @Patch(':templateId')
   @RequirePermission(Permission.TRANSFORM_TEMPLATES_UPDATE)
   @ApiOperation({
     summary: 'Update a transform template',
@@ -86,16 +86,16 @@ export class TransformController {
   @ApiOkResponse({ type: TransformTemplateDto })
   @ApiTransformTemplateNotFoundResponse()
   async updateTransformTemplate(
-    @Param('id') id: string,
+    @Param('templateId') templateId: string,
     @Body() body: UpdateTransformTemplateDto
   ) {
     const template =
-      await this.transformService.getTransformTemplateByIdOrThrow(id);
+      await this.transformService.getTransformTemplateByIdOrThrow(templateId);
     await template.update(body);
     return template.toDto();
   }
 
-  @Delete('templates/:id')
+  @Delete(':templateId')
   @RequirePermission(Permission.TRANSFORM_TEMPLATES_DELETE)
   @ApiOperation({
     summary: 'Delete a transform template',
@@ -103,9 +103,9 @@ export class TransformController {
   })
   @ApiOkResponse({ description: 'The transform template was deleted' })
   @ApiTransformTemplateNotFoundResponse()
-  async deleteTransformTemplate(@Param('id') id: string) {
+  async deleteTransformTemplate(@Param('templateId') templateId: string) {
     const template =
-      await this.transformService.getTransformTemplateByIdOrThrow(id);
+      await this.transformService.getTransformTemplateByIdOrThrow(templateId);
     await template.delete();
   }
 }

@@ -17,3 +17,19 @@ export const ApiTransformTemplateNotFoundResponse = () =>
       ...transformTemplateNotFoundDoc,
     })
   );
+
+export class TransformerNotFound extends ResourceNotFound {
+  constructor(id: string) {
+    super('Transformer', id);
+  }
+}
+export const transformerNotFoundDoc = apiErrorDoc(
+  new TransformerNotFound('something/transformer')
+);
+export const ApiTransformerNotFoundResponse = () =>
+  applyDecorators(
+    ApiNotFoundResponse({
+      description: 'The transformer was not found',
+      ...transformerNotFoundDoc,
+    })
+  );

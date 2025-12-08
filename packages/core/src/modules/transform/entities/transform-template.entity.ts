@@ -1,15 +1,16 @@
 import { PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
-import { TransformTemplateDto } from '../dtos/transform-template.dto';
-import { UpdateTransformTemplateDto } from '../dtos/update-transform-template.dto';
+import { TransformTemplateDto, UpdateTransformTemplateDto } from '../dtos';
 import { TransformTemplateNotFound } from '../transform.errors';
 import {
   SelectedTransformTemplate,
   selectTransformTemplate,
 } from '../transform.selectors';
+import { TransformerEntity } from './transformer.entity';
 
 export interface TransformTemplateEntityArgs extends SelectedTransformTemplate {
   prismaService: PrismaService;
+  transformer: TransformerEntity;
 }
 
 export class TransformTemplateEntity {
@@ -17,9 +18,10 @@ export class TransformTemplateEntity {
   private _name: string;
   private _displayName: string | null;
   private _description: string | null;
-  private _input: ConfigValues;
+  private _inputFromDb: ConfigValues | null;
   private _createdAt: Date;
   private _updatedAt: Date;
+  private _transformer: TransformerEntity;
 
   private readonly prismaService: PrismaService;
 
@@ -28,10 +30,11 @@ export class TransformTemplateEntity {
     this._name = args.name;
     this._displayName = args.displayName;
     this._description = args.description;
-    this._input = args.input as ConfigValues;
+    this._inputFromDb = args.input as ConfigValues;
     this._createdAt = args.createdAt;
     this._updatedAt = args.updatedAt;
     this.prismaService = args.prismaService;
+    this._transformer = args.transformer;
   }
 
   async update(data: UpdateTransformTemplateDto) {
@@ -43,14 +46,16 @@ export class TransformTemplateEntity {
         data: {
           name: data.name,
           description: data.description,
-          input: data.input,
+          input: data.input
+            ? await this._transformer.processInput(data.input)
+            : undefined,
         },
         select: selectTransformTemplate(),
       });
 
     this._name = updatedTransformTemplate.name;
     this._description = updatedTransformTemplate.description;
-    this._input = updatedTransformTemplate.input as ConfigValues;
+    this._inputFromDb = updatedTransformTemplate.input as ConfigValues;
     this._updatedAt = updatedTransformTemplate.updatedAt;
     this._createdAt = updatedTransformTemplate.createdAt;
   }
@@ -70,13 +75,16 @@ export class TransformTemplateEntity {
     }
   }
 
-  toDto(): TransformTemplateDto {
+  async toDto(): Promise<TransformTemplateDto> {
     return new TransformTemplateDto({
       id: this.id,
       name: this.name,
       displayName: this.displayName,
       description: this.description,
-      input: this.input,
+      transformerId: this._transformer.id,
+      input: await this._transformer.processInputFromDb(
+        this._inputFromDb ?? {}
+      ),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     });
@@ -92,10 +100,6 @@ export class TransformTemplateEntity {
 
   get description(): string | null {
     return this._description;
-  }
-
-  get input(): ConfigValues {
-    return this._input;
   }
 
   get createdAt(): Date {

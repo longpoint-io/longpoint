@@ -10,21 +10,19 @@ export interface FileOperations {
 
 export interface AssetTransformerArgs {
   pluginSettings: ConfigValues;
-  fileOperations: FileOperations;
 }
 
 export interface TransformArgs<T extends ConfigValues = ConfigValues> {
   source: AssetSource;
+  fileOperations: FileOperations;
   input: T;
 }
 
 export abstract class AssetTransformer {
   protected readonly pluginSettings: ConfigValues;
-  protected readonly fileOperations: FileOperations;
 
   constructor(args: AssetTransformerArgs) {
     this.pluginSettings = args.pluginSettings;
-    this.fileOperations = args.fileOperations;
   }
 
   abstract transform(args: TransformArgs): Promise<void>;

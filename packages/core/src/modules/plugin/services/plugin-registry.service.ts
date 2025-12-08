@@ -40,7 +40,7 @@ export interface StorageProviderRegistryEntry
 
 export interface TransformerRegistryEntry
   extends BaseContributionRegistryEntry {
-  transformerId: string;
+  transformerKey: string;
   contribution: TransformerContribution;
 }
 
@@ -443,15 +443,15 @@ export class PluginRegistryService implements OnModuleInit {
 
     // Extract transformers
     if (pluginConfig.contributes?.transformers) {
-      for (const [transformerId, contribution] of Object.entries(
+      for (const [transformerKey, contribution] of Object.entries(
         pluginConfig.contributes.transformers
       )) {
-        const fullyQualifiedId = `${pluginId}/${transformerId}`;
+        const fullyQualifiedId = `${pluginId}/${transformerKey}`;
         this.transformerRegistry.set(fullyQualifiedId, {
           packageName,
           packagePath,
           pluginId,
-          transformerId,
+          transformerKey,
           fullyQualifiedId,
           contribution,
           pluginConfig: processedPluginConfig,

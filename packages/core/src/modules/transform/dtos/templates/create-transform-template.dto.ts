@@ -5,7 +5,7 @@ import {
   IsResourceName,
 } from '@longpoint/validations/resource-identifiers';
 import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
-import { IsObject, IsOptional } from 'class-validator';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 const RESOURCE_TYPE = 'transform template';
 
@@ -33,6 +33,13 @@ export class CreateTransformTemplateDto {
     type: 'string',
   })
   description?: string;
+
+  @IsString()
+  @ApiProperty({
+    description: 'The ID of the transformer to use',
+    example: 'video/transcoder',
+  })
+  transformerId!: string;
 
   @IsObject()
   @IsOptional()

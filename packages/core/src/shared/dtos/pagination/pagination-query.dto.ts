@@ -12,10 +12,10 @@ export const MAX_PAGE_SIZE = 1000;
  * @returns
  */
 export const ApiPaginationQueryDto = ({
-  defaultPageSize = 100,
+  defaultPageSize = MAX_PAGE_SIZE,
 }: {
   defaultPageSize?: number;
-}) => {
+} = {}) => {
   class PaginationQueryDtoClass {
     @Transform(({ value }) =>
       value !== undefined && value !== '' ? base64Decode(value) : undefined
@@ -83,6 +83,4 @@ export const ApiPaginationQueryDto = ({
 };
 
 @ApiSchema({ name: 'PaginationQuery' })
-export class PaginationQueryDto extends ApiPaginationQueryDto({
-  defaultPageSize: 100,
-}) {}
+export class PaginationQueryDto extends ApiPaginationQueryDto() {}

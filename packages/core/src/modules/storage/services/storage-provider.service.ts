@@ -3,10 +3,7 @@ import {
   ConfigService,
   PrismaService,
 } from '@/modules/common/services';
-import {
-  PluginRegistryService,
-  StorageProviderRegistryEntry,
-} from '@/modules/plugin/services';
+import { PluginRegistryService } from '@/modules/plugin/services';
 import { selectStorageUnit } from '@/shared/selectors/storage-unit.selectors';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Injectable, Logger } from '@nestjs/common';
@@ -30,8 +27,7 @@ export class StorageProviderService {
    * @returns A list of base storage provider entities.
    */
   async listProviders() {
-    const registryEntries =
-      this.pluginRegistryService.listStorageProviders();
+    const registryEntries = this.pluginRegistryService.listStorageProviders();
     return registryEntries.map((entry) => {
       return new BaseStorageProviderEntity({
         configSchemaService: this.configSchemaService,
@@ -50,8 +46,7 @@ export class StorageProviderService {
     id: string,
     configFromDb: ConfigValues
   ): Promise<StorageProviderEntity | null> {
-    const registryEntry =
-      this.pluginRegistryService.getStorageProviderById(id);
+    const registryEntry = this.pluginRegistryService.getStorageProviderById(id);
 
     if (!registryEntry) {
       return null;
