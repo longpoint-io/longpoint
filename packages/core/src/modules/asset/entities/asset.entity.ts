@@ -9,9 +9,9 @@ import {
   CollectionNotFound,
   CollectionReferenceDto,
 } from '@/modules/collection';
-import { JsonObject, SupportedMimeType } from '@longpoint/types';
+import { getAssetPath } from '@/shared/utils/asset.utils';
+import { JsonObject } from '@longpoint/types';
 import { formatBytes } from '@longpoint/utils/format';
-import { getAssetPath, mimeTypeToExtension } from '@longpoint/utils/media';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery';
@@ -172,7 +172,8 @@ export class AssetEntity {
         });
         const provider = await this.storageUnit.getProvider();
         await provider.deleteDirectory(
-          getAssetPath(this.id, {
+          getAssetPath({
+            assetId: this.id,
             storageUnitId: this.storageUnit.id,
             prefix: this.pathPrefix,
           })
@@ -255,7 +256,7 @@ export class AssetEntity {
    */
   toEmbeddingText(): string {
     const primaryVariant = this.variants.find(
-      (variant) => variant.variant === AssetVariantType.PRIMARY
+      (variant) => variant.type === AssetVariantType.ORIGINAL
     );
 
     if (primaryVariant?.status !== AssetVariantStatus.READY) {
@@ -304,12 +305,10 @@ export class AssetEntity {
   }
 
   private async hydrateVariant(variant: SelectedAsset['variants'][number]) {
-    // Assumes primary as the only variant for now
-    const filename = `primary.${mimeTypeToExtension(
-      variant.mimeType as SupportedMimeType
-    )}`;
-
-    const url = this.urlSigningService.generateSignedUrl(this.id, filename);
+    const url = this.urlSigningService.generateSignedUrl(
+      variant.id,
+      variant.entryPoint
+    );
 
     return {
       ...variant,

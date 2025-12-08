@@ -35,8 +35,9 @@ export type SelectedAsset = Prisma.AssetGetPayload<{
 export const selectAssetVariant = () => {
   return {
     id: true,
-    variant: true,
+    type: true,
     status: true,
+    entryPoint: true,
     mimeType: true,
     width: true,
     height: true,

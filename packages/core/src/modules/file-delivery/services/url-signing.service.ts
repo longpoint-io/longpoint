@@ -21,14 +21,14 @@ export class UrlSigningService {
 
   /**
    * Generates a signed URL for accessing a file through the storage proxy endpoint.
-   * @param assetId The asset ID
-   * @param filename The filename within the asset
+   * @param assetVariantId The asset variant ID
+   * @param entryPoint The entry point within the asset variant
    * @param options Optional parameters for width, height, and expiration
    * @returns A signed URL path with query parameters
    */
   generateSignedUrl(
-    assetId: string,
-    filename: string,
+    assetVariantId: string,
+    entryPoint: string,
     options: GenerateSignedUrlOptions = {}
   ): string {
     const {
@@ -62,7 +62,7 @@ export class UrlSigningService {
 
     const queryString =
       queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
-    const stringToSign = `${assetId}/${filename}${queryString}`;
+    const stringToSign = `${assetVariantId}/${entryPoint}${queryString}`;
 
     const secret = this.configService.get('storage.storageUrlSecret');
     const signature = crypto
@@ -89,7 +89,7 @@ export class UrlSigningService {
       urlParams.set('fit', fit);
     }
 
-    const finalPath = `/a/${assetId}/${filename}?${urlParams.toString()}`;
+    const finalPath = `/v/${assetVariantId}/${entryPoint}?${urlParams.toString()}`;
     const url = new URL(finalPath, this.configService.get('server.baseUrl'))
       .href;
     return url;
@@ -97,7 +97,7 @@ export class UrlSigningService {
 
   /**
    * Verifies the signature and expiration of a signed URL.
-   * @param path The path part of the URL (e.g., "{assetId}/{filename}")
+   * @param path The path part of the URL (e.g., "{assetVariantId}/{entryPoint}")
    * @param query The query parameters including sig, expires, w, h
    * @throws UnauthorizedException if signature is invalid or URL has expired
    */

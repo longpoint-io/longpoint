@@ -6,12 +6,8 @@ import {
 } from '@/database';
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { StorageUnitService } from '@/modules/storage';
-import { SupportedMimeType } from '@longpoint/types';
-import {
-  getAssetPath,
-  mimeTypeToAssetType,
-  mimeTypeToExtension,
-} from '@longpoint/utils/media';
+import { getAssetVariantPath } from '@/shared/utils/asset.utils';
+import { mimeTypeToAssetType } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import { isAfter } from 'date-fns';
 import { Request } from 'express';
@@ -44,6 +40,8 @@ export class UploadService {
             id: true,
             assetId: true,
             mimeType: true,
+            type: true,
+            entryPoint: true,
             classifiersOnUpload: true,
             asset: {
               select: {
@@ -67,19 +65,15 @@ export class UploadService {
       status: 'PROCESSING',
     });
 
-    const extension = mimeTypeToExtension(
-      uploadToken.assetVariant.mimeType as SupportedMimeType
-    );
-    const fullPath = getAssetPath(assetId, {
+    const filePath = getAssetVariantPath({
+      ...uploadToken.assetVariant,
       storageUnitId: uploadToken.assetVariant.asset.storageUnitId,
-      prefix: this.configService.get('storage.pathPrefix'),
-      suffix: `primary.${extension}`,
     });
 
     try {
       const provider = await storageUnit.getProvider();
-      await provider.upload(fullPath, req);
-      await this.finalize(fullPath, uploadToken.assetVariant);
+      await provider.upload(filePath, req);
+      await this.finalize(uploadToken.assetVariant);
     } catch (error) {
       await this.updateVariant(uploadToken.assetVariant.id, {
         status: 'FAILED',
@@ -89,16 +83,12 @@ export class UploadService {
   }
 
   private async finalize(
-    fullPath: string,
-    variant: Pick<AssetVariant, 'id' | 'assetId' | 'mimeType'>
+    variant: Pick<AssetVariant, 'id' | 'assetId' | 'mimeType' | 'entryPoint'>
   ) {
     try {
-      // Extract filename from fullPath (format: {prefix}/{storageUnitId}/{assetId}/primary.{extension})
-      const pathParts = fullPath.split('/');
-      const filename = pathParts[pathParts.length - 1];
       const url = this.urlSigningService.generateSignedUrl(
-        variant.assetId,
-        filename
+        variant.id,
+        variant.entryPoint
       );
       const baseUrl = this.configService.get('server.baseUrl');
       const fullUrl = new URL(url, baseUrl).href;

@@ -63,7 +63,7 @@ export class AssetDto {
     example: {
       primary: {
         id: 'okie3r17vhfswyyp38v9lrsl',
-        variant: AssetVariantType.PRIMARY,
+        type: AssetVariantType.ORIGINAL,
         status: AssetVariantStatus.READY,
         mimeType: SupportedMimeType.JPEG,
         width: 1920,

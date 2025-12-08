@@ -1,8 +1,6 @@
 import { AssetVariantType } from '@/database';
 import { PrismaService } from '@/modules/common/services';
 import { UrlSigningService } from '@/modules/file-delivery';
-import { SupportedMimeType } from '@longpoint/types';
-import { mimeTypeToExtension } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import { GenerateMediaLinksDto } from '../dtos/generate-links.dto';
 
@@ -24,19 +22,28 @@ export class AssetLinkGeneratorService {
         id: true,
         variants: {
           where: {
-            variant: AssetVariantType.PRIMARY,
+            type: AssetVariantType.ORIGINAL,
           },
           select: {
+            id: true,
+            entryPoint: true,
             mimeType: true,
           },
         },
       },
     });
 
-    const assetMap = new Map<string, { mimeType: string }>(
+    const assetMap = new Map<
+      string,
+      { id: string; entryPoint: string; mimeType: string }
+    >(
       assets.map((asset) => [
         asset.id,
-        { mimeType: asset.variants[0]?.mimeType ?? '' },
+        {
+          id: asset.variants[0]?.id ?? '',
+          entryPoint: asset.variants[0]?.entryPoint ?? '',
+          mimeType: asset.variants[0]?.mimeType ?? '',
+        },
       ])
     );
 
@@ -47,12 +54,9 @@ export class AssetLinkGeneratorService {
         return acc;
       }
 
-      const filename = `primary.${mimeTypeToExtension(
-        assetData.mimeType as SupportedMimeType
-      )}`;
       const link = this.urlSigningService.generateSignedUrl(
-        assetOptions.assetId,
-        filename,
+        assetData.id,
+        assetData.entryPoint,
         assetOptions
       );
       return { ...acc, [assetOptions.assetId]: link };

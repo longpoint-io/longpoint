@@ -49,10 +49,14 @@ enum AssetStatus {
 
 model AssetVariant {
   id                  String             @id @default(cuid(2))
-  variant             AssetVariantType   @default(PRIMARY)
+  type                AssetVariantType   @default(ORIGINAL)
   status              AssetVariantStatus
   /// Names of the classifiers to run on the uploaded asset after processing
   classifiersOnUpload String[]
+  /// Entry point file for serving (e.g. "master.m3u8", "video.mp4")
+  /// Relative path from variant directory root
+  entryPoint          String
+  displayName         String?
 
   // asset metadata
   mimeType    String
@@ -76,8 +80,9 @@ model AssetVariant {
 }
 
 enum AssetVariantType {
-  PRIMARY
+  ORIGINAL
   THUMBNAIL
+  DERIVATIVE
 }
 
 enum AssetVariantStatus {

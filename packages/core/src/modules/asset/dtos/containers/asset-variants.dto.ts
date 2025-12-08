@@ -19,7 +19,7 @@ export class AssetVariantsDto {
 
   private getPrimaryVariant(data: AssetVariantsParams) {
     const primary = data.find(
-      (variant) => variant.variant === AssetVariantType.PRIMARY
+      (variant) => variant.type === AssetVariantType.ORIGINAL
     );
     if (!primary) {
       throw new Error('Expected primary variant - not found');

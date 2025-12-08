@@ -1,7 +1,10 @@
 import { CollectionNotFound } from '@/modules/collection';
 import { ConfigService } from '@/modules/common/services';
 import { SupportedMimeType } from '@longpoint/types';
-import { mimeTypeToAssetType } from '@longpoint/utils/media';
+import {
+  mimeTypeToAssetType,
+  mimeTypeToExtension,
+} from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { addHours } from 'date-fns';
@@ -93,8 +96,9 @@ export class AssetService {
         storageUnitId: storageUnit.id,
         variants: {
           create: {
-            variant: 'PRIMARY',
+            type: 'ORIGINAL',
             status: 'WAITING_FOR_UPLOAD',
+            entryPoint: `original.${mimeTypeToExtension(data.mimeType)}`,
             mimeType: data.mimeType,
             classifiersOnUpload: data.classifiersOnUpload,
             uploadToken: {
