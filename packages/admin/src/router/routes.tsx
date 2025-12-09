@@ -16,6 +16,10 @@ import { SearchResults } from '../pages/dashboard/search-results';
 import { PluginDetails } from '../pages/dashboard/settings/plugins/plugin-details';
 import { Settings } from '../pages/dashboard/settings/settings';
 import { StorageProviderConfigDetail } from '../pages/dashboard/settings/storage-settings/storage-provider-config-detail';
+import { TransformTemplates } from '../pages/dashboard/transform-templates';
+import { CreateTransformTemplate } from '../pages/dashboard/transform-templates/create';
+import { TransformTemplateDetail } from '../pages/dashboard/transform-templates/detail';
+import { EditTransformTemplate } from '../pages/dashboard/transform-templates/edit';
 import { UsersAndRoles } from '../pages/dashboard/users/users-and-roles';
 import { NotFound } from '../pages/not-found';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
@@ -232,6 +236,66 @@ export function AppRoutes() {
               <PermissionGuard permission={Permission.CLASSIFIERS_READ}>
                 <DashboardLayout>
                   <ClassifierDetail />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/transform/templates"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.TRANSFORM_TEMPLATES_READ}>
+                <DashboardLayout>
+                  <TransformTemplates />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/transform/templates/create"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard
+                permission={Permission.TRANSFORM_TEMPLATES_CREATE}
+              >
+                <DashboardLayout>
+                  <CreateTransformTemplate />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/transform/templates/:templateId"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.TRANSFORM_TEMPLATES_READ}>
+                <DashboardLayout>
+                  <TransformTemplateDetail />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/transform/templates/:templateId/edit"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard
+                permission={Permission.TRANSFORM_TEMPLATES_UPDATE}
+              >
+                <DashboardLayout>
+                  <EditTransformTemplate />
                 </DashboardLayout>
               </PermissionGuard>
             </AuthGuard>

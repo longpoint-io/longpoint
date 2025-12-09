@@ -33,6 +33,7 @@ import {
   HomeIcon,
   ImagesIcon,
   LogOutIcon,
+  Move3dIcon,
   ScanSearchIcon,
   Settings2Icon,
   SettingsIcon,
@@ -78,6 +79,14 @@ export function AppSidebar() {
       icon: ScanSearchIcon,
       visible: () => {
         return hasPermission(Permission.CLASSIFIERS_READ);
+      },
+    },
+    {
+      label: 'Transformers',
+      url: '/transform/templates',
+      icon: Move3dIcon,
+      visible: () => {
+        return hasPermission(Permission.TRANSFORM_TEMPLATES_READ);
       },
     },
     {

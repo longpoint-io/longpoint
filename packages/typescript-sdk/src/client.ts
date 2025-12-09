@@ -18,6 +18,7 @@ export class Longpoint {
   users: UsersClient;
   search: SearchClient;
   system: SystemClient;
+  transform: TransformClient;
 
   constructor(config: ClientConfig = {}) {
     this.httpClient = axios.create({
@@ -48,6 +49,7 @@ export class Longpoint {
     this.users = new UsersClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
+    this.transform = new TransformClient(this.httpClient);
   }
 }
 
@@ -664,6 +666,95 @@ class SystemClient {
     async updateSystemSettings(data: components['schemas']['UpdateSystemSettings']): Promise<components['schemas']['SystemStatus']> {
         const url = `system/settings`;
         const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+}
+
+class TransformClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Create a transform template
+   *
+   * Define a template for transforming assets.
+   */
+    async createTransformTemplate(data: components['schemas']['CreateTransformTemplate']): Promise<components['schemas']['TransformTemplate']> {
+        const url = `transform-templates`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List transform templates
+   */
+    async listTransformTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformTemplatesResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `transform-templates${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a transform template
+   */
+    async getTransformTemplate(templateId: string): Promise<components['schemas']['TransformTemplate']> {
+        const url = `transform-templates/${encodeURIComponent(String(templateId))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a transform template
+   */
+    async updateTransformTemplate(templateId: string, data: components['schemas']['UpdateTransformTemplate']): Promise<components['schemas']['TransformTemplate']> {
+        const url = `transform-templates/${encodeURIComponent(String(templateId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a transform template
+   */
+    async deleteTransformTemplate(templateId: string): Promise<void> {
+        const url = `transform-templates/${encodeURIComponent(String(templateId))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * List installed transformers
+   */
+    async listTransformers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformersResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `transformers${queryString ? `?${queryString}` : ''}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get a transformer
+   */
+    async getTransformer(transformerId: string): Promise<components['schemas']['TransformerDetails']> {
+        const url = `transformers/${encodeURIComponent(String(transformerId))}`;
+        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

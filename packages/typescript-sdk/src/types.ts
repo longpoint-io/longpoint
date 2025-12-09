@@ -512,6 +512,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transform-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List transform templates */
+        get: operations["listTransformTemplates"];
+        put?: never;
+        /**
+         * Create a transform template
+         * @description Define a template for transforming assets.
+         */
+        post: operations["createTransformTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transform-templates/{templateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a transform template */
+        get: operations["getTransformTemplate"];
+        put?: never;
+        post?: never;
+        /** Delete a transform template */
+        delete: operations["deleteTransformTemplate"];
+        options?: never;
+        head?: never;
+        /** Update a transform template */
+        patch: operations["updateTransformTemplate"];
+        trace?: never;
+    };
+    "/transformers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List installed transformers */
+        get: operations["listTransformers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transformers/{transformerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a transformer */
+        get: operations["getTransformer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/user-registrations": {
         parameters: {
             query?: never;
@@ -661,7 +735,7 @@ export interface components {
              * @example {
              *       "primary": {
              *         "id": "okie3r17vhfswyyp38v9lrsl",
-             *         "variant": "PRIMARY",
+             *         "type": "ORIGINAL",
              *         "status": "READY",
              *         "mimeType": "image/jpeg",
              *         "width": 1920,
@@ -1121,6 +1195,11 @@ export interface components {
              * @example 1
              */
             minLength: Record<string, never> | null;
+            /**
+             * @description A placeholder for the field
+             * @example John Doe
+             */
+            placeholder: Record<string, never> | null;
             /** @description The properties of the field, if the field type is an object */
             properties: {
                 [key: string]: components["schemas"]["ConfigSchemaValue"];
@@ -1252,7 +1331,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         CreateSearchIndex: {
             /**
@@ -1316,6 +1395,40 @@ export interface components {
              * @example mbjq36xe6397dsi6x9nq4ghc
              */
             storageConfigId: string;
+        };
+        CreateTransformTemplate: {
+            /**
+             * @description A brief description of the transform template
+             * @example Convert videos into a watchable format for 5th generation iPods
+             */
+            description?: string | null;
+            /**
+             * @description The display name of the transform template
+             * @example iPod Video
+             */
+            displayName?: string;
+            /**
+             * @description The input values passed to the transformer
+             * @example {
+             *       "dimensions": {
+             *         "width": 320,
+             *         "height": 240
+             *       }
+             *     }
+             */
+            input?: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description The name of the transform template
+             * @example ipod-video
+             */
+            name: string;
+            /**
+             * @description The ID of the transformer to use
+             * @example video/transcoder
+             */
+            transformerId: string;
         };
         CreateUserRegistration: {
             /**
@@ -1408,6 +1521,18 @@ export interface components {
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
+        ListTransformersResponse: {
+            /** @description The transformers in the response */
+            items: components["schemas"]["Transformer"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
+        ListTransformTemplatesResponse: {
+            /** @description The transform templates in the response */
+            items: components["schemas"]["TransformTemplate"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
         ListUsersResponse: {
             /** @description The users in the response */
             items: components["schemas"]["User"][];
@@ -1427,7 +1552,7 @@ export interface components {
             nextLink: string | null;
             /**
              * @description The number of items per page
-             * @example 100
+             * @example 1
              */
             pageSize: number;
         };
@@ -1543,7 +1668,7 @@ export interface components {
              *       "classifiers:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
             /**
              * Format: date-time
              * @description When the role was last updated
@@ -1824,6 +1949,111 @@ export interface components {
              */
             totalAssets: number;
         };
+        Transformer: {
+            /**
+             * @description A brief description of the transformer
+             * @example Convert videos to a variety of formats and qualities
+             */
+            description: Record<string, never>;
+            /**
+             * @description The display name of the transformer
+             * @example Transcoder
+             */
+            displayName: string;
+            /**
+             * @description The ID of the transformer
+             * @example video/transcoder
+             */
+            id: string;
+            /**
+             * @description Supported MIME types
+             * @example [
+             *       "video/mp4",
+             *       "video/mov"
+             *     ]
+             */
+            supportedMimeTypes: string[];
+        };
+        TransformerDetails: {
+            /**
+             * @description A brief description of the transformer
+             * @example Convert videos to a variety of formats and qualities
+             */
+            description: Record<string, never>;
+            /**
+             * @description The display name of the transformer
+             * @example Transcoder
+             */
+            displayName: string;
+            /**
+             * @description The ID of the transformer
+             * @example video/transcoder
+             */
+            id: string;
+            /** @description The schema for transformer inputs */
+            inputSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description Supported MIME types
+             * @example [
+             *       "video/mp4",
+             *       "video/mov"
+             *     ]
+             */
+            supportedMimeTypes: string[];
+        };
+        TransformTemplate: {
+            /**
+             * Format: date-time
+             * @description The date and time the transform template was created
+             * @example 2021-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description A brief description of the transform template
+             * @example Convert videos to a watchable format for 5th generation iPods
+             */
+            description?: string | null;
+            /**
+             * @description The display name of the transform template
+             * @example iPod Video
+             */
+            displayName: string;
+            /**
+             * @description The ID of the transform template
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The input values passed to the transformer
+             * @example {
+             *       "dimensions": {
+             *         "width": 320,
+             *         "height": 240
+             *       }
+             *     }
+             */
+            input: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description The name of the transform template
+             * @example ipod-video
+             */
+            name: string;
+            /**
+             * @description The ID of the transformer the template uses
+             * @example video/transcoder
+             */
+            transformerId: string;
+            /**
+             * Format: date-time
+             * @description The date and time the transform template was updated
+             * @example 2021-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
         UpdateAsset: {
             /**
              * @description IDs of collections the asset is a member of.
@@ -1904,7 +2134,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         UpdateStorageConfig: {
             /**
@@ -1952,6 +2182,40 @@ export interface components {
              * @example My Assets
              */
             name?: string;
+        };
+        UpdateTransformTemplate: {
+            /**
+             * @description A brief description of the transform template
+             * @example Convert videos into a watchable format for 5th generation iPods
+             */
+            description?: string | null;
+            /**
+             * @description The display name of the transform template
+             * @example iPod Video
+             */
+            displayName?: string;
+            /**
+             * @description The input values passed to the transformer
+             * @example {
+             *       "dimensions": {
+             *         "width": 320,
+             *         "height": 240
+             *       }
+             *     }
+             */
+            input?: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description The name of the transform template
+             * @example ipod-video
+             */
+            name?: string;
+            /**
+             * @description The ID of the transformer to use
+             * @example video/transcoder
+             */
+            transformerId?: string;
         };
         UpdateUser: {
             /**
@@ -3622,6 +3886,236 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SystemStatus"];
+                };
+            };
+        };
+    };
+    listTransformTemplates: {
+        parameters: {
+            query?: {
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListTransformTemplatesResponse"];
+                };
+            };
+        };
+    };
+    createTransformTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTransformTemplate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransformTemplate"];
+                };
+            };
+        };
+    };
+    getTransformTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransformTemplate"];
+                };
+            };
+            /** @description The transform template was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteTransformTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The transform template was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The transform template was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateTransformTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTransformTemplate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransformTemplate"];
+                };
+            };
+            /** @description The transform template was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    listTransformers: {
+        parameters: {
+            query?: {
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListTransformersResponse"];
+                };
+            };
+        };
+    };
+    getTransformer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transformerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransformerDetails"];
+                };
+            };
+            /** @description The transformer was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Transformer with id something/transformer not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
                 };
             };
         };
