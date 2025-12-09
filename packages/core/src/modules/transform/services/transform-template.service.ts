@@ -1,4 +1,5 @@
 import { Prisma } from '@/database';
+import { AssetService } from '@/modules/asset';
 import { PaginationQueryDto } from '@/shared/dtos';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/services';
@@ -12,7 +13,8 @@ import { TransformerService } from './transformer.service';
 export class TransformTemplateService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly transformerService: TransformerService
+    private readonly transformerService: TransformerService,
+    private readonly assetService: AssetService
   ) {}
 
   async createTransformTemplate(data: CreateTransformTemplateDto) {
@@ -35,6 +37,7 @@ export class TransformTemplateService {
       ...transformTemplate,
       transformer,
       prismaService: this.prismaService,
+      assetService: this.assetService,
     });
   }
 
@@ -57,6 +60,7 @@ export class TransformTemplateService {
       ...transformTemplate,
       transformer,
       prismaService: this.prismaService,
+      assetService: this.assetService,
     });
   }
 

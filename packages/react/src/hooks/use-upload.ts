@@ -104,6 +104,7 @@ export function useUpload(): UseUploadReturn {
         });
 
         xhr.open('PUT', endpoint);
+        xhr.setRequestHeader('Content-Length', file.size.toString());
         xhr.setRequestHeader('Content-Type', file.type);
         xhr.send(file);
       });

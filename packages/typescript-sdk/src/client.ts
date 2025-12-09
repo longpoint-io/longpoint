@@ -731,6 +731,17 @@ class TransformClient {
   }
 
     /**
+   * Generate a variant from a transform template
+   *
+   * Creates a new derivative variant by applying the transform template to the source variant.
+   */
+    async generateVariantFromTemplate(templateId: string, data: components['schemas']['GenerateVariant']): Promise<void> {
+        const url = `transform-templates/${encodeURIComponent(String(templateId))}/generate-variant`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
    * List installed transformers
    */
     async listTransformers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformersResponse']> {

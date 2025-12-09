@@ -54,35 +54,35 @@ export class TransformTemplateEntity {
       this.displayName
     );
 
-    try {
-      const result = await this._transformer.transform({
+    this._transformer
+      .transform({
         input: await this._transformer.processInputFromDb(
           this._inputFromDb ?? {}
         ),
-        fileOperations: await derivativeVariant.getStorageUnitOperations(
-          this._transformer.id
-        ),
+        fileOperations: await derivativeVariant.getStorageUnitOperations(),
         source: {
           url: dto.url!,
           mimeType: sourceVariant.mimeType,
         },
+      })
+      .then(async (result) => {
+        await derivativeVariant.syncSize();
+        derivativeVariant.update({
+          status: 'READY',
+          entryPoint: result.entryPoint,
+          mimeType: result.mimeType,
+        });
+      })
+      .catch((e) => {
+        this.logger.error(
+          `Transform template "${this.name}" failed: ${
+            e instanceof Error ? e.message : 'Unknown error'
+          }`
+        );
+        derivativeVariant.update({
+          status: 'FAILED',
+        });
       });
-
-      await derivativeVariant.update({
-        status: 'READY',
-        entryPoint: result.entryPoint,
-        mimeType: result.mimeType,
-      });
-    } catch (e) {
-      this.logger.error(
-        `Transform template "${this.name}" failed: ${
-          e instanceof Error ? e.message : 'Unknown error'
-        }`
-      );
-      await derivativeVariant.update({
-        status: 'FAILED',
-      });
-    }
   }
 
   async update(data: UpdateTransformTemplateDto) {

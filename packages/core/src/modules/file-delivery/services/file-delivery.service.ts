@@ -2,12 +2,14 @@ import { AssetVariantNotFound } from '@/modules/asset/asset.errors';
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { StorageUnitService } from '@/modules/storage';
 import { StorageProviderEntity } from '@/modules/storage/entities';
+import { BaseError } from '@/shared/errors';
 import {
   getAssetCachePath,
   getAssetVariantPath,
 } from '@/shared/utils/asset.utils';
+import { ErrorCode } from '@longpoint/types';
 import { getMimeType } from '@longpoint/utils/media';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import crypto from 'crypto';
 import type { Request, Response } from 'express';
 import { SignedUrlParamsDto } from '../dtos';
@@ -49,6 +51,7 @@ export class FileDeliveryService {
       },
       select: {
         mimeType: true,
+        size: true,
         asset: {
           select: {
             id: true,
@@ -85,12 +88,47 @@ export class FileDeliveryService {
 
     if (!hasTransformParams) {
       try {
-        const stream = await provider.getFileStream(variantEntryPointPath);
+        const range = req.headers.range;
 
-        // const contentType = getContentType(filename);
-        res.setHeader('Content-Type', assetVariant.mimeType);
-        res.setHeader('Cache-Control', 'public, max-age=31536000');
-        stream.pipe(res);
+        if (range) {
+          if (!assetVariant.size) {
+            throw new BaseError(
+              ErrorCode.INVALID_INPUT,
+              'Cannot serve file with an undetermined size',
+              HttpStatus.BAD_REQUEST
+            );
+          }
+
+          const parts = range.replace(/bytes=/, '').split('-');
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : assetVariant.size - 1;
+          const chunkSize = end - start + 1;
+
+          const stream = await provider.getFileStream(variantEntryPointPath, {
+            start,
+            end,
+          });
+
+          res.status(HttpStatus.PARTIAL_CONTENT);
+          res.setHeader(
+            'Content-Range',
+            `bytes ${start}-${end}/${assetVariant.size}`
+          );
+          res.setHeader('Accept-Ranges', 'bytes');
+          res.setHeader('Content-Type', assetVariant.mimeType);
+          res.setHeader('Content-Length', chunkSize.toString());
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+          stream.pipe(res);
+        } else {
+          const stream = await provider.getFileStream(variantEntryPointPath);
+          res.setHeader('Content-Type', assetVariant.mimeType);
+          if (assetVariant.size) {
+            res.setHeader('Content-Length', assetVariant.size.toString());
+            res.setHeader('Accept-Ranges', 'bytes');
+          }
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+          stream.pipe(res);
+        }
         return;
       } catch (error) {
         throw new FileNotFound(variantEntryPointPath);

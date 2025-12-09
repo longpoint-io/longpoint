@@ -14,6 +14,7 @@ import { Request } from 'express';
 import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
 import { EventPublisher } from '../event';
 import { UrlSigningService } from '../file-delivery/services/url-signing.service';
+import { StorageProviderEntity } from '../storage/entities';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { TokenExpired } from './upload.errors';
 
@@ -74,7 +75,7 @@ export class UploadService {
     try {
       const provider = await storageUnit.getProvider();
       await provider.upload(filePath, req);
-      await this.finalize(uploadToken.assetVariant);
+      await this.finalize(uploadToken.assetVariant, provider, storageUnit.id);
     } catch (error) {
       await this.updateVariant(uploadToken.assetVariant.id, {
         status: 'FAILED',
@@ -84,7 +85,9 @@ export class UploadService {
   }
 
   private async finalize(
-    variant: Pick<AssetVariant, 'id' | 'assetId' | 'mimeType' | 'entryPoint'>
+    variant: Pick<AssetVariant, 'id' | 'assetId' | 'mimeType' | 'entryPoint'>,
+    provider: StorageProviderEntity,
+    storageUnitId: string
   ) {
     try {
       const url = this.urlSigningService.generateSignedUrl(
@@ -95,6 +98,7 @@ export class UploadService {
       const fullUrl = new URL(url, baseUrl).href;
 
       const assetType = mimeTypeToAssetType(variant.mimeType);
+
       let variantUpdateData: Prisma.AssetVariantUpdateInput = {};
 
       if (assetType === 'IMAGE') {
@@ -105,16 +109,16 @@ export class UploadService {
           aspectRatio: imageProbe.aspectRatio,
           size: imageProbe.size.bytes,
         };
-      } else if (assetType === 'VIDEO') {
-        const videoProbe = await this.probeService.probeVideo(fullUrl);
-        variantUpdateData = {
-          width: videoProbe.width,
-          height: videoProbe.height,
-          aspectRatio: videoProbe.aspectRatio,
-          size: videoProbe.size,
-          duration: videoProbe.duration,
-        };
       }
+
+      const fileStats = await provider.getFileStats(
+        getAssetVariantPath({
+          ...variant,
+          storageUnitId,
+          prefix: this.configService.get('storage.pathPrefix'),
+        })
+      );
+      variantUpdateData.size = fileStats.size;
 
       await this.updateVariant(variant.id, {
         ...variantUpdateData,

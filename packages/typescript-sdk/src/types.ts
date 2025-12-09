@@ -552,6 +552,26 @@ export interface paths {
         patch: operations["updateTransformTemplate"];
         trace?: never;
     };
+    "/transform-templates/{templateId}/generate-variant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate a variant from a transform template
+         * @description Creates a new derivative variant by applying the transform template to the source variant.
+         */
+        post: operations["generateVariantFromTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transformers": {
         parameters: {
             query?: never;
@@ -1502,6 +1522,13 @@ export interface components {
         GenerateMediaLinks: {
             /** @description The assets to generate links for */
             assets: components["schemas"]["GenerateAssetLink"][];
+        };
+        GenerateVariant: {
+            /**
+             * @description The ID of the source asset variant to transform
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            sourceVariantId: string;
         };
         ListAssetsResponse: {
             /** @description The assets in the response */
@@ -4036,6 +4063,48 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TransformTemplate"];
                 };
+            };
+            /** @description The transform template was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    generateVariantFromTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateVariant"];
+            };
+        };
+        responses: {
+            /** @description The variant generation has been initiated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description The transform template was not found */
             404: {

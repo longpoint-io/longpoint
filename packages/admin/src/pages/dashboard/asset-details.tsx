@@ -60,6 +60,7 @@ import {
   Download,
   EditIcon,
   ImageIcon,
+  Sparkles,
   Trash2,
   VideoIcon,
 } from 'lucide-react';
@@ -275,6 +276,127 @@ function AddToCollectionCombobox({
   );
 }
 
+type SelectTransformTemplateProps = {
+  client: Longpoint;
+  onSelect: (templateId: string) => void;
+  onClose: () => void;
+};
+
+function SelectTransformTemplate({
+  client,
+  onSelect,
+  onClose,
+}: SelectTransformTemplateProps) {
+  const [search, setSearch] = useState('');
+  const [templates, setTemplates] = useState<
+    components['schemas']['TransformTemplate'][]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    client.transform
+      .listTransformTemplates({ pageSize: 100 })
+      .then((response) => {
+        if (!cancelled) {
+          setTemplates(response.items || []);
+          setIsLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching transform templates:', error);
+        if (!cancelled) {
+          setTemplates([]);
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client]);
+
+  const filterTemplates = (
+    tmpls: components['schemas']['TransformTemplate'][]
+  ) => {
+    if (!search) return tmpls;
+    return tmpls.filter(
+      (template) =>
+        template.name.toLowerCase().includes(search.toLowerCase()) ||
+        template.displayName?.toLowerCase().includes(search.toLowerCase()) ||
+        template.description?.toLowerCase().includes(search.toLowerCase())
+    );
+  };
+
+  const filteredTemplates = filterTemplates(templates);
+
+  const handleSelect = (templateId: string) => {
+    onSelect(templateId);
+  };
+
+  return (
+    <div className="flex flex-col">
+      <Command shouldFilter={false}>
+        <CommandInput
+          placeholder="Search transform templates..."
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList className="max-h-[300px]">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Spinner className="h-4 w-4" />
+            </div>
+          ) : (
+            <>
+              {filteredTemplates.length > 0 ? (
+                <CommandGroup>
+                  {filteredTemplates.map((template) => (
+                    <CommandItem
+                      key={template.id}
+                      value={template.id}
+                      onSelect={() => handleSelect(template.id)}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex flex-col gap-1 w-full">
+                        <span className="font-medium">
+                          {template.displayName || template.name}
+                        </span>
+                        {template.description && (
+                          <span className="text-xs text-muted-foreground">
+                            {template.description}
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ) : (
+                <CommandEmpty>
+                  {search
+                    ? 'No transform templates found.'
+                    : 'No transform templates available.'}
+                </CommandEmpty>
+              )}
+            </>
+          )}
+        </CommandList>
+      </Command>
+      <div className="border-t p-2 flex justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onClose}
+          disabled={isLoading}
+        >
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function AssetDetails() {
   const { id } = useParams<{ id: string }>();
   const client = useClient();
@@ -287,6 +409,7 @@ export function AssetDetails() {
   const [permanentlyDelete, setPermanentlyDelete] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
+  const [generateVariantOpen, setGenerateVariantOpen] = useState(false);
 
   const renameFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -373,6 +496,34 @@ export function AssetDetails() {
     },
     onError: (error) => {
       toast.error('Failed to update collections', {
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      });
+    },
+  });
+
+  const generateVariantMutation = useMutation({
+    mutationFn: (templateId: string) => {
+      const primaryVariantId = media?.variants?.primary?.id;
+      if (!primaryVariantId) {
+        throw new Error('Primary variant not found');
+      }
+      return client.transform.generateVariantFromTemplate(templateId, {
+        sourceVariantId: primaryVariantId,
+      });
+    },
+    onSuccess: () => {
+      toast.success('Variant generation started', {
+        description: 'The variant is being generated. This may take a moment.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['assets', id] });
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      setGenerateVariantOpen(false);
+    },
+    onError: (error) => {
+      toast.error('Failed to generate variant', {
         description:
           error instanceof Error
             ? error.message
@@ -547,6 +698,37 @@ export function AssetDetails() {
             </TooltipTrigger>
             <TooltipContent>Download</TooltipContent>
           </Tooltip>
+          <Popover
+            open={generateVariantOpen}
+            onOpenChange={setGenerateVariantOpen}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="icon"
+                    disabled={
+                      !primaryAsset?.id ||
+                      primaryAsset.status !== 'READY' ||
+                      generateVariantMutation.isPending
+                    }
+                  >
+                    <Sparkles />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Generate Variant</TooltipContent>
+            </Tooltip>
+            <PopoverContent className="w-[300px] p-0" align="end">
+              <SelectTransformTemplate
+                client={client}
+                onSelect={(templateId) => {
+                  generateVariantMutation.mutate(templateId);
+                }}
+                onClose={() => setGenerateVariantOpen(false)}
+              />
+            </PopoverContent>
+          </Popover>
           {canDelete && (
             <Tooltip>
               <TooltipTrigger asChild>

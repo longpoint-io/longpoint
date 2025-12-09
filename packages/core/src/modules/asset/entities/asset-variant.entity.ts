@@ -4,11 +4,10 @@ import { EventPublisher } from '@/modules/event';
 import { UrlSigningService } from '@/modules/file-delivery';
 import { StorageUnitEntity } from '@/modules/storage/entities';
 import { Serializable } from '@/shared/types/swagger.types';
-import { getAssetPath } from '@/shared/utils/asset.utils';
+import { getAssetVariantPath } from '@/shared/utils/asset.utils';
 import { FileOperations } from '@longpoint/devkit';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
 import { forwardSlashJoin } from '@longpoint/utils/path';
-import path from 'path';
 import { Readable } from 'stream';
 import { AssetVariantNotFound } from '../asset.errors';
 import { SelectedAssetVariant } from '../asset.selectors';
@@ -29,7 +28,6 @@ export type UpdateAssetVariantArgs = Partial<
     | 'mimeType'
     | 'width'
     | 'height'
-    | 'size'
     | 'aspectRatio'
     | 'duration'
     | 'metadata'
@@ -86,7 +84,6 @@ export class AssetVariantEntity implements Serializable {
           mimeType: data.mimeType,
           width: data.width,
           height: data.height,
-          size: data.size,
           aspectRatio: data.aspectRatio,
         },
       });
@@ -120,29 +117,48 @@ export class AssetVariantEntity implements Serializable {
     }
   }
 
-  async getStorageUnitOperations(pluginId: string): Promise<FileOperations> {
+  /**
+   * Sync the size of the variant from the storage unit
+   */
+  async syncSize() {
     const provider = await this.storageUnit.getProvider();
-    const assetPath = getAssetPath({
+    const fileStats = await provider.getFileStats(
+      getAssetVariantPath({
+        id: this.id,
+        assetId: this.assetId,
+        entryPoint: this.entryPoint,
+        storageUnitId: this.storageUnit.id,
+        prefix: this.storageUnit.pathPrefix,
+      })
+    );
+    await this.prismaService.assetVariant.update({
+      where: {
+        id: this.id,
+      },
+      data: {
+        size: fileStats.size,
+      },
+    });
+    this._size = fileStats.size;
+  }
+
+  async getStorageUnitOperations(): Promise<FileOperations> {
+    const provider = await this.storageUnit.getProvider();
+    const assetVariantPath = getAssetVariantPath({
+      id: this.id,
       assetId: this.assetId,
+      entryPoint: this.entryPoint,
       storageUnitId: this.storageUnit.id,
       prefix: this.storageUnit.pathPrefix,
     });
     return {
       write: async (path: string, readable: Readable) => {
-        const sanitizedPath = this.sanitizePluginPath(
-          pluginId,
-          assetPath,
-          path
-        );
-        await provider.upload(sanitizedPath, readable);
+        const fullPath = forwardSlashJoin(assetVariantPath, path);
+        await provider.upload(fullPath, readable);
       },
       read: async (path: string) => {
-        const sanitizedPath = this.sanitizePluginPath(
-          pluginId,
-          assetPath,
-          path
-        );
-        return provider.getFileStream(sanitizedPath);
+        const fullPath = forwardSlashJoin(assetVariantPath, path);
+        return provider.getFileStream(fullPath);
       },
       delete: async (path: string) => {
         throw new Error('Not implemented');
@@ -206,26 +222,5 @@ export class AssetVariantEntity implements Serializable {
 
   get url(): string {
     return this.urlSigningService.generateSignedUrl(this.id, this._entryPoint);
-  }
-
-  private sanitizePluginPath(
-    pluginId: string,
-    scopedDir: string,
-    pluginRequestedPath: string
-  ) {
-    const fullPath = path.resolve(scopedDir, pluginRequestedPath);
-    const normalizedScope = path.resolve(scopedDir);
-
-    // Ensure it's within the scoped directory
-    if (
-      !fullPath.startsWith(normalizedScope + path.sep) &&
-      fullPath !== normalizedScope
-    ) {
-      throw new Error(
-        `Path traversal denied: "${pluginRequestedPath}" escapes scoped directory for plugin ${pluginId}`
-      );
-    }
-
-    return forwardSlashJoin(fullPath);
   }
 }

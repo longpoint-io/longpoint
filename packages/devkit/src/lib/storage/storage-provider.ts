@@ -1,5 +1,6 @@
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Readable } from 'stream';
+import { FileStats, GetFileStreamOptions } from './types.js';
 
 export interface StorageProviderArgs<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
@@ -24,9 +25,13 @@ export abstract class StorageProvider {
     path: string,
     body: Readable | Buffer | string
   ): Promise<boolean>;
-  abstract getFileStream(path: string): Promise<Readable>;
+  abstract getFileStream(
+    path: string,
+    options?: GetFileStreamOptions
+  ): Promise<Readable>;
   abstract exists(path: string): Promise<boolean>;
   abstract deleteDirectory(path: string): Promise<void>;
+  abstract getFileStats(path: string): Promise<FileStats>;
 
   /**
    * Helper method to consume the entire stream and return as Buffer.

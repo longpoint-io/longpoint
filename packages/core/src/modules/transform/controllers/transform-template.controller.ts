@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import {
   CreateTransformTemplateDto,
+  GenerateVariantDto,
   ListTransformTemplatesQueryDto,
   ListTransformTemplatesResponseDto,
   TransformTemplateDto,
@@ -107,5 +108,27 @@ export class TransformController {
     const template =
       await this.transformService.getTransformTemplateByIdOrThrow(templateId);
     await template.delete();
+  }
+
+  @Post(':templateId/generate-variant')
+  @RequirePermission(Permission.TRANSFORM_TEMPLATES_CREATE)
+  @ApiOperation({
+    summary: 'Generate a variant from a transform template',
+    description:
+      'Creates a new derivative variant by applying the transform template to the source variant.',
+    operationId: 'generateVariantFromTemplate',
+  })
+  @ApiOkResponse({
+    description: 'The variant generation has been initiated',
+  })
+  @ApiTransformTemplateNotFoundResponse()
+  async generateVariantFromTemplate(
+    @Param('templateId') templateId: string,
+    @Body() body: GenerateVariantDto
+  ) {
+    const template =
+      await this.transformService.getTransformTemplateByIdOrThrow(templateId);
+    await template.transformAssetVariant(body.sourceVariantId);
+    return { success: true };
   }
 }
