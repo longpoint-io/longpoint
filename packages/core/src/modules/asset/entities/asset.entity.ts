@@ -29,7 +29,7 @@ import { AssetDto } from '../dtos/containers/asset.dto';
 export interface AssetEntityArgs extends SelectedAsset {
   storageUnit: StorageUnitEntity;
   prismaService: PrismaService;
-  pathPrefix: string;
+  pathPrefix?: string;
   urlSigningService: UrlSigningService;
   eventPublisher: EventPublisher;
 }
@@ -43,7 +43,7 @@ export class AssetEntity {
   private _updatedAt: Date;
   private readonly storageUnit: StorageUnitEntity;
   private readonly prismaService: PrismaService;
-  private readonly pathPrefix: string;
+  private readonly pathPrefix?: string;
   private readonly urlSigningService: UrlSigningService;
   private readonly eventPublisher: EventPublisher;
   private variants: SelectedAsset['variants'];

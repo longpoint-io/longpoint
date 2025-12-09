@@ -18,6 +18,11 @@ export interface TransformArgs<T extends ConfigValues = ConfigValues> {
   input: T;
 }
 
+export interface TransformResult {
+  mimeType: string;
+  entryPoint: string;
+}
+
 export abstract class AssetTransformer {
   protected readonly pluginSettings: ConfigValues;
 
@@ -25,5 +30,5 @@ export abstract class AssetTransformer {
     this.pluginSettings = args.pluginSettings;
   }
 
-  abstract transform(args: TransformArgs): Promise<void>;
+  abstract transform(args: TransformArgs): Promise<TransformResult>;
 }

@@ -37,6 +37,7 @@ export const selectAssetVariant = () => {
     id: true,
     type: true,
     status: true,
+    assetId: true,
     entryPoint: true,
     mimeType: true,
     width: true,

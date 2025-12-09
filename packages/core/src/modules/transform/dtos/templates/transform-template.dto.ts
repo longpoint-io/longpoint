@@ -44,6 +44,18 @@ export class TransformTemplateDto {
   transformerId: string;
 
   @ApiProperty({
+    description: 'The date and time the transform template was created',
+    example: '2021-01-01T00:00:00.000Z',
+  })
+  createdAt: Date;
+
+  @ApiProperty({
+    description: 'The date and time the transform template was updated',
+    example: '2021-01-01T00:00:00.000Z',
+  })
+  updatedAt: Date;
+
+  @ApiProperty({
     description: 'The input values passed to the transformer',
     type: 'object',
     additionalProperties: true,
@@ -63,5 +75,7 @@ export class TransformTemplateDto {
     this.description = params.description;
     this.transformerId = params.transformerId;
     this.input = params.input as ConfigValues;
+    this.createdAt = params.createdAt;
+    this.updatedAt = params.updatedAt;
   }
 }

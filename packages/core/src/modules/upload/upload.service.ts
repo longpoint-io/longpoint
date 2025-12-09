@@ -68,6 +68,7 @@ export class UploadService {
     const filePath = getAssetVariantPath({
       ...uploadToken.assetVariant,
       storageUnitId: uploadToken.assetVariant.asset.storageUnitId,
+      prefix: this.configService.get('storage.pathPrefix'),
     });
 
     try {

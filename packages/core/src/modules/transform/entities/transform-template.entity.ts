@@ -1,5 +1,7 @@
+import { AssetService } from '@/modules/asset';
 import { PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
+import { Logger } from '@nestjs/common';
 import { TransformTemplateDto, UpdateTransformTemplateDto } from '../dtos';
 import { TransformTemplateNotFound } from '../transform.errors';
 import {
@@ -9,8 +11,9 @@ import {
 import { TransformerEntity } from './transformer.entity';
 
 export interface TransformTemplateEntityArgs extends SelectedTransformTemplate {
-  prismaService: PrismaService;
   transformer: TransformerEntity;
+  prismaService: PrismaService;
+  assetService: AssetService;
 }
 
 export class TransformTemplateEntity {
@@ -24,6 +27,8 @@ export class TransformTemplateEntity {
   private _transformer: TransformerEntity;
 
   private readonly prismaService: PrismaService;
+  private readonly assetService: AssetService;
+  private readonly logger = new Logger(TransformTemplateEntity.name);
 
   constructor(args: TransformTemplateEntityArgs) {
     this.id = args.id;
@@ -34,7 +39,50 @@ export class TransformTemplateEntity {
     this._createdAt = args.createdAt;
     this._updatedAt = args.updatedAt;
     this.prismaService = args.prismaService;
+    this.assetService = args.assetService;
     this._transformer = args.transformer;
+  }
+
+  async transformAssetVariant(sourceVariantId: string) {
+    const sourceVariant = await this.assetService.getAssetVariantByIdOrThrow(
+      sourceVariantId
+    );
+    const dto = sourceVariant.toDto();
+
+    const derivativeVariant = await this.assetService.createDerivativeVariant(
+      sourceVariant.assetId,
+      this.displayName
+    );
+
+    try {
+      const result = await this._transformer.transform({
+        input: await this._transformer.processInputFromDb(
+          this._inputFromDb ?? {}
+        ),
+        fileOperations: await derivativeVariant.getStorageUnitOperations(
+          this._transformer.id
+        ),
+        source: {
+          url: dto.url!,
+          mimeType: sourceVariant.mimeType,
+        },
+      });
+
+      await derivativeVariant.update({
+        status: 'READY',
+        entryPoint: result.entryPoint,
+        mimeType: result.mimeType,
+      });
+    } catch (e) {
+      this.logger.error(
+        `Transform template "${this.name}" failed: ${
+          e instanceof Error ? e.message : 'Unknown error'
+        }`
+      );
+      await derivativeVariant.update({
+        status: 'FAILED',
+      });
+    }
   }
 
   async update(data: UpdateTransformTemplateDto) {

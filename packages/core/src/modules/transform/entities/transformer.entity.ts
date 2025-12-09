@@ -2,7 +2,7 @@ import { ConfigSchemaService } from '@/modules/common/services';
 import { TransformerRegistryEntry } from '@/modules/plugin/services';
 import { Serializable } from '@/shared/types/swagger.types';
 import { ConfigValues } from '@longpoint/config-schema';
-import { AssetTransformer } from '@longpoint/devkit';
+import { AssetTransformer, TransformArgs } from '@longpoint/devkit';
 import {
   TransformerDetailsDto,
   TransformerDto,
@@ -36,6 +36,10 @@ export class TransformerEntity implements Serializable {
     this.registryEntry = args.registryEntry;
     this.transformerInstance = args.transformerInstance;
     this.configSchemaService = args.configSchemaService;
+  }
+
+  async transform(args: TransformArgs) {
+    return this.transformerInstance.transform(args);
   }
 
   /**

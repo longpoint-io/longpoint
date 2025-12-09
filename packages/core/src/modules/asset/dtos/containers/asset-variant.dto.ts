@@ -5,7 +5,7 @@ import { JsonObject } from '@/shared/types/object.types';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-export type AssetVariantParams = SelectedAssetVariant & {
+export type AssetVariantParams = Omit<SelectedAssetVariant, 'assetId'> & {
   url?: string;
 };
 

@@ -1,3 +1,4 @@
+import { AssetVariantType } from '@/database/generated/prisma/client';
 import { CollectionNotFound } from '@/modules/collection';
 import { ConfigService } from '@/modules/common/services';
 import { SupportedMimeType } from '@longpoint/types';
@@ -14,8 +15,13 @@ import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery/services/url-signing.service';
 import { StorageUnitService } from '../../storage/services/storage-unit.service';
 import { AssetNotFound, AssetVariantNotFound } from '../asset.errors';
-import { selectAsset, selectAssetSummary } from '../asset.selectors';
+import {
+  selectAsset,
+  selectAssetSummary,
+  selectAssetVariant,
+} from '../asset.selectors';
 import { CreateAssetDto, ListAssetsQueryDto } from '../dtos';
+import { AssetVariantEntity } from '../entities/asset-variant.entity';
 
 export interface CreateAssetParams {
   path: string;
@@ -280,6 +286,56 @@ export class AssetService {
           })
       )
     );
+  }
+
+  async createDerivativeVariant(assetId: string, displayName?: string) {
+    const variant = await this.prismaService.assetVariant.create({
+      data: {
+        assetId,
+        mimeType: '',
+        status: 'PROCESSING',
+        entryPoint: '',
+        type: AssetVariantType.DERIVATIVE,
+        displayName,
+      },
+      select: selectAssetVariant(),
+    });
+    return new AssetVariantEntity({
+      ...variant,
+      storageUnit: await this.storageUnitService.getStorageUnitByAssetId(
+        assetId
+      ),
+      urlSigningService: this.urlSigningService,
+      prismaService: this.prismaService,
+      eventPublisher: this.eventPublisher,
+    });
+  }
+
+  async getAssetVariantById(id: string): Promise<AssetVariantEntity | null> {
+    const variant = await this.prismaService.assetVariant.findUnique({
+      where: { id },
+      select: selectAssetVariant(),
+    });
+    if (!variant) {
+      return null;
+    }
+    return new AssetVariantEntity({
+      ...variant,
+      urlSigningService: this.urlSigningService,
+      storageUnit: await this.storageUnitService.getStorageUnitByAssetId(
+        variant.assetId
+      ),
+      prismaService: this.prismaService,
+      eventPublisher: this.eventPublisher,
+    });
+  }
+
+  async getAssetVariantByIdOrThrow(id: string): Promise<AssetVariantEntity> {
+    const variant = await this.getAssetVariantById(id);
+    if (!variant) {
+      throw new AssetVariantNotFound(id);
+    }
+    return variant;
   }
 
   /**

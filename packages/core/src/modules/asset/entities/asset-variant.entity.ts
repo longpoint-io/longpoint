@@ -1,41 +1,231 @@
-import { AssetVariantStatus, AssetVariantType } from '@/database';
+import { AssetVariant, AssetVariantStatus, AssetVariantType } from '@/database';
+import { PrismaService } from '@/modules/common/services';
+import { EventPublisher } from '@/modules/event';
 import { UrlSigningService } from '@/modules/file-delivery';
+import { StorageUnitEntity } from '@/modules/storage/entities';
+import { Serializable } from '@/shared/types/swagger.types';
+import { getAssetPath } from '@/shared/utils/asset.utils';
+import { FileOperations } from '@longpoint/devkit';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
+import { forwardSlashJoin } from '@longpoint/utils/path';
+import path from 'path';
+import { Readable } from 'stream';
+import { AssetVariantNotFound } from '../asset.errors';
 import { SelectedAssetVariant } from '../asset.selectors';
+import { AssetVariantDto } from '../dtos/containers/asset-variant.dto';
 
 export interface AssetVariantEntityArgs extends SelectedAssetVariant {
   urlSigningService: UrlSigningService;
+  storageUnit: StorageUnitEntity;
+  prismaService: PrismaService;
+  eventPublisher: EventPublisher;
 }
 
-export class AssetVariantEntity {
+export type UpdateAssetVariantArgs = Partial<
+  Pick<
+    AssetVariant,
+    | 'status'
+    | 'entryPoint'
+    | 'mimeType'
+    | 'width'
+    | 'height'
+    | 'size'
+    | 'aspectRatio'
+    | 'duration'
+    | 'metadata'
+  >
+>;
+
+export class AssetVariantEntity implements Serializable {
   readonly id: string;
   readonly type: AssetVariantType;
-  readonly mimeType: SupportedMimeType;
-  readonly width: number | null;
-  readonly height: number | null;
-  readonly size: number | null;
-  readonly aspectRatio: number | null;
-  readonly duration: number | null;
-  readonly metadata: JsonObject | null;
-  private readonly _status: AssetVariantStatus;
+  readonly assetId: string;
+  private _status: AssetVariantStatus;
+  private _entryPoint: string;
+  private _mimeType: SupportedMimeType;
+  private _width: number | null;
+  private _height: number | null;
+  private _size: number | null;
+  private _aspectRatio: number | null;
+  private _duration: number | null;
+  private _metadata: JsonObject | null;
 
   private readonly urlSigningService: UrlSigningService;
+  private readonly prismaService: PrismaService;
+  private readonly storageUnit: StorageUnitEntity;
+  private readonly eventPublisher: EventPublisher;
 
   constructor(params: AssetVariantEntityArgs) {
     this.id = params.id;
     this.type = params.type;
-    this.mimeType = params.mimeType as SupportedMimeType;
-    this.width = params.width;
-    this.height = params.height;
-    this.size = params.size;
-    this.aspectRatio = params.aspectRatio;
-    this.duration = params.duration;
-    this.metadata = params.metadata as JsonObject | null;
+    this._entryPoint = params.entryPoint;
+    this._mimeType = params.mimeType as SupportedMimeType;
+    this._width = params.width;
+    this._height = params.height;
+    this._size = params.size;
+    this._aspectRatio = params.aspectRatio;
+    this._duration = params.duration;
+    this._metadata = params.metadata as JsonObject | null;
     this._status = params.status;
     this.urlSigningService = params.urlSigningService;
+    this.assetId = params.assetId;
+    this.storageUnit = params.storageUnit;
+    this.prismaService = params.prismaService;
+    this.eventPublisher = params.eventPublisher;
+  }
+
+  async update(data: UpdateAssetVariantArgs) {
+    try {
+      const updated = await this.prismaService.assetVariant.update({
+        where: {
+          id: this.id,
+        },
+        data: {
+          status: data.status,
+          entryPoint: data.entryPoint,
+          mimeType: data.mimeType,
+          width: data.width,
+          height: data.height,
+          size: data.size,
+          aspectRatio: data.aspectRatio,
+        },
+      });
+      this._status = updated.status;
+      this._entryPoint = updated.entryPoint;
+      this._mimeType = updated.mimeType as SupportedMimeType;
+      this._width = updated.width;
+      this._height = updated.height;
+      this._size = updated.size;
+      this._aspectRatio = updated.aspectRatio;
+      this._duration = updated.duration;
+      this._metadata = updated.metadata as JsonObject | null;
+
+      if (data.status === 'READY') {
+        this.eventPublisher.publish('asset.variant.ready', {
+          id: this.id,
+          assetId: this.assetId,
+        });
+      }
+      if (data.status === 'FAILED') {
+        this.eventPublisher.publish('asset.variant.failed', {
+          id: this.id,
+          assetId: this.assetId,
+        });
+      }
+    } catch (e) {
+      if (PrismaService.isNotFoundError(e)) {
+        throw new AssetVariantNotFound(this.id);
+      }
+      throw e;
+    }
+  }
+
+  async getStorageUnitOperations(pluginId: string): Promise<FileOperations> {
+    const provider = await this.storageUnit.getProvider();
+    const assetPath = getAssetPath({
+      assetId: this.assetId,
+      storageUnitId: this.storageUnit.id,
+      prefix: this.storageUnit.pathPrefix,
+    });
+    return {
+      write: async (path: string, readable: Readable) => {
+        const sanitizedPath = this.sanitizePluginPath(
+          pluginId,
+          assetPath,
+          path
+        );
+        await provider.upload(sanitizedPath, readable);
+      },
+      read: async (path: string) => {
+        const sanitizedPath = this.sanitizePluginPath(
+          pluginId,
+          assetPath,
+          path
+        );
+        return provider.getFileStream(sanitizedPath);
+      },
+      delete: async (path: string) => {
+        throw new Error('Not implemented');
+      },
+    };
+  }
+
+  toDto(): AssetVariantDto {
+    return new AssetVariantDto({
+      id: this.id,
+      type: this.type,
+      width: this.width,
+      height: this.height,
+      size: this.size,
+      aspectRatio: this.aspectRatio,
+      duration: this.duration,
+      metadata: this.metadata as JsonObject | null,
+      classifierRuns: [],
+      status: this._status,
+      entryPoint: this.entryPoint,
+      mimeType: this.mimeType,
+      url: this.url,
+    });
   }
 
   get status(): AssetVariantStatus {
     return this._status;
+  }
+
+  get width(): number | null {
+    return this._width;
+  }
+
+  get height(): number | null {
+    return this._height;
+  }
+
+  get size(): number | null {
+    return this._size;
+  }
+
+  get aspectRatio(): number | null {
+    return this._aspectRatio;
+  }
+
+  get duration(): number | null {
+    return this._duration;
+  }
+
+  get metadata(): JsonObject | null {
+    return this._metadata;
+  }
+
+  get entryPoint(): string {
+    return this._entryPoint;
+  }
+
+  get mimeType(): SupportedMimeType {
+    return this._mimeType;
+  }
+
+  get url(): string {
+    return this.urlSigningService.generateSignedUrl(this.id, this._entryPoint);
+  }
+
+  private sanitizePluginPath(
+    pluginId: string,
+    scopedDir: string,
+    pluginRequestedPath: string
+  ) {
+    const fullPath = path.resolve(scopedDir, pluginRequestedPath);
+    const normalizedScope = path.resolve(scopedDir);
+
+    // Ensure it's within the scoped directory
+    if (
+      !fullPath.startsWith(normalizedScope + path.sep) &&
+      fullPath !== normalizedScope
+    ) {
+      throw new Error(
+        `Path traversal denied: "${pluginRequestedPath}" escapes scoped directory for plugin ${pluginId}`
+      );
+    }
+
+    return forwardSlashJoin(fullPath);
   }
 }

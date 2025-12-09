@@ -3,6 +3,7 @@ import {
   AssetTransformer,
   AssetTransformerArgs,
   TransformArgs,
+  TransformResult,
 } from '@longpoint/devkit';
 import { spawn } from 'child_process';
 import { Readable } from 'stream';
@@ -15,15 +16,15 @@ export class VideoTranscoder extends AssetTransformer {
 
   async transform(
     args: TransformArgs<ConfigValues<typeof input>>
-  ): Promise<void> {
+  ): Promise<TransformResult> {
     const {
       source,
       input: { dimensions },
     } = args;
 
-    // If no dimensions specified, skip transformation
+    // TODO: temporary
     if (!dimensions || (!dimensions.width && !dimensions.height)) {
-      return;
+      throw new Error('No dimensions specified');
     }
 
     // Get input video source
@@ -40,7 +41,6 @@ export class VideoTranscoder extends AssetTransformer {
       throw new Error('No valid video source provided');
     }
 
-    // Build ffmpeg command arguments
     const ffmpegArgs = [
       '-i',
       inputSource,
@@ -95,7 +95,6 @@ export class VideoTranscoder extends AssetTransformer {
     const timestamp = Date.now();
     const outputPath = `transformed_${timestamp}.mp4`;
 
-    // Wait for ffmpeg to complete and handle errors
     const ffmpegPromise = new Promise<void>((resolve, reject) => {
       ffmpeg.on('close', (code) => {
         if (code !== 0) {
@@ -112,10 +111,13 @@ export class VideoTranscoder extends AssetTransformer {
       });
     });
 
-    // Write output stream to file operations
     await args.fileOperations.write(outputPath, outputStream);
 
-    // Wait for ffmpeg to complete
     await ffmpegPromise;
+
+    return {
+      mimeType: 'video/mp4',
+      entryPoint: outputPath,
+    };
   }
 }
