@@ -25,10 +25,10 @@ export type UpdateAssetVariantArgs = Partial<
     AssetVariant,
     | 'status'
     | 'entryPoint'
+    | 'displayName'
     | 'mimeType'
     | 'width'
     | 'height'
-    | 'aspectRatio'
     | 'duration'
     | 'metadata'
   >
@@ -38,13 +38,13 @@ export class AssetVariantEntity implements Serializable {
   readonly id: string;
   readonly type: AssetVariantType;
   readonly assetId: string;
+  private _displayName: string | null;
   private _status: AssetVariantStatus;
   private _entryPoint: string;
   private _mimeType: SupportedMimeType;
   private _width: number | null;
   private _height: number | null;
   private _size: number | null;
-  private _aspectRatio: number | null;
   private _duration: number | null;
   private _metadata: JsonObject | null;
 
@@ -56,12 +56,12 @@ export class AssetVariantEntity implements Serializable {
   constructor(params: AssetVariantEntityArgs) {
     this.id = params.id;
     this.type = params.type;
+    this._displayName = params.displayName;
     this._entryPoint = params.entryPoint;
     this._mimeType = params.mimeType as SupportedMimeType;
     this._width = params.width;
     this._height = params.height;
     this._size = params.size;
-    this._aspectRatio = params.aspectRatio;
     this._duration = params.duration;
     this._metadata = params.metadata as JsonObject | null;
     this._status = params.status;
@@ -84,7 +84,6 @@ export class AssetVariantEntity implements Serializable {
           mimeType: data.mimeType,
           width: data.width,
           height: data.height,
-          aspectRatio: data.aspectRatio,
         },
       });
       this._status = updated.status;
@@ -93,7 +92,6 @@ export class AssetVariantEntity implements Serializable {
       this._width = updated.width;
       this._height = updated.height;
       this._size = updated.size;
-      this._aspectRatio = updated.aspectRatio;
       this._duration = updated.duration;
       this._metadata = updated.metadata as JsonObject | null;
 
@@ -174,9 +172,9 @@ export class AssetVariantEntity implements Serializable {
       height: this.height,
       size: this.size,
       aspectRatio: this.aspectRatio,
+      displayName: this._displayName,
       duration: this.duration,
       metadata: this.metadata as JsonObject | null,
-      classifierRuns: [],
       status: this._status,
       entryPoint: this.entryPoint,
       mimeType: this.mimeType,
@@ -186,6 +184,10 @@ export class AssetVariantEntity implements Serializable {
 
   get status(): AssetVariantStatus {
     return this._status;
+  }
+
+  get displayName(): string | null {
+    return this._displayName;
   }
 
   get width(): number | null {
@@ -201,7 +203,7 @@ export class AssetVariantEntity implements Serializable {
   }
 
   get aspectRatio(): number | null {
-    return this._aspectRatio;
+    return this.width && this.height ? this.width / this.height : null;
   }
 
   get duration(): number | null {

@@ -1,5 +1,4 @@
 import { Prisma } from '@/database';
-import { selectClassifierRun } from '@/modules/classifier';
 
 export const selectAssetSummary = () => {
   return {
@@ -36,6 +35,7 @@ export const selectAssetVariant = () => {
   return {
     id: true,
     type: true,
+    displayName: true,
     status: true,
     assetId: true,
     entryPoint: true,
@@ -43,12 +43,8 @@ export const selectAssetVariant = () => {
     width: true,
     height: true,
     size: true,
-    aspectRatio: true,
     duration: true,
     metadata: true,
-    classifierRuns: {
-      select: selectClassifierRun(),
-    },
   } satisfies Prisma.AssetVariantSelect;
 };
 

@@ -722,6 +722,8 @@ export interface components {
              * @example 2025-12-05T17:29:36.504Z
              */
             createdAt: string;
+            /** @description Derivative variants of the original asset. */
+            derivatives: components["schemas"]["AssetVariant"][];
             /**
              * @description The ID of the asset
              * @example r2qwyd76nvd98cu6ewg8ync2
@@ -732,6 +734,21 @@ export interface components {
              * @example Blissful Fields
              */
             name: string;
+            /**
+             * @description The original asset variant
+             * @example {
+             *       "id": "okie3r17vhfswyyp38v9lrsl",
+             *       "type": "ORIGINAL",
+             *       "status": "READY",
+             *       "mimeType": "image/jpeg",
+             *       "width": 1920,
+             *       "height": 1080,
+             *       "size": 950120,
+             *       "aspectRatio": 1.777777,
+             *       "url": "https://longpoint.example.com/v/okie3r17vhfswyyp38v9lrsl/original.jpg"
+             *     }
+             */
+            original: components["schemas"]["AssetVariant"];
             /**
              * @description The status of the asset
              * @example WAITING_FOR_UPLOAD
@@ -750,23 +767,6 @@ export interface components {
              * @example 2025-11-28T06:05:39.257Z
              */
             updatedAt: string;
-            /**
-             * @description The accessible asset variants
-             * @example {
-             *       "primary": {
-             *         "id": "okie3r17vhfswyyp38v9lrsl",
-             *         "type": "ORIGINAL",
-             *         "status": "READY",
-             *         "mimeType": "image/jpeg",
-             *         "width": 1920,
-             *         "height": 1080,
-             *         "size": 950120,
-             *         "aspectRatio": 1.777777,
-             *         "url": "https://longpoint.example.com/storage/default/abc123/original.jpg"
-             *       }
-             *     }
-             */
-            variants: components["schemas"]["AssetVariants"];
         };
         AssetSummary: {
             /**
@@ -810,8 +810,6 @@ export interface components {
              * @example 1.777777
              */
             aspectRatio: number | null;
-            /** @description The classifier runs for the asset variant */
-            classifierRuns: components["schemas"]["ClassifierRun"][];
             /**
              * @description The duration of the asset variant in seconds, if applicable
              * @example 120
@@ -861,7 +859,7 @@ export interface components {
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED";
             /**
              * @description The URL of the asset variant
-             * @example https://longpoint.example.com/storage/default/abc123/original.jpg
+             * @example https://longpoint.example.com/v/r2qwyd76nvd98cu6ewg8ync2/original.jpg
              */
             url: string | null;
             /**
@@ -869,10 +867,6 @@ export interface components {
              * @example 100
              */
             width: number | null;
-        };
-        AssetVariants: {
-            /** @description The primary asset variant */
-            primary: components["schemas"]["AssetVariant"];
         };
         ClassificationProvider: {
             /** @description The schema for classifier input */
@@ -989,72 +983,6 @@ export interface components {
              * @example 2025-01-01T00:00:00.000Z
              */
             updatedAt: string;
-        };
-        ClassifierRun: {
-            /** @description The classifier that was used to run the classifier run */
-            classifier: components["schemas"]["ClassifierShort"];
-            /**
-             * @description When the classifier run completed
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            completedAt: string | null;
-            /**
-             * Format: date-time
-             * @description When the classifier run was created
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * @description The error message of the classifier run
-             * @example An error occurred while running the classifier
-             */
-            errorMessage: string | null;
-            /**
-             * @description The ID of the classifier run
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description The result of the classifier run
-             * @example {
-             *       "tags": [
-             *         "person",
-             *         "car",
-             *         "tree"
-             *       ]
-             *     }
-             */
-            result: {
-                [key: string]: unknown;
-            };
-            /**
-             * @description When the classifier run started
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            startedAt: string | null;
-            /**
-             * @description The status of the classifier run
-             * @example SUCCESS
-             * @enum {string}
-             */
-            status: "PROCESSING" | "SUCCESS" | "FAILED";
-        };
-        ClassifierShort: {
-            /**
-             * @description A brief description of the classifier
-             * @example Tag general subjects like people, places, and things
-             */
-            description: Record<string, never> | null;
-            /**
-             * @description The ID of the classifier
-             * @example sajl1kih6emtwozh8y0zenkj
-             */
-            id: string;
-            /**
-             * @description The name of the classifier
-             * @example general-tagging
-             */
-            name: string;
         };
         ClassifierSummary: {
             /**

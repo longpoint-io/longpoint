@@ -1,6 +1,7 @@
 import { AssetVariantType } from '@/database/generated/prisma/client';
 import { CollectionNotFound } from '@/modules/collection';
 import { ConfigService } from '@/modules/common/services';
+import { Unexpected } from '@/shared/errors';
 import { SupportedMimeType } from '@longpoint/types';
 import {
   mimeTypeToAssetType,
@@ -9,7 +10,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { addHours } from 'date-fns';
-import { AssetEntity } from '../../common/entities';
+import { AssetEntity, StorageUnitEntity } from '../../common/entities';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
 import { UrlSigningService } from '../../file-delivery/services/url-signing.service';
@@ -19,6 +20,8 @@ import {
   selectAsset,
   selectAssetSummary,
   selectAssetVariant,
+  SelectedAsset,
+  SelectedAssetVariant,
 } from '../asset.selectors';
 import { CreateAssetDto, ListAssetsQueryDto } from '../dtos';
 import { AssetVariantEntity } from '../entities/asset-variant.entity';
@@ -132,14 +135,7 @@ export class AssetService {
       uploadUrl: `${this.configService.get('server.baseUrl')}/assets/${
         asset.id
       }/upload?token=${uploadToken.token}`,
-      asset: new AssetEntity({
-        ...asset,
-        storageUnit,
-        prismaService: this.prismaService,
-        pathPrefix: this.configService.get('storage.pathPrefix'),
-        urlSigningService: this.urlSigningService,
-        eventPublisher: this.eventPublisher,
-      }),
+      asset: await this.toAssetEntity(asset),
     };
   }
 
@@ -162,14 +158,7 @@ export class AssetService {
       throw new AssetNotFound(id);
     }
 
-    return new AssetEntity({
-      ...asset,
-      storageUnit: await this.storageUnitService.getStorageUnitByAssetId(id),
-      prismaService: this.prismaService,
-      pathPrefix: this.configService.get('storage.pathPrefix'),
-      urlSigningService: this.urlSigningService,
-      eventPublisher: this.eventPublisher,
-    });
+    return this.toAssetEntity(asset);
   }
 
   /**
@@ -232,19 +221,7 @@ export class AssetService {
     });
 
     const entities = await Promise.all(
-      assets.map(
-        async (asset) =>
-          new AssetEntity({
-            ...asset,
-            storageUnit: await this.storageUnitService.getStorageUnitById(
-              asset.storageUnitId
-            ),
-            prismaService: this.prismaService,
-            pathPrefix: this.configService.get('storage.pathPrefix'),
-            urlSigningService: this.urlSigningService,
-            eventPublisher: this.eventPublisher,
-          })
-      )
+      assets.map((asset) => this.toAssetEntity(asset))
     );
 
     return entities;
@@ -271,21 +248,7 @@ export class AssetService {
       select: selectAsset(),
     });
 
-    return Promise.all(
-      assets.map(
-        async (a) =>
-          new AssetEntity({
-            ...a,
-            storageUnit: await this.storageUnitService.getStorageUnitByAssetId(
-              a.id
-            ),
-            prismaService: this.prismaService,
-            pathPrefix: this.configService.get('storage.pathPrefix'),
-            urlSigningService: this.urlSigningService,
-            eventPublisher: this.eventPublisher,
-          })
-      )
-    );
+    return Promise.all(assets.map(async (a) => this.toAssetEntity(a)));
   }
 
   async createDerivativeVariant(assetId: string, displayName?: string) {
@@ -336,6 +299,47 @@ export class AssetService {
       throw new AssetVariantNotFound(id);
     }
     return variant;
+  }
+
+  private async toAssetEntity(asset: SelectedAsset): Promise<AssetEntity> {
+    const original = asset.variants.find(
+      (v) => v.type === AssetVariantType.ORIGINAL
+    );
+    if (!original) {
+      throw new Unexpected(
+        `Expected original variant for asset ${asset.id}! Not found.`
+      );
+    }
+    const derivatives = asset.variants.filter(
+      (v) => v.type === AssetVariantType.DERIVATIVE
+    );
+    const storageUnit = await this.storageUnitService.getStorageUnitByAssetId(
+      asset.id
+    );
+    return new AssetEntity({
+      ...asset,
+      original: this.toAssetVariantEntity(original, storageUnit),
+      derivatives: derivatives.map((v) =>
+        this.toAssetVariantEntity(v, storageUnit)
+      ),
+      storageUnit,
+      prismaService: this.prismaService,
+      pathPrefix: this.configService.get('storage.pathPrefix'),
+      eventPublisher: this.eventPublisher,
+    });
+  }
+
+  private toAssetVariantEntity(
+    variant: SelectedAssetVariant,
+    storageUnit: StorageUnitEntity
+  ): AssetVariantEntity {
+    return new AssetVariantEntity({
+      ...variant,
+      storageUnit,
+      urlSigningService: this.urlSigningService,
+      prismaService: this.prismaService,
+      eventPublisher: this.eventPublisher,
+    });
   }
 
   /**

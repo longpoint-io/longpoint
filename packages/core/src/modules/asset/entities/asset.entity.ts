@@ -1,10 +1,4 @@
-import {
-  AssetStatus,
-  AssetType,
-  AssetVariantStatus,
-  AssetVariantType,
-  Prisma,
-} from '@/database';
+import { AssetStatus, AssetType, Prisma } from '@/database';
 import {
   CollectionNotFound,
   CollectionReferenceDto,
@@ -14,28 +8,31 @@ import { JsonObject } from '@longpoint/types';
 import { formatBytes } from '@longpoint/utils/format';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { EventPublisher } from '../../event';
-import { UrlSigningService } from '../../file-delivery';
 import { StorageUnitEntity } from '../../storage/entities/storage-unit.entity';
 import {
   AssetAlreadyDeleted,
   AssetAlreadyExists,
-  AssetNotEmbeddable,
   AssetNotFound,
 } from '../asset.errors';
 import { SelectedAsset, selectAsset } from '../asset.selectors';
-import { AssetSummaryDto, AssetVariantsDto, UpdateAssetDto } from '../dtos';
+import { AssetSummaryDto, UpdateAssetDto } from '../dtos';
 import { AssetDto } from '../dtos/containers/asset.dto';
+import { AssetVariantEntity } from './asset-variant.entity';
 
 export interface AssetEntityArgs extends SelectedAsset {
+  original: AssetVariantEntity;
+  derivatives: AssetVariantEntity[];
   storageUnit: StorageUnitEntity;
   prismaService: PrismaService;
   pathPrefix?: string;
-  urlSigningService: UrlSigningService;
   eventPublisher: EventPublisher;
 }
 
 export class AssetEntity {
-  public readonly id: string;
+  readonly id: string;
+  readonly original: AssetVariantEntity;
+  readonly derivatives: AssetVariantEntity[];
+
   private _name: string;
   private _type: AssetType;
   private _status: AssetStatus;
@@ -44,9 +41,7 @@ export class AssetEntity {
   private readonly storageUnit: StorageUnitEntity;
   private readonly prismaService: PrismaService;
   private readonly pathPrefix?: string;
-  private readonly urlSigningService: UrlSigningService;
   private readonly eventPublisher: EventPublisher;
-  private variants: SelectedAsset['variants'];
 
   constructor(args: AssetEntityArgs) {
     this.id = args.id;
@@ -58,9 +53,9 @@ export class AssetEntity {
     this.storageUnit = args.storageUnit;
     this.prismaService = args.prismaService;
     this.pathPrefix = args.pathPrefix;
-    this.urlSigningService = args.urlSigningService;
     this.eventPublisher = args.eventPublisher;
-    this.variants = args.variants;
+    this.original = args.original;
+    this.derivatives = args.derivatives;
   }
 
   async update(data: UpdateAssetDto) {
@@ -151,7 +146,6 @@ export class AssetEntity {
       this._type = updated.type;
       this._status = updated.status as AssetStatus;
       this._createdAt = updated.createdAt;
-      this.variants = updated.variants as SelectedAsset['variants'];
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
         throw new AssetNotFound(this.id);
@@ -229,7 +223,8 @@ export class AssetEntity {
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      variants: await this.getVariants(),
+      original: this.original.toDto(),
+      derivatives: this.derivatives.map((d) => d.toDto()),
       collections: collections.map(
         (c) => new CollectionReferenceDto(c.collection)
       ),
@@ -255,71 +250,36 @@ export class AssetEntity {
    * @returns The embedding document, or null if the asset has no primary variant
    */
   toEmbeddingText(): string {
-    const primaryVariant = this.variants.find(
-      (variant) => variant.type === AssetVariantType.ORIGINAL
-    );
-
-    if (primaryVariant?.status !== AssetVariantStatus.READY) {
-      throw new AssetNotEmbeddable(this.id);
-    }
-
-    const classifierResults = primaryVariant.classifierRuns.reduce(
-      (acc, run) => {
-        acc[run.classifier.name] = run.result as JsonObject;
-        return acc;
-      },
-      {} as Record<string, JsonObject>
-    );
-
     const dimensions =
-      primaryVariant.width && primaryVariant.height
-        ? `${primaryVariant.width}x${primaryVariant.height}`
+      this.original.width && this.original.height
+        ? `${this.original.width}x${this.original.height}`
         : undefined;
 
     const textParts: string[] = [
       `Name: ${this.name}`,
-      `MIME Type: ${primaryVariant.mimeType}`,
+      `MIME Type: ${this.original.mimeType}`,
       dimensions ? `Dimensions: ${dimensions}` : '',
-      primaryVariant.size ? `Size: ${formatBytes(primaryVariant.size)}` : '',
-      primaryVariant.aspectRatio
-        ? `Aspect Ratio: ${primaryVariant.aspectRatio.toFixed(2)}`
+      this.original.size ? `Size: ${formatBytes(this.original.size)}` : '',
+      this.original.aspectRatio
+        ? `Aspect Ratio: ${this.original.aspectRatio.toFixed(2)}`
+        : '',
+      this.original.duration
+        ? `Duration: ${this.original.duration} seconds`
+        : '',
+      this.original.metadata
+        ? `Metadata: ${this.formatMetadataForDocument(this.original.metadata)}`
         : '',
     ];
-
-    for (const [classifierName, result] of Object.entries(classifierResults)) {
-      const resultText = this.formatClassifierResult(result);
-      textParts.push(`${classifierName}: ${resultText}`);
-    }
 
     const text = textParts.filter(Boolean).join(', ');
 
     return text;
   }
 
-  private async getVariants() {
-    return new AssetVariantsDto(
-      await Promise.all(
-        this.variants.map(async (variant) => await this.hydrateVariant(variant))
-      )
-    );
-  }
-
-  private async hydrateVariant(variant: SelectedAsset['variants'][number]) {
-    const url = this.urlSigningService.generateSignedUrl(
-      variant.id,
-      variant.entryPoint
-    );
-
-    return {
-      ...variant,
-      url,
-    };
-  }
-
   /**
    * Formats classifier result JSON into a readable string for embedding.
    */
-  private formatClassifierResult(result: JsonObject): string {
+  private formatMetadataForDocument(result: JsonObject): string {
     if (typeof result === 'string') {
       return result;
     }
