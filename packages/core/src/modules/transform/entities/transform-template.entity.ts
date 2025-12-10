@@ -1,4 +1,4 @@
-import { AssetService } from '@/modules/asset';
+import { AssetService, AssetVariantEntity } from '@/modules/asset';
 import { PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { formatDuration } from '@longpoint/utils/format';
@@ -50,50 +50,81 @@ export class TransformTemplateEntity {
     );
     const dto = sourceVariant.toDto();
 
-    const derivativeVariant = await this.assetService.createDerivativeVariant(
-      sourceVariant.assetId,
-      this.displayName
-    );
-
     this.logger.log(
       `Transforming asset variant '${sourceVariantId}' with template '${this.name}'`
     );
     const startTime = Date.now();
-    this._transformer
-      .transform({
-        input: await this._transformer.processInputFromDb(
-          this._inputFromDb ?? {}
-        ),
-        fileOperations: await derivativeVariant.getStorageUnitOperations(),
-        source: {
-          url: dto.url!,
-          mimeType: sourceVariant.mimeType,
-        },
-      })
-      .then(async (result) => {
-        const endTime = Date.now();
-        const duration = endTime - startTime;
-        this.logger.log(
-          `Transform completed in ${formatDuration(duration / 1000, 'compact')}`
-        );
-        await derivativeVariant.syncSize();
-        derivativeVariant.update({
-          status: 'READY',
-          entryPoint: result.entryPoint,
-          mimeType: result.mimeType,
-        });
-      })
-      .catch((e) => {
-        const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-        const stackTrace = e instanceof Error ? e.stack : undefined;
-        this.logger.error(
-          `Transform template "${this.name}" failed: ${errorMessage}`,
-          stackTrace
-        );
-        derivativeVariant.update({
-          status: 'FAILED',
-        });
+    const source = { url: dto.url!, mimeType: sourceVariant.mimeType };
+    const input = await this._transformer.processInputFromDb(
+      this._inputFromDb ?? {}
+    );
+    const handshakeResult = await this._transformer.handshake({
+      source,
+      input,
+    });
+    const variantMap = new Map<string, AssetVariantEntity>();
+
+    for (const variant of handshakeResult.variants) {
+      const variantEntity = await this.assetService.createDerivativeVariant({
+        assetId: sourceVariant.assetId,
+        displayName: this.displayName,
+        mimeType: variant.mimeType,
+        entryPoint: variant.entryPoint,
       });
+      variantMap.set(variantEntity.id, variantEntity);
+    }
+
+    const variantsForTransformer = await Promise.all(
+      Array.from(variantMap.values()).map(async (variant) => ({
+        id: variant.id,
+        mimeType: variant.mimeType,
+        entryPoint: variant.entryPoint,
+        fileOperations: await variant.getStorageUnitOperations(),
+      }))
+    );
+
+    try {
+      const transformResult = await this._transformer.transform({
+        input,
+        source,
+        variants: variantsForTransformer,
+      });
+
+      for (const variant of transformResult.variants) {
+        const variantEntity = variantMap.get(variant.id);
+        if (!variantEntity) {
+          this.logger.warn(
+            `Unexpected variant ID returned from transformer: ${variant.id} - skipping`
+          );
+          continue;
+        }
+        if (variant.error) {
+          await variantEntity.update({ status: 'FAILED' });
+          this.logger.warn(
+            `Transform template "${this.name}" failed to process variant "${variant.id}": ${variant.error}`
+          );
+          continue;
+        }
+        await variantEntity.syncSize();
+        await variantEntity.update({ status: 'READY' });
+      }
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      this.logger.log(
+        `Transform completed in ${formatDuration(duration / 1000, 'compact')}`
+      );
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      const stackTrace = e instanceof Error ? e.stack : undefined;
+      this.logger.error(
+        `Transform template "${this.name}" failed: ${errorMessage}`,
+        stackTrace
+      );
+      for (const variant of variantMap.values()) {
+        await variant.update({ status: 'FAILED' });
+      }
+    }
   }
 
   async update(data: UpdateTransformTemplateDto) {

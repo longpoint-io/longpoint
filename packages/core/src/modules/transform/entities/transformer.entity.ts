@@ -2,7 +2,11 @@ import { ConfigSchemaService } from '@/modules/common/services';
 import { TransformerRegistryEntry } from '@/modules/plugin/services';
 import { Serializable } from '@/shared/types/swagger.types';
 import { ConfigValues } from '@longpoint/config-schema';
-import { AssetTransformer, TransformArgs } from '@longpoint/devkit';
+import {
+  AssetTransformer,
+  HandshakeArgs,
+  TransformArgs,
+} from '@longpoint/devkit';
 import {
   TransformerDetailsDto,
   TransformerDto,
@@ -40,6 +44,10 @@ export class TransformerEntity implements Serializable {
 
   async transform(args: TransformArgs) {
     return this.transformerInstance.transform(args);
+  }
+
+  async handshake(args: HandshakeArgs) {
+    return this.transformerInstance.handshake(args);
   }
 
   /**

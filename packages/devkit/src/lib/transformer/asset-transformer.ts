@@ -12,15 +12,33 @@ export interface AssetTransformerArgs {
   pluginSettings: ConfigValues;
 }
 
-export interface TransformArgs<T extends ConfigValues = ConfigValues> {
+export interface HandshakeArgs<T extends ConfigValues = ConfigValues> {
   source: AssetSource;
-  fileOperations: FileOperations;
   input: T;
 }
 
+export interface HandshakeResult {
+  variants: Array<{
+    mimeType: string;
+    entryPoint: string;
+  }>;
+}
+
+export interface TransformArgs<T extends ConfigValues = ConfigValues>
+  extends HandshakeArgs<T> {
+  variants: Array<{
+    id: string;
+    mimeType: string;
+    entryPoint: string;
+    fileOperations: FileOperations;
+  }>;
+}
+
 export interface TransformResult {
-  mimeType: string;
-  entryPoint: string;
+  variants: Array<{
+    id: string;
+    error?: string;
+  }>;
 }
 
 export abstract class AssetTransformer {
@@ -30,5 +48,6 @@ export abstract class AssetTransformer {
     this.pluginSettings = args.pluginSettings;
   }
 
+  abstract handshake(args: HandshakeArgs): Promise<HandshakeResult>;
   abstract transform(args: TransformArgs): Promise<TransformResult>;
 }

@@ -37,6 +37,13 @@ export interface CreateAssetParams {
   };
 }
 
+export interface CreateDerivativeVariantParams {
+  assetId: string;
+  mimeType: string;
+  entryPoint: string;
+  displayName?: string;
+}
+
 /**
  * Service for managing assets and their associated variants.
  * Handles creation, retrieval, and listing of assets with support
@@ -251,22 +258,22 @@ export class AssetService {
     return Promise.all(assets.map(async (a) => this.toAssetEntity(a)));
   }
 
-  async createDerivativeVariant(assetId: string, displayName?: string) {
+  async createDerivativeVariant(params: CreateDerivativeVariantParams) {
     const variant = await this.prismaService.assetVariant.create({
       data: {
-        assetId,
-        mimeType: '',
+        assetId: params.assetId,
+        mimeType: params.mimeType,
         status: 'PROCESSING',
-        entryPoint: '',
+        entryPoint: params.entryPoint,
         type: AssetVariantType.DERIVATIVE,
-        displayName,
+        displayName: params.displayName,
       },
       select: selectAssetVariant(),
     });
     return new AssetVariantEntity({
       ...variant,
       storageUnit: await this.storageUnitService.getStorageUnitByAssetId(
-        assetId
+        params.assetId
       ),
       urlSigningService: this.urlSigningService,
       prismaService: this.prismaService,

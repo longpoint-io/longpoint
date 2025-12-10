@@ -128,7 +128,7 @@ export class TransformController {
   ) {
     const template =
       await this.transformService.getTransformTemplateByIdOrThrow(templateId);
-    await template.transformAssetVariant(body.sourceVariantId);
-    return { success: true };
+    // TODO: fire and forget until job queue is implemented
+    template.transformAssetVariant(body.sourceVariantId);
   }
 }

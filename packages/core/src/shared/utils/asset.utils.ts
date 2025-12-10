@@ -12,8 +12,9 @@ export function getAssetPath(args: GetAssetPathArgs) {
 }
 
 export interface GetAssetVariantPathArgs
-  extends Pick<AssetVariant, 'id' | 'assetId' | 'entryPoint'> {
+  extends Pick<AssetVariant, 'id' | 'assetId'> {
   storageUnitId: string;
+  entryPoint?: string;
   prefix?: string;
 }
 

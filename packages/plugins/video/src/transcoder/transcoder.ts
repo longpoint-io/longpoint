@@ -2,6 +2,8 @@ import { ConfigValues } from '@longpoint/config-schema';
 import {
   AssetTransformer,
   AssetTransformerArgs,
+  HandshakeArgs,
+  HandshakeResult,
   TransformArgs,
   TransformResult,
 } from '@longpoint/devkit';
@@ -13,12 +15,24 @@ export class VideoTranscoder extends AssetTransformer {
     super(args);
   }
 
+  async handshake(args: HandshakeArgs): Promise<HandshakeResult> {
+    return {
+      variants: [
+        {
+          entryPoint: 'variant.mp4',
+          mimeType: 'video/mp4',
+        },
+      ],
+    };
+  }
+
   async transform(
     args: TransformArgs<ConfigValues<typeof input>>
   ): Promise<TransformResult> {
     const {
       source,
       input: { dimensions },
+      variants,
     } = args;
 
     // TODO: temporary
@@ -26,7 +40,6 @@ export class VideoTranscoder extends AssetTransformer {
       throw new Error('No dimensions specified');
     }
 
-    // Get input video source
     let inputSource: string;
     if (source.url) {
       inputSource = source.url;
@@ -65,7 +78,7 @@ export class VideoTranscoder extends AssetTransformer {
       stderrData += data.toString();
     });
 
-    const outputPath = `variant.mp4`;
+    const outputVariant = variants[0];
 
     const ffmpegPromise = new Promise<void>((resolve, reject) => {
       ffmpeg.on('close', (code) => {
@@ -81,13 +94,29 @@ export class VideoTranscoder extends AssetTransformer {
       });
     });
 
-    const writePromise = args.fileOperations.write(outputPath, ffmpeg.stdout);
+    const writePromise = outputVariant.fileOperations.write(
+      outputVariant.entryPoint,
+      ffmpeg.stdout
+    );
 
-    await Promise.all([writePromise, ffmpegPromise]);
-
-    return {
-      mimeType: 'video/mp4',
-      entryPoint: outputPath,
-    };
+    try {
+      await Promise.all([writePromise, ffmpegPromise]);
+      return {
+        variants: [
+          {
+            id: outputVariant.id,
+          },
+        ],
+      };
+    } catch (e) {
+      return {
+        variants: [
+          {
+            id: outputVariant.id,
+            error: e instanceof Error ? e.message : 'Unknown error',
+          },
+        ],
+      };
+    }
   }
 }

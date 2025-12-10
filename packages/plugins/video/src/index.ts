@@ -10,9 +10,15 @@ export default {
       transcoder: {
         transformer: VideoTranscoder,
         displayName: 'Video Transcoder',
-        supportedMimeTypes: ['video/mp4', 'video/mov'],
+        supportedMimeTypes: ['video/mp4', 'video/quicktime'],
         input,
       },
+      // thumbnailGenerator: {
+      //   transformer: ThumbnailGenerator,
+      //   displayName: 'Thumbnail Generator',
+      //   supportedMimeTypes: ['video/mp4', 'video/mov'],
+      //   input: {},
+      // },
     },
   },
 } satisfies LongpointPluginConfig;
