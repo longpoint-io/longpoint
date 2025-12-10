@@ -7,6 +7,7 @@ export type TransformTemplateParams = Omit<
   'displayName'
 > & {
   displayName: string;
+  supportedMimeTypes: string[];
 };
 
 @ApiSchema({ name: 'TransformTemplate' })
@@ -44,6 +45,13 @@ export class TransformTemplateDto {
   transformerId: string;
 
   @ApiProperty({
+    description: 'The supported MIME types as input to the transformer',
+    type: [String],
+    example: ['video/mp4', 'video/mov'],
+  })
+  supportedMimeTypes: string[];
+
+  @ApiProperty({
     description: 'The date and time the transform template was created',
     example: '2021-01-01T00:00:00.000Z',
   })
@@ -77,5 +85,6 @@ export class TransformTemplateDto {
     this.input = params.input as ConfigValues;
     this.createdAt = params.createdAt;
     this.updatedAt = params.updatedAt;
+    this.supportedMimeTypes = params.supportedMimeTypes;
   }
 }

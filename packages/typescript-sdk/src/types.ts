@@ -2008,6 +2008,14 @@ export interface components {
              */
             name: string;
             /**
+             * @description The supported MIME types as input to the transformer
+             * @example [
+             *       "video/mp4",
+             *       "video/mov"
+             *     ]
+             */
+            supportedMimeTypes: string[];
+            /**
              * @description The ID of the transformer the template uses
              * @example video/transcoder
              */

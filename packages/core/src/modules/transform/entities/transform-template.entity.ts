@@ -146,6 +146,7 @@ export class TransformTemplateEntity {
       ),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      supportedMimeTypes: this.supportedMimeTypes,
     });
   }
 
@@ -167,5 +168,9 @@ export class TransformTemplateEntity {
 
   get updatedAt(): Date {
     return this._updatedAt;
+  }
+
+  get supportedMimeTypes(): string[] {
+    return this._transformer.supportedMimeTypes;
   }
 }

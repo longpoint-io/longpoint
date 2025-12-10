@@ -277,12 +277,14 @@ function AddToCollectionCombobox({
 
 type SelectTransformTemplateProps = {
   client: Longpoint;
+  selectedVariantMimeType: string;
   onSelect: (templateId: string) => void;
   onClose: () => void;
 };
 
 function SelectTransformTemplate({
   client,
+  selectedVariantMimeType,
   onSelect,
   onClose,
 }: SelectTransformTemplateProps) {
@@ -319,13 +321,21 @@ function SelectTransformTemplate({
   const filterTemplates = (
     tmpls: components['schemas']['TransformTemplate'][]
   ) => {
-    if (!search) return tmpls;
-    return tmpls.filter(
-      (template) =>
-        template.name.toLowerCase().includes(search.toLowerCase()) ||
-        template.displayName?.toLowerCase().includes(search.toLowerCase()) ||
-        template.description?.toLowerCase().includes(search.toLowerCase())
-    );
+    return tmpls.filter((template) => {
+      if (!template.supportedMimeTypes.includes(selectedVariantMimeType)) {
+        return false;
+      }
+      const matchesName = template.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      const matchesDisplayName = template.displayName
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
+      const matchesDescription = template.description
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
+      return matchesName || matchesDisplayName || matchesDescription;
+    });
   };
 
   const filteredTemplates = filterTemplates(templates);
@@ -746,6 +756,7 @@ export function AssetDetails() {
               <PopoverContent className="w-[300px] p-0" align="end">
                 <SelectTransformTemplate
                   client={client}
+                  selectedVariantMimeType={selectedVariant?.mimeType ?? ''}
                   onSelect={(templateId) => {
                     generateVariantMutation.mutate(templateId);
                   }}
@@ -773,9 +784,9 @@ export function AssetDetails() {
             <span className="font-medium">ID:</span>
             <div className="relative flex items-center gap-2">
               <span className="font-mono select-all">{media.id}</span>
-              {/* <CopyButton value={media.id} iconOnly /> */}
             </div>
           </div>
+          <span>•</span>
           <div className="flex items-center gap-2">
             <span className="font-medium">Created:</span>
             <span>{new Date(media.createdAt).toLocaleString()}</span>
