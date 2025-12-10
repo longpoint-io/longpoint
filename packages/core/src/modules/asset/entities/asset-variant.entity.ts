@@ -120,7 +120,7 @@ export class AssetVariantEntity implements Serializable {
    */
   async syncSize() {
     const provider = await this.storageUnit.getProvider();
-    const fileStats = await provider.getFileStats(
+    const fileStats = await provider.getPathStats(
       getAssetVariantPath({
         id: this.id,
         assetId: this.assetId,

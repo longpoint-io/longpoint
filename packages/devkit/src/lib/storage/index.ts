@@ -1,7 +1,7 @@
 export * from './storage-provider.js';
 export type {
   CreateSignedUrlOptions,
-  FileStats,
+  FilePathStats as FileStats,
   GetFileStreamOptions,
   SignedUrlResponse,
   StorageContribution,

@@ -111,7 +111,7 @@ export class UploadService {
         };
       }
 
-      const fileStats = await provider.getFileStats(
+      const fileStats = await provider.getPathStats(
         getAssetVariantPath({
           ...variant,
           storageUnitId,

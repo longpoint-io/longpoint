@@ -84,10 +84,11 @@ export class TransformTemplateEntity {
         });
       })
       .catch((e) => {
+        const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+        const stackTrace = e instanceof Error ? e.stack : undefined;
         this.logger.error(
-          `Transform template "${this.name}" failed: ${
-            e instanceof Error ? e.message : 'Unknown error'
-          }`
+          `Transform template "${this.name}" failed: ${errorMessage}`,
+          stackTrace
         );
         derivativeVariant.update({
           status: 'FAILED',

@@ -51,7 +51,7 @@ export class LocalStorageProvider extends StorageProvider {
     }
   }
 
-  async getFileStats(path: string): Promise<FileStats> {
+  async getPathStats(path: string): Promise<FileStats> {
     const fullPath = this.getFullPath(path);
     const stats = await fs.promises.stat(fullPath);
 

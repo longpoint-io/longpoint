@@ -38,7 +38,7 @@ export class StorageProviderEntity extends BaseStorageProviderEntity {
 
   getFileStream(
     path: string,
-    options?: GetFileStreamOptions
+    options: GetFileStreamOptions = {}
   ): Promise<Readable> {
     return this.pluginInstance.getFileStream(path, options);
   }
@@ -55,7 +55,7 @@ export class StorageProviderEntity extends BaseStorageProviderEntity {
     return this.pluginInstance.deleteDirectory(path);
   }
 
-  getFileStats(path: string): Promise<FileStats> {
-    return this.pluginInstance.getFileStats(path);
+  getPathStats(path: string): Promise<FileStats> {
+    return this.pluginInstance.getPathStats(path);
   }
 }

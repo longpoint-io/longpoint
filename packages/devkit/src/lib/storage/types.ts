@@ -65,9 +65,9 @@ export interface GetFileStreamOptions {
   end?: number;
 }
 
-export interface FileStats {
+export interface FilePathStats {
   /**
-   * The size of the file in bytes
+   * The size of the file or directory in bytes
    */
   size: number;
 }
