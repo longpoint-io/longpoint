@@ -18,6 +18,14 @@ export class AssetVariantDto {
   id: string;
 
   @ApiProperty({
+    description: 'The display name of the asset variant',
+    example: 'Original',
+    type: 'string',
+    nullable: true,
+  })
+  displayName: string | null;
+
+  @ApiProperty({
     description: 'The status of the asset variant',
     example: AssetVariantStatus.WAITING_FOR_UPLOAD,
     enum: AssetVariantStatus,
@@ -96,6 +104,7 @@ export class AssetVariantDto {
 
   constructor(data: AssetVariantParams) {
     this.id = data.id;
+    this.displayName = data.displayName;
     this.status = data.status;
     this.mimeType = data.mimeType as SupportedMimeType;
     this.width = data.width;

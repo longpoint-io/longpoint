@@ -59,7 +59,6 @@ export class VideoTranscoder extends AssetTransformer {
     ];
 
     const ffmpeg = spawn('ffmpeg', ffmpegArgs);
-    console.log('ffmpeg command: ffmpeg', ffmpegArgs.join(' '));
 
     let stderrData = '';
     ffmpeg.stderr.on('data', (data) => {

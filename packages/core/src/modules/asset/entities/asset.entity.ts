@@ -223,6 +223,7 @@ export class AssetEntity {
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      totalSize: this.totalSize,
       original: this.original.toDto(),
       derivatives: this.derivatives.map((d) => d.toDto()),
       collections: collections.map(
@@ -312,6 +313,13 @@ export class AssetEntity {
 
   get status() {
     return this._status;
+  }
+
+  get totalSize() {
+    return (
+      (this.original.size ?? 0) +
+      this.derivatives.reduce((acc, d) => acc + (d.size ?? 0), 0)
+    );
   }
 
   get createdAt() {

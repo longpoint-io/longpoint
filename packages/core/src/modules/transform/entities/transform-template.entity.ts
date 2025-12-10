@@ -1,6 +1,7 @@
 import { AssetService } from '@/modules/asset';
 import { PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
+import { formatDuration } from '@longpoint/utils/format';
 import { Logger } from '@nestjs/common';
 import { TransformTemplateDto, UpdateTransformTemplateDto } from '../dtos';
 import { TransformTemplateNotFound } from '../transform.errors';
@@ -54,6 +55,10 @@ export class TransformTemplateEntity {
       this.displayName
     );
 
+    this.logger.log(
+      `Transforming asset variant '${sourceVariantId}' with template '${this.name}'`
+    );
+    const startTime = Date.now();
     this._transformer
       .transform({
         input: await this._transformer.processInputFromDb(
@@ -66,6 +71,11 @@ export class TransformTemplateEntity {
         },
       })
       .then(async (result) => {
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        this.logger.log(
+          `Transform completed in ${formatDuration(duration / 1000, 'compact')}`
+        );
         await derivativeVariant.syncSize();
         derivativeVariant.update({
           status: 'READY',

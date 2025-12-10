@@ -756,6 +756,11 @@ export interface components {
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
             /**
+             * @description The total size of all asset variants in bytes
+             * @example 1000000
+             */
+            totalSize: number;
+            /**
              * @description The primary asset type.
              * @example IMAGE
              * @enum {string}
@@ -810,6 +815,11 @@ export interface components {
              * @example 1.777777
              */
             aspectRatio: number | null;
+            /**
+             * @description The display name of the asset variant
+             * @example Original
+             */
+            displayName: string | null;
             /**
              * @description The duration of the asset variant in seconds, if applicable
              * @example 120

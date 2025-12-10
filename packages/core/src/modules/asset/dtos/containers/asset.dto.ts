@@ -12,6 +12,7 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { AssetVariantDto } from './asset-variant.dto';
 
 export type AssetParams = Omit<SelectedAsset, 'variants'> & {
+  totalSize: number;
   original: AssetVariantDto;
   derivatives: AssetVariantDto[];
   collections: CollectionReferenceDto[];
@@ -59,6 +60,13 @@ export class AssetDto {
   updatedAt: Date;
 
   @ApiProperty({
+    description: 'The total size of all asset variants in bytes',
+    example: 1000000,
+    type: 'number',
+  })
+  totalSize: number;
+
+  @ApiProperty({
     description: 'The original asset variant',
     type: AssetVariantDto,
     example: {
@@ -94,6 +102,7 @@ export class AssetDto {
     this.status = data.status;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
+    this.totalSize = data.totalSize;
     this.original = data.original;
     this.derivatives = data.derivatives;
     this.collections = data.collections;

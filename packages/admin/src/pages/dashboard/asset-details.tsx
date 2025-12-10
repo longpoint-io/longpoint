@@ -1,5 +1,4 @@
 import { useAuth } from '@/auth';
-import { AssetType } from '@/components/asset-type';
 import { useClient } from '@/hooks/common';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { components } from '@longpoint/sdk';
@@ -7,12 +6,7 @@ import { Longpoint } from '@longpoint/sdk';
 import { Permission } from '@longpoint/types';
 import { Badge } from '@longpoint/ui/components/badge';
 import { Button } from '@longpoint/ui/components/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@longpoint/ui/components/card';
+import { Card, CardContent, CardHeader } from '@longpoint/ui/components/card';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
 import {
   Command,
@@ -22,7 +16,6 @@ import {
   CommandItem,
   CommandList,
 } from '@longpoint/ui/components/command';
-import { CopyButton } from '@longpoint/ui/components/copy-button';
 import {
   Dialog,
   DialogContent,
@@ -43,6 +36,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@longpoint/ui/components/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@longpoint/ui/components/select';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { Spinner } from '@longpoint/ui/components/spinner';
 import {
@@ -56,7 +56,6 @@ import { enumToTitleCase } from '@longpoint/utils/string';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   BookmarkIcon,
-  Calendar,
   Download,
   EditIcon,
   ImageIcon,
@@ -410,6 +409,8 @@ export function AssetDetails() {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const [generateVariantOpen, setGenerateVariantOpen] = useState(false);
+  const [selectedVariantId, setSelectedVariantId] =
+    useState<string>('original');
 
   const renameFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -442,6 +443,19 @@ export function AssetDetails() {
       });
     }
   }, [media, renameDialogOpen, renameForm]);
+
+  // Reset selected variant when media changes
+  useEffect(() => {
+    if (media) {
+      setSelectedVariantId('original');
+    }
+  }, [media]);
+
+  // Get the currently selected variant
+  const selectedVariant =
+    selectedVariantId === 'original'
+      ? media?.original
+      : media?.derivatives?.find((d) => d.id === selectedVariantId);
 
   const deleteMutation = useMutation({
     mutationFn: () =>
@@ -506,12 +520,12 @@ export function AssetDetails() {
 
   const generateVariantMutation = useMutation({
     mutationFn: (templateId: string) => {
-      const primaryVariantId = media?.variants?.primary?.id;
-      if (!primaryVariantId) {
-        throw new Error('Primary variant not found');
+      const sourceVariantId = selectedVariant?.id;
+      if (!sourceVariantId) {
+        throw new Error('Selected variant not found');
       }
       return client.transform.generateVariantFromTemplate(templateId, {
-        sourceVariantId: primaryVariantId,
+        sourceVariantId,
       });
     },
     onSuccess: () => {
@@ -537,10 +551,9 @@ export function AssetDetails() {
   };
 
   const handleDownload = async () => {
-    const primaryAsset = media?.variants?.primary;
-    if (primaryAsset?.url) {
+    if (selectedVariant?.url) {
       try {
-        const response = await fetch(primaryAsset.url);
+        const response = await fetch(selectedVariant.url);
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -565,7 +578,6 @@ export function AssetDetails() {
     deleteMutation.mutate();
   };
 
-  const primaryAsset = media?.variants?.primary;
   const isVideo = media?.type === 'VIDEO';
 
   if (isLoading) {
@@ -634,114 +646,155 @@ export function AssetDetails() {
     }
   };
 
+  const hasDerivatives = media?.derivatives && media.derivatives.length > 0;
+  const variantOptions = [
+    { value: 'original', label: 'Original' },
+    ...(media?.derivatives?.map((d) => ({
+      value: d.id,
+      label: d.displayName || `Derivative ${d.id.slice(0, 8)}`,
+    })) || []),
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold">{media.name}</h2>
-        <div className="flex items-center gap-2">
-          <Popover
-            open={addToCollectionOpen}
-            onOpenChange={setAddToCollectionOpen}
-          >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <PopoverTrigger asChild>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold">{media.name}</h2>
+          <div className="flex items-center gap-2">
+            <Popover
+              open={addToCollectionOpen}
+              onOpenChange={setAddToCollectionOpen}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="icon"
+                      disabled={updateCollectionsMutation.isPending}
+                    >
+                      <BookmarkIcon
+                        className={cn(
+                          media.collections.length > 0
+                            ? 'fill-destructive stroke-destructive'
+                            : ''
+                        )}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Edit Collections</TooltipContent>
+              </Tooltip>
+              <PopoverContent className="w-[300px] p-0" align="end">
+                <AddToCollectionCombobox
+                  client={client}
+                  asset={media}
+                  onApply={(collectionIds) => {
+                    updateCollectionsMutation.mutate(collectionIds);
+                  }}
+                  onClose={() => setAddToCollectionOpen(false)}
+                />
+              </PopoverContent>
+            </Popover>
+            {canUpdate && (
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <Button
                     variant="icon"
-                    disabled={updateCollectionsMutation.isPending}
+                    onClick={() => setRenameDialogOpen(true)}
                   >
-                    <BookmarkIcon
-                      className={cn(
-                        media.collections.length > 0
-                          ? 'fill-destructive stroke-destructive'
-                          : ''
-                      )}
-                    />
+                    <EditIcon />
                   </Button>
-                </PopoverTrigger>
-              </TooltipTrigger>
-              <TooltipContent>Edit Collections</TooltipContent>
-            </Tooltip>
-            <PopoverContent className="w-[300px] p-0" align="end">
-              <AddToCollectionCombobox
-                client={client}
-                asset={media}
-                onApply={(collectionIds) => {
-                  updateCollectionsMutation.mutate(collectionIds);
-                }}
-                onClose={() => setAddToCollectionOpen(false)}
-              />
-            </PopoverContent>
-          </Popover>
-          {canUpdate && (
+                </TooltipTrigger>
+                <TooltipContent>Rename</TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="icon"
-                  onClick={() => setRenameDialogOpen(true)}
+                  onClick={handleDownload}
+                  disabled={
+                    !selectedVariant?.url || selectedVariant.status !== 'READY'
+                  }
                 >
-                  <EditIcon />
+                  <Download />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Rename</TooltipContent>
+              <TooltipContent>Download</TooltipContent>
             </Tooltip>
-          )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="icon"
-                onClick={handleDownload}
-                disabled={!primaryAsset?.url || primaryAsset.status !== 'READY'}
-              >
-                <Download />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Download</TooltipContent>
-          </Tooltip>
-          <Popover
-            open={generateVariantOpen}
-            onOpenChange={setGenerateVariantOpen}
-          >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <PopoverTrigger asChild>
+            <Popover
+              open={generateVariantOpen}
+              onOpenChange={setGenerateVariantOpen}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="icon"
+                      disabled={
+                        !selectedVariant?.id ||
+                        selectedVariant.status !== 'READY' ||
+                        generateVariantMutation.isPending
+                      }
+                    >
+                      <Sparkles />
+                    </Button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Generate Variant</TooltipContent>
+              </Tooltip>
+              <PopoverContent className="w-[300px] p-0" align="end">
+                <SelectTransformTemplate
+                  client={client}
+                  onSelect={(templateId) => {
+                    generateVariantMutation.mutate(templateId);
+                  }}
+                  onClose={() => setGenerateVariantOpen(false)}
+                />
+              </PopoverContent>
+            </Popover>
+            {canDelete && (
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <Button
                     variant="icon"
-                    disabled={
-                      !primaryAsset?.id ||
-                      primaryAsset.status !== 'READY' ||
-                      generateVariantMutation.isPending
-                    }
+                    onClick={() => setDeleteDialogOpen(true)}
                   >
-                    <Sparkles />
+                    <Trash2 className="text-destructive" />
                   </Button>
-                </PopoverTrigger>
-              </TooltipTrigger>
-              <TooltipContent>Generate Variant</TooltipContent>
-            </Tooltip>
-            <PopoverContent className="w-[300px] p-0" align="end">
-              <SelectTransformTemplate
-                client={client}
-                onSelect={(templateId) => {
-                  generateVariantMutation.mutate(templateId);
-                }}
-                onClose={() => setGenerateVariantOpen(false)}
-              />
-            </PopoverContent>
-          </Popover>
-          {canDelete && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="icon"
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="text-destructive" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Delete</TooltipContent>
-            </Tooltip>
+                </TooltipTrigger>
+                <TooltipContent>Delete</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">ID:</span>
+            <div className="relative flex items-center gap-2">
+              <span className="font-mono select-all">{media.id}</span>
+              {/* <CopyButton value={media.id} iconOnly /> */}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Created:</span>
+            <span>{new Date(media.createdAt).toLocaleString()}</span>
+          </div>
+          {hasDerivatives && (
+            <>
+              <span>•</span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">
+                  {media.derivatives.length + 1} variants
+                </span>
+              </div>
+            </>
           )}
+          <span>•</span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Total Size:</span>
+            <span>{formatBytes(media.totalSize)}</span>
+          </div>
         </div>
       </div>
 
@@ -750,11 +803,11 @@ export function AssetDetails() {
         <div className="lg:col-span-2 lg:sticky lg:top-6 lg:self-start">
           <Card>
             <CardContent>
-              {primaryAsset?.url && primaryAsset.status === 'READY' ? (
+              {selectedVariant?.url && selectedVariant.status === 'READY' ? (
                 <div className="relative w-full bg-muted rounded-lg overflow-hidden">
                   {isVideo ? (
                     <video
-                      src={primaryAsset.url}
+                      src={selectedVariant.url}
                       controls
                       className="w-full h-auto max-h-[600px]"
                     >
@@ -762,7 +815,7 @@ export function AssetDetails() {
                     </video>
                   ) : (
                     <img
-                      src={primaryAsset.url}
+                      src={selectedVariant.url}
                       alt={media.name}
                       className="w-full h-auto max-h-[600px] object-contain mx-auto"
                     />
@@ -777,9 +830,9 @@ export function AssetDetails() {
                       <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto" />
                     )}
                     <p className="text-sm text-muted-foreground">
-                      {primaryAsset?.status === 'PROCESSING'
+                      {selectedVariant?.status === 'PROCESSING'
                         ? 'Processing...'
-                        : primaryAsset?.status === 'FAILED'
+                        : selectedVariant?.status === 'FAILED'
                         ? 'Failed to load'
                         : 'No preview available'}
                     </p>
@@ -791,113 +844,88 @@ export function AssetDetails() {
         </div>
 
         {/* Details Section */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3">
           <Card>
-            {/* <CardHeader>
-              <CardTitle>Media Information</CardTitle>
-              <CardDescription>Basic details about this media</CardDescription>
-            </CardHeader> */}
             <CardContent>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel>ID</FieldLabel>
-                  <div className="relative">
-                    <p className="text-sm font-mono text-muted-foreground select-all pr-8">
-                      {media.id}
-                    </p>
-                    <CopyButton
-                      value={media.id}
-                      iconOnly
-                      className="absolute -top-1.5 left-52"
-                    />
-                  </div>
-                </Field>
-                <Field>
-                  <FieldLabel>Type</FieldLabel>
-                  <div className="flex items-center gap-2">
-                    <AssetType type={media.type} />
-                  </div>
-                </Field>
-                <Field>
-                  <FieldLabel>Status</FieldLabel>
-                  <Badge
-                    variant={getStatusBadgeVariant(media.status)}
-                    className="w-fit!"
-                  >
-                    {enumToTitleCase(media.status)}
-                  </Badge>
-                </Field>
-                <Field>
-                  <FieldLabel>Created</FieldLabel>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {new Date(media.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                </Field>
-              </FieldGroup>
-            </CardContent>
-          </Card>
-
-          {primaryAsset && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Primary Asset</CardTitle>
-              </CardHeader>
-              <CardContent>
+              {(hasDerivatives || selectedVariantId !== 'original') && (
+                <div className="mb-6">
+                  <Field>
+                    <FieldLabel>Variant</FieldLabel>
+                    <Select
+                      value={selectedVariantId}
+                      onValueChange={setSelectedVariantId}
+                    >
+                      <SelectTrigger className="max-w-[200px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {variantOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+              )}
+              {selectedVariant ? (
                 <FieldGroup>
                   <Field>
                     <FieldLabel>MIME Type</FieldLabel>
-                    <p className="text-sm font-mono">{primaryAsset.mimeType}</p>
+                    <p className="text-sm font-mono">
+                      {selectedVariant.mimeType}
+                    </p>
                   </Field>
-                  {primaryAsset.width && primaryAsset.height && (
+                  {selectedVariant.width && selectedVariant.height && (
                     <>
                       <Field>
                         <FieldLabel>Dimensions</FieldLabel>
                         <p className="text-sm">
-                          {primaryAsset.width} × {primaryAsset.height} pixels
+                          {selectedVariant.width} × {selectedVariant.height}{' '}
+                          pixels
                         </p>
                       </Field>
-                      {primaryAsset.aspectRatio && (
+                      {selectedVariant.aspectRatio && (
                         <Field>
                           <FieldLabel>Aspect Ratio</FieldLabel>
                           <p className="text-sm">
-                            {primaryAsset.aspectRatio.toFixed(2)}&nbsp;×&nbsp;1
+                            {selectedVariant.aspectRatio.toFixed(2)}
+                            &nbsp;×&nbsp;1
                           </p>
                         </Field>
                       )}
                     </>
                   )}
-                  {primaryAsset.size && (
+                  {selectedVariant.size && (
                     <Field>
                       <FieldLabel>File Size</FieldLabel>
                       <p className="text-sm">
-                        {formatBytes(primaryAsset.size)}
+                        {formatBytes(selectedVariant.size)}
                       </p>
                     </Field>
                   )}
-                  {primaryAsset.duration && (
+                  {selectedVariant.duration && (
                     <Field>
                       <FieldLabel>Duration</FieldLabel>
                       <p className="text-sm">
-                        {formatDuration(primaryAsset.duration, 'compact')}
+                        {formatDuration(selectedVariant.duration, 'compact')}
                       </p>
                     </Field>
                   )}
                   <Field>
                     <FieldLabel>Status</FieldLabel>
                     <Badge
-                      variant={getStatusBadgeVariant(primaryAsset.status)}
+                      variant={getStatusBadgeVariant(selectedVariant.status)}
                       className="w-fit!"
                     >
-                      {enumToTitleCase(primaryAsset.status)}
+                      {enumToTitleCase(selectedVariant.status)}
                     </Badge>
                   </Field>
-                  {primaryAsset.metadata &&
-                    Object.keys(primaryAsset.metadata).length > 0 && (
+                  {selectedVariant.metadata &&
+                    Object.keys(selectedVariant.metadata).length > 0 && (
                       <>
-                        {Object.entries(primaryAsset.metadata).map(
+                        {Object.entries(selectedVariant.metadata).map(
                           ([key, value]) => (
                             <Field key={key}>
                               <FieldLabel className="capitalize">
@@ -931,9 +959,13 @@ export function AssetDetails() {
                       </>
                     )}
                 </FieldGroup>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No variant information available</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
