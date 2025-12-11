@@ -22,16 +22,19 @@ export default class ThumbnailGenerator extends AssetTransformer {
     return {
       variants: [
         {
+          name: 'Thumbnail 1',
           entryPoint: `thumbnail-1.${extension}`,
           mimeType: format,
           type: 'THUMBNAIL',
         },
         {
+          name: 'Thumbnail 2',
           entryPoint: `thumbnail-2.${extension}`,
           mimeType: format,
           type: 'THUMBNAIL',
         },
         {
+          name: 'Thumbnail 3',
           entryPoint: `thumbnail-3.${extension}`,
           mimeType: format,
           type: 'THUMBNAIL',

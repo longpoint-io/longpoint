@@ -53,12 +53,10 @@ model AssetVariant {
   status              AssetVariantStatus
   /// Names of the classifiers to run on the uploaded asset after processing
   classifiersOnUpload String[]
-  /// Entry point file for serving (e.g. "master.m3u8", "video.mp4")
-  /// Relative path from variant directory root
+  /// Entry point file for serving (e.g. "master.m3u8", "video.mp4"). Relative path from variant directory root
   entryPoint          String
   displayName         String?
 
-  // asset metadata
   mimeType    String
   width       Int?
   height      Int?

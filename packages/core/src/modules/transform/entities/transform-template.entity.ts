@@ -79,7 +79,7 @@ export class TransformTemplateEntity {
       const variantEntity = await this.assetService.createAssetVariant({
         assetId: sourceVariant.assetId,
         type: variant.type,
-        displayName: this.displayName,
+        displayName: variant.name ?? this.displayName,
         mimeType: variant.mimeType,
         entryPoint: variant.entryPoint,
       });

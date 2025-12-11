@@ -5,6 +5,7 @@ import { type VariantWithType } from '@/components/variant-table-row';
 import type { components } from '@longpoint/sdk';
 import {
   Empty,
+  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,

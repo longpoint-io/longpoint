@@ -19,6 +19,7 @@ export interface HandshakeArgs<T extends ConfigValues = ConfigValues> {
 
 export interface HandshakeResult {
   variants: Array<{
+    name?: string;
     mimeType: string;
     entryPoint: string;
     type: 'DERIVATIVE' | 'THUMBNAIL';
