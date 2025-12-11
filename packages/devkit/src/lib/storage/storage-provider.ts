@@ -38,7 +38,7 @@ export abstract class StorageProvider {
    * Use this when you need the full file contents in memory.
    */
   async getFileContents(path: string): Promise<Buffer> {
-    const stream = await this.getFileStream(path, { start: 0, end: undefined });
+    const stream = await this.getFileStream(path, {});
     const chunks: Uint8Array[] = [];
 
     for await (const chunk of stream) {

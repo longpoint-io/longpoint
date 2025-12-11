@@ -755,6 +755,8 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /** @description Thumbnails for the asset */
+            thumbnails: components["schemas"]["AssetVariant"][];
             /**
              * @description The total size of all asset variants in bytes
              * @example 1000000
@@ -796,6 +798,8 @@ export interface components {
              * @enum {string}
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /** @description Thumbnails for the asset */
+            thumbnails: components["schemas"]["AssetVariant"][];
             /**
              * @description The primary asset type.
              * @example IMAGE
@@ -1129,6 +1133,15 @@ export interface components {
              * @example The name of the user
              */
             description: Record<string, never> | null;
+            /**
+             * @description The allowed values for the field, if the field type is a string
+             * @example [
+             *       "apple",
+             *       "banana",
+             *       "cherry"
+             *     ]
+             */
+            enum: Record<string, never> | null;
             /**
              * @description Whether the field is immutable
              * @example true

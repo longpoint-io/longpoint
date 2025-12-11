@@ -1,24 +1,14 @@
 import { LongpointPluginConfig } from '@longpoint/devkit';
-import input from './input/index.js';
-import { VideoTranscoder } from './transcoder/transcoder.js';
+import thumbnailGeneratorContribution from './thumbnail-generator/index.js';
+import videoTranscoderContribution from './video-transcoder/index.js';
 
 export default {
-  displayName: 'Video',
-  description: 'Longpoint official video plugin',
+  displayName: 'Longpoint Video',
+  description: 'The official Longpoint video plugin',
   contributes: {
     transformers: {
-      transcoder: {
-        transformer: VideoTranscoder,
-        displayName: 'Video Transcoder',
-        supportedMimeTypes: ['video/mp4', 'video/quicktime'],
-        input,
-      },
-      // thumbnailGenerator: {
-      //   transformer: ThumbnailGenerator,
-      //   displayName: 'Thumbnail Generator',
-      //   supportedMimeTypes: ['video/mp4', 'video/mov'],
-      //   input: {},
-      // },
+      transcoder: videoTranscoderContribution,
+      thumbnailGenerator: thumbnailGeneratorContribution,
     },
   },
 } satisfies LongpointPluginConfig;

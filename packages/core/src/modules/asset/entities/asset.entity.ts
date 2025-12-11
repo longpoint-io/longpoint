@@ -22,6 +22,7 @@ import { AssetVariantEntity } from './asset-variant.entity';
 export interface AssetEntityArgs extends SelectedAsset {
   original: AssetVariantEntity;
   derivatives: AssetVariantEntity[];
+  thumbnails: AssetVariantEntity[];
   storageUnit: StorageUnitEntity;
   prismaService: PrismaService;
   pathPrefix?: string;
@@ -32,6 +33,7 @@ export class AssetEntity {
   readonly id: string;
   readonly original: AssetVariantEntity;
   readonly derivatives: AssetVariantEntity[];
+  readonly thumbnails: AssetVariantEntity[];
 
   private _name: string;
   private _type: AssetType;
@@ -56,6 +58,7 @@ export class AssetEntity {
     this.eventPublisher = args.eventPublisher;
     this.original = args.original;
     this.derivatives = args.derivatives;
+    this.thumbnails = args.thumbnails;
   }
 
   async update(data: UpdateAssetDto) {
@@ -226,6 +229,7 @@ export class AssetEntity {
       totalSize: this.totalSize,
       original: this.original.toDto(),
       derivatives: this.derivatives.map((d) => d.toDto()),
+      thumbnails: this.thumbnails.map((t) => t.toDto()),
       collections: collections.map(
         (c) => new CollectionReferenceDto(c.collection)
       ),
@@ -236,6 +240,7 @@ export class AssetEntity {
     return new AssetSummaryDto({
       id: this.id,
       name: this.name,
+      thumbnails: this.thumbnails.map((t) => t.toDto()),
       type: this.type,
       status: this.status,
       createdAt: this.createdAt,

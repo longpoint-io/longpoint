@@ -21,6 +21,7 @@ export interface HandshakeResult {
   variants: Array<{
     mimeType: string;
     entryPoint: string;
+    type: 'DERIVATIVE' | 'THUMBNAIL';
   }>;
 }
 

@@ -178,6 +178,112 @@ describe('ConfigSchema', () => {
         expect(invalidResult.valid).toBe(false);
         expect(invalidResult.errors).toContain('apiKey must be a string');
       });
+
+      it('should validate enum types', () => {
+        const schema = new ConfigSchema({
+          status: {
+            label: 'Status',
+            type: 'string',
+            enum: ['active', 'inactive', 'pending'],
+          },
+        });
+
+        const validResult = schema.validate({ status: 'active' });
+        expect(validResult.valid).toBe(true);
+
+        const invalidResult = schema.validate({ status: 'invalid' });
+        expect(invalidResult.valid).toBe(false);
+        expect(invalidResult.errors).toContain(
+          'status must be one of: active, inactive, pending'
+        );
+      });
+
+      it('should validate enum types with secret fields', () => {
+        const schema = new ConfigSchema({
+          apiKey: {
+            label: 'API Key',
+            type: 'secret',
+            enum: ['key1', 'key2', 'key3'],
+          },
+        });
+
+        const validResult = schema.validate({ apiKey: 'key1' });
+        expect(validResult.valid).toBe(true);
+
+        const invalidResult = schema.validate({ apiKey: 'invalid-key' });
+        expect(invalidResult.valid).toBe(false);
+        expect(invalidResult.errors).toContain(
+          'apiKey must be one of: key1, key2, key3'
+        );
+      });
+
+      it('should validate enum types in nested objects', () => {
+        const schema = new ConfigSchema({
+          user: {
+            label: 'User',
+            type: 'object',
+            properties: {
+              role: {
+                label: 'Role',
+                type: 'string',
+                enum: ['admin', 'user', 'guest'],
+              },
+            },
+          },
+        });
+
+        const validResult = schema.validate({
+          user: { role: 'admin' },
+        });
+        expect(validResult.valid).toBe(true);
+
+        const invalidResult = schema.validate({
+          user: { role: 'superadmin' },
+        });
+        expect(invalidResult.valid).toBe(false);
+        expect(invalidResult.errors).toContain(
+          'user.role must be one of: admin, user, guest'
+        );
+      });
+
+      it('should validate enum types in array items', () => {
+        const schema = new ConfigSchema({
+          tags: {
+            label: 'Tags',
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: ['tag1', 'tag2', 'tag3'],
+            },
+          },
+        });
+
+        const validResult = schema.validate({
+          tags: ['tag1', 'tag2'],
+        });
+        expect(validResult.valid).toBe(true);
+
+        const invalidResult = schema.validate({
+          tags: ['tag1', 'invalid-tag'],
+        });
+        expect(invalidResult.valid).toBe(false);
+        expect(invalidResult.errors).toContain(
+          'tags[1] must be one of: tag1, tag2, tag3'
+        );
+      });
+
+      it('should allow empty enum array (no restriction)', () => {
+        const schema = new ConfigSchema({
+          status: {
+            label: 'Status',
+            type: 'string',
+            enum: [],
+          },
+        });
+
+        const validResult = schema.validate({ status: 'any-value' });
+        expect(validResult.valid).toBe(true);
+      });
     });
 
     describe('nested object validation', () => {

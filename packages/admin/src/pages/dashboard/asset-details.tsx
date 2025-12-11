@@ -465,7 +465,8 @@ export function AssetDetails() {
   const selectedVariant =
     selectedVariantId === 'original'
       ? media?.original
-      : media?.derivatives?.find((d) => d.id === selectedVariantId);
+      : media?.derivatives?.find((d) => d.id === selectedVariantId) ||
+        media?.thumbnails?.find((t) => t.id === selectedVariantId);
 
   const deleteMutation = useMutation({
     mutationFn: () =>
@@ -813,7 +814,7 @@ export function AssetDetails() {
         {/* Preview Section */}
         <div className="lg:col-span-2 lg:sticky lg:top-6 lg:self-start">
           <Card>
-            <CardContent>
+            <CardContent className="space-y-4">
               {selectedVariant?.url && selectedVariant.status === 'READY' ? (
                 <div className="relative w-full bg-muted rounded-lg overflow-hidden">
                   {isVideo ? (
@@ -850,6 +851,111 @@ export function AssetDetails() {
                   </div>
                 </div>
               )}
+
+              {/* Thumbnail Strip */}
+              {(media.thumbnails && media.thumbnails.length > 0) ||
+              (selectedVariant && selectedVariant.status === 'READY') ? (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {/* Current Variant Thumbnail */}
+                  {selectedVariant && selectedVariant.status === 'READY' && (
+                    <div
+                      className={cn(
+                        'flex-shrink-0 relative w-20 h-20 rounded-lg overflow-hidden border-2',
+                        'border-primary ring-2 ring-primary ring-offset-2'
+                      )}
+                      title="Current variant"
+                    >
+                      {isVideo ? (
+                        selectedVariant.url ? (
+                          <video
+                            src={selectedVariant.url}
+                            className="w-full h-full object-cover"
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <VideoIcon className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )
+                      ) : selectedVariant.url ? (
+                        <img
+                          src={selectedVariant.url}
+                          alt="Current variant"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Thumbnails */}
+                  {media.thumbnails
+                    ?.filter(
+                      (thumbnail) =>
+                        // Don't show the current variant as a thumbnail if it's already shown
+                        thumbnail.id !== selectedVariant?.id
+                    )
+                    .map((thumbnail) => {
+                      // Check if this thumbnail corresponds to a derivative or original
+                      const correspondingDerivative = media.derivatives?.find(
+                        (d) => d.id === thumbnail.id
+                      );
+                      const isOriginal = thumbnail.id === media.original?.id;
+                      const isSelected = selectedVariantId === thumbnail.id;
+
+                      const handleThumbnailClick = () => {
+                        if (isOriginal) {
+                          // If it's the original, select original
+                          setSelectedVariantId('original');
+                        } else if (correspondingDerivative) {
+                          // If it's a derivative, select that derivative
+                          setSelectedVariantId(thumbnail.id);
+                        } else {
+                          // It's a standalone thumbnail, select it directly
+                          setSelectedVariantId(thumbnail.id);
+                        }
+                      };
+
+                      return (
+                        <button
+                          key={thumbnail.id}
+                          onClick={handleThumbnailClick}
+                          className={cn(
+                            'flex-shrink-0 relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all cursor-pointer',
+                            isSelected
+                              ? 'border-primary ring-2 ring-primary ring-offset-2'
+                              : 'border-border hover:border-primary/50'
+                          )}
+                          title={
+                            isOriginal
+                              ? 'Original'
+                              : correspondingDerivative
+                              ? correspondingDerivative.displayName ||
+                                'Derivative'
+                              : 'Thumbnail'
+                          }
+                        >
+                          {thumbnail.url && thumbnail.status === 'READY' ? (
+                            <img
+                              src={thumbnail.url}
+                              alt="Thumbnail"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors" />
+                        </button>
+                      );
+                    })}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </div>

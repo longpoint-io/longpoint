@@ -7,6 +7,13 @@ import {
   FieldLabel,
 } from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@longpoint/ui/components/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { Control, Controller, useFieldArray } from 'react-hook-form';
 import { ConfigSchemaField } from './config-schema-field';
@@ -140,6 +147,12 @@ export function ArrayField({
           }
 
           // primitive array items
+          const itemEnumValues = itemSchema?.enum;
+          const hasEnum =
+            itemEnumValues &&
+            Array.isArray(itemEnumValues) &&
+            itemEnumValues.length > 0;
+
           return (
             <div key={field.id} className="flex items-end gap-2">
               <div className="flex-1">
@@ -161,6 +174,31 @@ export function ArrayField({
                             disabled={itemImmutable}
                           />
                         </div>
+                      ) : hasEnum ? (
+                        <>
+                          <FieldLabel htmlFor={fieldId}>
+                            {label} item #{index + 1}
+                          </FieldLabel>
+                          <Select
+                            value={field.value || undefined}
+                            onValueChange={field.onChange}
+                            disabled={itemImmutable}
+                          >
+                            <SelectTrigger
+                              id={fieldId}
+                              aria-invalid={fieldState.invalid}
+                            >
+                              <SelectValue placeholder={`Select ${label}`} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {itemEnumValues.map((enumValue: string) => (
+                                <SelectItem key={enumValue} value={enumValue}>
+                                  {enumValue}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </>
                       ) : itemType === 'number' ? (
                         <>
                           <FieldLabel htmlFor={fieldId}>

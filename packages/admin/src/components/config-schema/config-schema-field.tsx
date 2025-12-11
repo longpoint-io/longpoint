@@ -7,6 +7,13 @@ import {
 } from '@longpoint/ui/components/field';
 import { Input } from '@longpoint/ui/components/input';
 import { PasswordInput } from '@longpoint/ui/components/password-input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@longpoint/ui/components/select';
 import { Control, Controller } from 'react-hook-form';
 import { ArrayField } from './array-field';
 import { ObjectField } from './object-field';
@@ -153,6 +160,47 @@ export function ConfigSchemaField({
               placeholder={placeholder}
               disabled={immutable}
             />
+            {description && (
+              <FieldDescription>{String(description)}</FieldDescription>
+            )}
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+    );
+  }
+
+  // Check if enum is defined for this field
+  const enumValues = schemaValue?.enum;
+
+  // If enum is defined, render a Select component
+  if (enumValues && Array.isArray(enumValues) && enumValues.length > 0) {
+    return (
+      <Controller
+        name={name as any}
+        control={control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={fieldId}>
+              {label}
+              {required && <span className="ml-1 text-destructive">*</span>}
+            </FieldLabel>
+            <Select
+              value={field.value || undefined}
+              onValueChange={field.onChange}
+              disabled={immutable}
+            >
+              <SelectTrigger id={fieldId} aria-invalid={fieldState.invalid}>
+                <SelectValue placeholder={placeholder || `Select ${label}`} />
+              </SelectTrigger>
+              <SelectContent>
+                {enumValues.map((enumValue: string) => (
+                  <SelectItem key={enumValue} value={enumValue}>
+                    {enumValue}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {description && (
               <FieldDescription>{String(description)}</FieldDescription>
             )}

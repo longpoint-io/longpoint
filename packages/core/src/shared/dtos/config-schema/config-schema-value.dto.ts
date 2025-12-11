@@ -22,6 +22,14 @@ export class ConfigSchemaValueDto {
   type: string;
 
   @ApiProperty({
+    description:
+      'The allowed values for the field, if the field type is a string',
+    example: ['apple', 'banana', 'cherry'],
+    nullable: true,
+  })
+  enum: string[] | null;
+
+  @ApiProperty({
     description: 'Whether the field is required',
     example: true,
   })
@@ -85,6 +93,7 @@ export class ConfigSchemaValueDto {
   constructor(data: ConfigSchemaValueParams) {
     this.label = data.label;
     this.type = data.type;
+    this.enum = data.enum ?? null;
     this.required = data.required ?? false;
     this.description = data.description ?? null;
     this.placeholder = data.placeholder ?? null;

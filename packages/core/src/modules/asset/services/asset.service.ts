@@ -37,9 +37,10 @@ export interface CreateAssetParams {
   };
 }
 
-export interface CreateDerivativeVariantParams {
+export interface CreateAssetVariant {
   assetId: string;
   mimeType: string;
+  type: AssetVariantType;
   entryPoint: string;
   displayName?: string;
 }
@@ -258,14 +259,14 @@ export class AssetService {
     return Promise.all(assets.map(async (a) => this.toAssetEntity(a)));
   }
 
-  async createDerivativeVariant(params: CreateDerivativeVariantParams) {
+  async createAssetVariant(params: CreateAssetVariant) {
     const variant = await this.prismaService.assetVariant.create({
       data: {
         assetId: params.assetId,
         mimeType: params.mimeType,
         status: 'PROCESSING',
         entryPoint: params.entryPoint,
-        type: AssetVariantType.DERIVATIVE,
+        type: params.type,
         displayName: params.displayName,
       },
       select: selectAssetVariant(),
@@ -320,6 +321,9 @@ export class AssetService {
     const derivatives = asset.variants.filter(
       (v) => v.type === AssetVariantType.DERIVATIVE
     );
+    const thumbnails = asset.variants.filter(
+      (v) => v.type === AssetVariantType.THUMBNAIL
+    );
     const storageUnit = await this.storageUnitService.getStorageUnitByAssetId(
       asset.id
     );
@@ -327,6 +331,9 @@ export class AssetService {
       ...asset,
       original: this.toAssetVariantEntity(original, storageUnit),
       derivatives: derivatives.map((v) =>
+        this.toAssetVariantEntity(v, storageUnit)
+      ),
+      thumbnails: thumbnails.map((v) =>
         this.toAssetVariantEntity(v, storageUnit)
       ),
       storageUnit,

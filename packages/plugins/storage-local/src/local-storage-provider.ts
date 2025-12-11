@@ -19,6 +19,11 @@ export class LocalStorageProvider extends StorageProvider {
     const dirPath = dirname(fullPath);
     await fs.promises.mkdir(dirPath, { recursive: true });
 
+    if (body instanceof Buffer || typeof body === 'string') {
+      await fs.promises.writeFile(fullPath, body);
+      return true;
+    }
+
     const writeStream = fs.createWriteStream(fullPath);
     await pipelineAsync(body, writeStream);
 

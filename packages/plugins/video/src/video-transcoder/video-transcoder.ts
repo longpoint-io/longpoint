@@ -1,4 +1,3 @@
-import { ConfigValues } from '@longpoint/config-schema';
 import {
   AssetTransformer,
   AssetTransformerArgs,
@@ -8,9 +7,9 @@ import {
   TransformResult,
 } from '@longpoint/devkit';
 import { spawn } from 'child_process';
-import input from '../input/index.js';
+import { VideoTranscoderInput } from './input.js';
 
-export class VideoTranscoder extends AssetTransformer {
+export default class VideoTranscoder extends AssetTransformer {
   constructor(args: AssetTransformerArgs) {
     super(args);
   }
@@ -21,13 +20,14 @@ export class VideoTranscoder extends AssetTransformer {
         {
           entryPoint: 'variant.mp4',
           mimeType: 'video/mp4',
+          type: 'DERIVATIVE',
         },
       ],
     };
   }
 
   async transform(
-    args: TransformArgs<ConfigValues<typeof input>>
+    args: TransformArgs<VideoTranscoderInput>
   ): Promise<TransformResult> {
     const {
       source,

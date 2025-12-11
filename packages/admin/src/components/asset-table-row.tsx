@@ -15,20 +15,22 @@ interface AssetTableRowProps {
 
 export function AssetTableRow({
   item,
-  thumbnailLink,
+  thumbnailLink: thumbnailLinkOverride,
   selected = false,
   onSelectChange,
   multiSelect = false,
 }: AssetTableRowProps) {
   const navigate = useNavigate();
 
-  const { id, name, createdAt, updatedAt, type } = item;
+  const { id, name, createdAt, updatedAt, type, thumbnails } = item;
   const isVideo = type === 'VIDEO';
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelectChange?.(!selected);
   };
+
+  const thumbnailLink = thumbnailLinkOverride ?? thumbnails[0]?.url;
 
   return (
     <TableRow
@@ -47,7 +49,7 @@ export function AssetTableRow({
       <TableCell>
         <div className="flex items-center gap-3">
           <div className="size-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded overflow-hidden shrink-0">
-            {thumbnailLink && !isVideo ? (
+            {thumbnailLink ? (
               <img
                 src={thumbnailLink}
                 alt={name}

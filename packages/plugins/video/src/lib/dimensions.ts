@@ -1,9 +1,8 @@
 import { ConfigSchemaValue } from '@longpoint/config-schema';
 
-const dimensionsInput: ConfigSchemaValue = {
+const dimensionsInputSchema = {
   label: 'Dimensions',
   type: 'object',
-  description: 'Resize video dimensions',
   properties: {
     width: {
       label: 'Width',
@@ -23,6 +22,6 @@ const dimensionsInput: ConfigSchemaValue = {
       description: 'Preserve original aspect ratio when resizing',
     },
   },
-};
+} satisfies ConfigSchemaValue;
 
-export default dimensionsInput;
+export default dimensionsInputSchema;

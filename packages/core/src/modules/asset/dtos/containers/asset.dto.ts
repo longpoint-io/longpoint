@@ -15,6 +15,7 @@ export type AssetParams = Omit<SelectedAsset, 'variants'> & {
   totalSize: number;
   original: AssetVariantDto;
   derivatives: AssetVariantDto[];
+  thumbnails: AssetVariantDto[];
   collections: CollectionReferenceDto[];
 };
 
@@ -90,6 +91,12 @@ export class AssetDto {
   derivatives: AssetVariantDto[] = [];
 
   @ApiProperty({
+    description: 'Thumbnails for the asset',
+    type: [AssetVariantDto],
+  })
+  thumbnails: AssetVariantDto[] = [];
+
+  @ApiProperty({
     description: 'Collections this asset belongs to',
     type: [CollectionReferenceDto],
   })
@@ -105,6 +112,7 @@ export class AssetDto {
     this.totalSize = data.totalSize;
     this.original = data.original;
     this.derivatives = data.derivatives;
+    this.thumbnails = data.thumbnails;
     this.collections = data.collections;
   }
 }

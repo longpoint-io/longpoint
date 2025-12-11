@@ -14,12 +14,14 @@ type FlexibleConfigSchema = {
     immutable?: boolean | null;
     minLength?: number | null;
     maxLength?: number | null;
+    enum?: string[];
     items?: {
       type: string;
       properties?: FlexibleConfigSchema;
       immutable?: boolean | null;
       minLength?: number | null;
       maxLength?: number | null;
+      enum?: string[];
     } | null;
     properties?: FlexibleConfigSchema;
   };

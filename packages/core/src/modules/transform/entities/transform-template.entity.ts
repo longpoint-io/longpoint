@@ -64,9 +64,21 @@ export class TransformTemplateEntity {
     });
     const variantMap = new Map<string, AssetVariantEntity>();
 
+    const validVariants = new Set(['DERIVATIVE', 'THUMBNAIL']);
     for (const variant of handshakeResult.variants) {
-      const variantEntity = await this.assetService.createDerivativeVariant({
+      if (!validVariants.has(variant.type)) {
+        this.logger.warn(
+          `Transform template returned an invalid variant type: ${variant.type} - skipping`,
+          {
+            transformTemplate: this.name,
+            transformer: this._transformer.id,
+          }
+        );
+        continue;
+      }
+      const variantEntity = await this.assetService.createAssetVariant({
         assetId: sourceVariant.assetId,
+        type: variant.type,
         displayName: this.displayName,
         mimeType: variant.mimeType,
         entryPoint: variant.entryPoint,

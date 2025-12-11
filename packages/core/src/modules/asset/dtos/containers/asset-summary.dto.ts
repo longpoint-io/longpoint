@@ -3,7 +3,7 @@ import { AssetDto, AssetParams } from './asset.dto';
 
 export type AssetSummaryParams = Pick<
   AssetParams,
-  'id' | 'name' | 'type' | 'status' | 'createdAt' | 'updatedAt'
+  'id' | 'name' | 'type' | 'status' | 'createdAt' | 'updatedAt' | 'thumbnails'
 >;
 
 @ApiSchema({ name: 'AssetSummary' })
@@ -12,6 +12,7 @@ export class AssetSummaryDto extends PickType(AssetDto, [
   'name',
   'type',
   'status',
+  'thumbnails',
   'createdAt',
   'updatedAt',
 ] as const) {
@@ -21,6 +22,7 @@ export class AssetSummaryDto extends PickType(AssetDto, [
     this.name = data.name;
     this.type = data.type;
     this.status = data.status;
+    this.thumbnails = data.thumbnails;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
   }
