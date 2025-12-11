@@ -17,12 +17,12 @@ interface AssetGridItemProps {
 
 export function AssetGridItem({
   item,
-  thumbnailLink,
+  thumbnailLink: thumbnailLinkOverride,
   selected = false,
   onSelectChange,
   multiSelect = false,
 }: AssetGridItemProps) {
-  const { id, name, status, type } = item;
+  const { id, name, status, type, thumbnails } = item;
   const isReady = status === 'READY';
   const isVideo = type === 'VIDEO';
 
@@ -31,6 +31,8 @@ export function AssetGridItem({
     e.stopPropagation();
     onSelectChange?.(!selected);
   };
+
+  const thumbnailLink = thumbnailLinkOverride ?? thumbnails[0]?.url;
 
   const content = (
     <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] group overflow-hidden relative">
@@ -55,7 +57,7 @@ export function AssetGridItem({
                 />
               </div>
             )}
-            {thumbnailLink && !isVideo ? (
+            {thumbnailLink ? (
               <img
                 src={thumbnailLink}
                 alt={name}
