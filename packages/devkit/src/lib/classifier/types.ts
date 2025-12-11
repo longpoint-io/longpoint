@@ -35,3 +35,22 @@ export interface ClassifierContribution<
    */
   input?: ConfigSchemaDefinition;
 }
+
+export const KeyAssetMetadataField = {
+  ASSET_NAME: 'assetName',
+  WIDTH: 'width',
+  HEIGHT: 'height',
+  DURATION: 'duration',
+} as const;
+
+export type KeyAssetMetadataField =
+  (typeof KeyAssetMetadataField)[keyof typeof KeyAssetMetadataField];
+
+export interface ClassifyResult
+  extends Partial<Record<KeyAssetMetadataField, any>> {
+  width?: number;
+  height?: number;
+  duration?: number;
+  assetName?: string;
+  [key: string]: string | number | boolean | undefined;
+}

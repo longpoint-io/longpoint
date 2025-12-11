@@ -83,4 +83,14 @@ export class FFprobeCommand extends BaseCommand {
 
     await Promise.all([ffprobePromise, outputPromise]);
   }
+
+  async executeAndReturnOutput(): Promise<string> {
+    let outputData = '';
+    await this.execute(async (stdout) => {
+      for await (const chunk of stdout) {
+        outputData += chunk.toString();
+      }
+    });
+    return outputData;
+  }
 }

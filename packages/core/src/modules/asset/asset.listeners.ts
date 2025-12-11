@@ -1,6 +1,10 @@
 import { JsonObject } from '@/shared/types/object.types';
+import { ClassifyResult, KeyAssetMetadataField } from '@longpoint/devkit';
 import { Injectable, Logger } from '@nestjs/common';
-import type { ClassifierRunCompleteEventPayload } from '../classifier';
+import {
+  ClassifierEvents,
+  type ClassifierRunCompleteEventPayload,
+} from '../classifier';
 import { PrismaService } from '../common/services';
 import { HandleEvent } from '../event';
 
@@ -10,7 +14,7 @@ export class MediaMetadataListeners {
 
   constructor(private readonly prismaService: PrismaService) {}
 
-  @HandleEvent('classifier.run.complete')
+  @HandleEvent(ClassifierEvents.CLASSIFIER_RUN_COMPLETE)
   async handleClassifierRunComplete(
     payload: ClassifierRunCompleteEventPayload
   ) {
@@ -34,17 +38,38 @@ export class MediaMetadataListeners {
         return;
       }
 
+      // separate key metadata fields from the rest of the result
+      const result = payload.result as ClassifyResult;
       const currentMetadata =
         (variant.metadata as JsonObject | null) ?? ({} as JsonObject);
       const mergedMetadata: JsonObject = {
         ...currentMetadata,
-        ...(payload.result as JsonObject),
+        ...Object.fromEntries(
+          Object.entries(payload.result as JsonObject).filter(
+            ([key]) =>
+              !Object.values(KeyAssetMetadataField).includes(
+                key as KeyAssetMetadataField
+              )
+          )
+        ),
       };
 
       await this.prismaService.assetVariant.update({
         where: { id: payload.assetVariantId },
         data: {
+          width: result.width,
+          height: result.height,
+          duration: result.duration,
           metadata: mergedMetadata,
+          ...(result.assetName
+            ? {
+                asset: {
+                  update: {
+                    name: result.assetName,
+                  },
+                },
+              }
+            : {}),
         },
       });
 

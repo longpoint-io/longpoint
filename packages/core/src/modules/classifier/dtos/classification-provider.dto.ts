@@ -1,14 +1,10 @@
+import { ConfigSchemaValueDto } from '@/shared/dtos';
 import {
   type ConfigSchemaForDto,
   toConfigSchemaForDto,
 } from '@/shared/dtos/config-schema';
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import {
-  ApiProperty,
-  ApiSchema,
-  getSchemaPath,
-} from '@nestjs/swagger';
-import { ConfigSchemaValueDto } from '@/shared/dtos';
+import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 
 export interface ClassificationProviderParams {
   id: string;
@@ -16,7 +12,7 @@ export interface ClassificationProviderParams {
   displayName: string;
   description?: string | null;
   supportedMimeTypes: string[];
-  maxFileSize: number;
+  maxFileSize?: number;
   classifierInputSchema: ConfigSchemaDefinition;
   pluginId: string;
 }
@@ -58,8 +54,10 @@ export class ClassificationProviderDto {
   @ApiProperty({
     description: 'Maximum file size in bytes',
     example: 52428800,
+    nullable: true,
+    type: 'number',
   })
-  maxFileSize: number;
+  maxFileSize: number | null;
 
   @ApiProperty({
     description: 'The schema for classifier input',
@@ -82,11 +80,10 @@ export class ClassificationProviderDto {
     this.displayName = data.displayName;
     this.description = data.description ?? null;
     this.supportedMimeTypes = data.supportedMimeTypes;
-    this.maxFileSize = data.maxFileSize;
+    this.maxFileSize = data.maxFileSize ?? null;
     this.classifierInputSchema = toConfigSchemaForDto(
       data.classifierInputSchema
     );
     this.pluginId = data.pluginId;
   }
 }
-

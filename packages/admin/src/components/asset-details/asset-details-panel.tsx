@@ -50,7 +50,7 @@ export function AssetDetailsPanel({
       : asset?.derivatives?.find((d) => d.id === selectedVariantId) ||
         asset?.thumbnails?.find((t) => t.id === selectedVariantId);
 
-  const variantOptions = [
+  const versionOptions = [
     { value: 'original', label: 'Original' },
     ...(asset?.derivatives?.map((d) => ({
       value: d.id,
@@ -62,93 +62,93 @@ export function AssetDetailsPanel({
     <div className="lg:col-span-3">
       <Card>
         <CardContent>
-          {(hasDerivatives || selectedVariantId !== 'original') && (
-            <div className="mb-6">
-              <Field>
-                <FieldLabel>Variant</FieldLabel>
-                <Select
-                  value={selectedVariantId}
-                  onValueChange={setSelectedVariantId}
+          <div className="mb-6">
+            <Field>
+              <FieldLabel>Variant</FieldLabel>
+              <Select
+                value={selectedVariantId}
+                onValueChange={setSelectedVariantId}
+              >
+                <SelectTrigger
+                  className="max-w-[240px]"
+                  disabled={asset.totalVariants === 1}
                 >
-                  <SelectTrigger className="max-w-[240px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Versions</SelectLabel>
-                      {variantOptions.map((option) => {
-                        // Get the variant data for this option
-                        const variant =
-                          option.value === 'original'
-                            ? asset?.original
-                            : asset?.derivatives?.find(
-                                (d) => d.id === option.value
-                              );
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Versions</SelectLabel>
+                    {versionOptions.map((option) => {
+                      // Get the variant data for this option
+                      const variant =
+                        option.value === 'original'
+                          ? asset?.original
+                          : asset?.derivatives?.find(
+                              (d) => d.id === option.value
+                            );
 
-                        // Determine if we should show image preview or icon
-                        const isImage =
-                          variant?.mimeType?.startsWith('image/') ?? false;
+                      // Determine if we should show image preview or icon
+                      const isImage =
+                        variant?.mimeType?.startsWith('image/') ?? false;
+                      const showImagePreview =
+                        isImage && variant?.status === 'READY' && variant?.url;
+
+                      return (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center gap-2.5">
+                            {showImagePreview ? (
+                              <img
+                                src={variant.url ?? undefined}
+                                alt={option.label}
+                                className="h-6 w-6 object-cover rounded flex-shrink-0"
+                              />
+                            ) : variant?.mimeType ? (
+                              <AssetType
+                                type={variant.mimeType}
+                                showText={false}
+                              />
+                            ) : null}
+                            <span>{option.label}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
+                  {asset?.thumbnails?.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>Thumbnails</SelectLabel>
+                      {asset?.thumbnails?.map((thumbnail) => {
                         const showImagePreview =
-                          isImage &&
-                          variant?.status === 'READY' &&
-                          variant?.url;
+                          thumbnail.status === 'READY' && thumbnail.url;
 
                         return (
-                          <SelectItem key={option.value} value={option.value}>
+                          <SelectItem key={thumbnail.id} value={thumbnail.id}>
                             <div className="flex items-center gap-2.5">
                               {showImagePreview ? (
                                 <img
-                                  src={variant.url ?? undefined}
-                                  alt={option.label}
+                                  src={thumbnail.url ?? undefined}
+                                  alt={
+                                    thumbnail.displayName ||
+                                    `Thumbnail ${thumbnail.id.slice(0, 8)}`
+                                  }
                                   className="h-6 w-6 object-cover rounded flex-shrink-0"
                                 />
-                              ) : variant?.mimeType ? (
-                                <AssetType
-                                  type={variant.mimeType}
-                                  showText={false}
-                                />
                               ) : null}
-                              <span>{option.label}</span>
+                              <span>
+                                {thumbnail.displayName ||
+                                  `Thumbnail ${thumbnail.id.slice(0, 8)}`}
+                              </span>
                             </div>
                           </SelectItem>
                         );
                       })}
                     </SelectGroup>
-                    {asset?.thumbnails?.length > 0 && (
-                      <SelectGroup>
-                        <SelectLabel>Thumbnails</SelectLabel>
-                        {asset?.thumbnails?.map((thumbnail) => {
-                          const showImagePreview =
-                            thumbnail.status === 'READY' && thumbnail.url;
+                  )}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
 
-                          return (
-                            <SelectItem key={thumbnail.id} value={thumbnail.id}>
-                              <div className="flex items-center gap-2.5">
-                                {showImagePreview ? (
-                                  <img
-                                    src={thumbnail.url ?? undefined}
-                                    alt={
-                                      thumbnail.displayName ||
-                                      `Thumbnail ${thumbnail.id.slice(0, 8)}`
-                                    }
-                                    className="h-6 w-6 object-cover rounded flex-shrink-0"
-                                  />
-                                ) : null}
-                                <span>
-                                  {thumbnail.displayName ||
-                                    `Thumbnail ${thumbnail.id.slice(0, 8)}`}
-                                </span>
-                              </div>
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectGroup>
-                    )}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-          )}
           {selectedVariant ? (
             <FieldGroup>
               <Field>
@@ -167,7 +167,10 @@ export function AssetDetailsPanel({
                     <Field>
                       <FieldLabel>Aspect Ratio</FieldLabel>
                       <p className="text-sm">
-                        {selectedVariant.aspectRatio.toFixed(2)}&nbsp;×&nbsp;1
+                        {parseFloat(
+                          selectedVariant.aspectRatio.toFixed(2)
+                        ).toString()}
+                        &nbsp;:&nbsp;1
                       </p>
                     </Field>
                   )}

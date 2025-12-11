@@ -88,7 +88,10 @@ export class ClassifierEntity {
       return;
     }
 
-    if ((variant.size ?? 0) > this.classificationProvider.maxFileSize) {
+    if (
+      this.classificationProvider.maxFileSize &&
+      (variant.size ?? 0) > this.classificationProvider.maxFileSize
+    ) {
       this.logger.warn(
         `Asset variant "${assetVariantId}" is too large for classification provider "${this.classificationProvider.fullyQualifiedId}" - skipping classifier run`
       );
@@ -127,7 +130,7 @@ export class ClassifierEntity {
           assetVariantId,
           classifierId: this.id,
           classifierName: this.name,
-          result,
+          result: JSON.parse(JSON.stringify(result)),
         }
       );
       return updatedRun;
@@ -256,7 +259,7 @@ export class ClassifierEntity {
         base64,
         mimeType: variant.mimeType,
         base64DataUri: toBase64DataUri(variant.mimeType, base64),
-        url: undefined,
+        url: variant.url,
       };
     }
 
