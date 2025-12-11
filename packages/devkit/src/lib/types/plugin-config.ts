@@ -1,6 +1,7 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { ClassifierContribution } from '../classifier/types.js';
 import { StorageContribution } from '../storage/index.js';
+import { TransformerContribution } from '../transformer/types.js';
 import { VectorContribution, VectorPluginManifest } from '../vector/types.js';
 import {
   VectorProvider,
@@ -51,6 +52,9 @@ export interface LongpointPluginConfig<
     };
     classifiers?: {
       [id: string]: ClassifierContribution<T>;
+    };
+    transformers?: {
+      [id: string]: TransformerContribution;
     };
   };
 }

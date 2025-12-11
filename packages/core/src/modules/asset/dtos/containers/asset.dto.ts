@@ -9,10 +9,13 @@ import { CollectionReferenceDto } from '@/modules/collection';
 import { SupportedMimeType } from '@longpoint/types';
 import { IsValidAssetName } from '@longpoint/validations';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { AssetVariantsDto } from './asset-variants.dto';
+import { AssetVariantDto } from './asset-variant.dto';
 
 export type AssetParams = Omit<SelectedAsset, 'variants'> & {
-  variants: AssetVariantsDto;
+  totalSize: number;
+  original: AssetVariantDto;
+  derivatives: AssetVariantDto[];
+  thumbnails: AssetVariantDto[];
   collections: CollectionReferenceDto[];
 };
 
@@ -58,23 +61,40 @@ export class AssetDto {
   updatedAt: Date;
 
   @ApiProperty({
-    description: 'The accessible asset variants',
-    type: AssetVariantsDto,
+    description: 'The total size of all asset variants in bytes',
+    example: 1000000,
+    type: 'number',
+  })
+  totalSize: number;
+
+  @ApiProperty({
+    description: 'The original asset variant',
+    type: AssetVariantDto,
     example: {
-      primary: {
-        id: 'okie3r17vhfswyyp38v9lrsl',
-        variant: AssetVariantType.PRIMARY,
-        status: AssetVariantStatus.READY,
-        mimeType: SupportedMimeType.JPEG,
-        width: 1920,
-        height: 1080,
-        size: 950120,
-        aspectRatio: 1.777777,
-        url: 'https://longpoint.example.com/storage/default/abc123/original.jpg',
-      },
+      id: 'okie3r17vhfswyyp38v9lrsl',
+      type: AssetVariantType.ORIGINAL,
+      status: AssetVariantStatus.READY,
+      mimeType: SupportedMimeType.JPEG,
+      width: 1920,
+      height: 1080,
+      size: 950120,
+      aspectRatio: 1.777777,
+      url: 'https://longpoint.example.com/v/okie3r17vhfswyyp38v9lrsl/original.jpg',
     },
   })
-  variants: AssetVariantsDto;
+  original: AssetVariantDto;
+
+  @ApiProperty({
+    description: 'Derivative variants of the original asset.',
+    type: [AssetVariantDto],
+  })
+  derivatives: AssetVariantDto[] = [];
+
+  @ApiProperty({
+    description: 'Thumbnails for the asset',
+    type: [AssetVariantDto],
+  })
+  thumbnails: AssetVariantDto[] = [];
 
   @ApiProperty({
     description: 'Collections this asset belongs to',
@@ -89,7 +109,10 @@ export class AssetDto {
     this.status = data.status;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
-    this.variants = data.variants;
+    this.totalSize = data.totalSize;
+    this.original = data.original;
+    this.derivatives = data.derivatives;
+    this.thumbnails = data.thumbnails;
     this.collections = data.collections;
   }
 }

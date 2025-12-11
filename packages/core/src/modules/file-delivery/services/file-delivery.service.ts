@@ -1,13 +1,15 @@
-import { AssetNotFound } from '@/modules/asset';
+import { AssetVariantNotFound } from '@/modules/asset/asset.errors';
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { StorageUnitService } from '@/modules/storage';
 import { StorageProviderEntity } from '@/modules/storage/entities';
+import { BaseError } from '@/shared/errors';
 import {
-  getAssetPath,
-  getContentType,
-  getMimeType,
-} from '@longpoint/utils/media';
-import { Injectable, NotFoundException } from '@nestjs/common';
+  getAssetCachePath,
+  getAssetVariantPath,
+} from '@/shared/utils/asset.utils';
+import { ErrorCode } from '@longpoint/types';
+import { getMimeType } from '@longpoint/utils/media';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import crypto from 'crypto';
 import type { Request, Response } from 'express';
 import { SignedUrlParamsDto } from '../dtos';
@@ -27,45 +29,54 @@ export class FileDeliveryService {
   ) {}
 
   async serveFile(req: Request, res: Response, query: SignedUrlParamsDto) {
-    const requestPath = req.path.replace(/^\/a\/?/, '');
+    const requestPath = req.path.replace(/^\/v\/?/, '');
     const pathPrefix = this.configService.get('storage.pathPrefix');
 
     const pathParts = requestPath.split('/').filter(Boolean);
 
-    // Path format: /a/{assetId}/{filename}
+    // Path format: /v/{assetVariantId}/{entryPoint}
     if (pathParts.length !== 2) {
       throw new InvalidFilePath(requestPath);
     }
 
-    const assetId = pathParts[0];
-    const filename = pathParts[1];
+    const assetVariantId = pathParts[0];
+    const entryPoint = pathParts[1];
 
-    const pathForSignature = `${assetId}/${filename}`;
+    const pathForSignature = `${assetVariantId}/${entryPoint}`;
     this.urlSigningService.verifySignature(pathForSignature, query);
 
-    const asset = await this.prismaService.asset.findUnique({
+    const assetVariant = await this.prismaService.assetVariant.findUnique({
       where: {
-        id: assetId,
+        id: assetVariantId,
       },
       select: {
-        storageUnitId: true,
+        mimeType: true,
+        size: true,
+        asset: {
+          select: {
+            id: true,
+            storageUnitId: true,
+          },
+        },
       },
     });
 
-    if (!asset) {
-      throw new AssetNotFound(assetId);
+    if (!assetVariant) {
+      throw new AssetVariantNotFound(assetVariantId);
     }
 
     const storageUnit = await this.storageUnitService.getStorageUnitById(
-      asset.storageUnitId
+      assetVariant.asset.storageUnitId
     );
 
     const provider = await storageUnit.getProvider();
 
-    const originalPath = getAssetPath(assetId, {
-      storageUnitId: asset.storageUnitId,
+    const variantEntryPointPath = getAssetVariantPath({
       prefix: pathPrefix,
-      suffix: filename,
+      assetId: assetVariant.asset.id,
+      id: assetVariantId,
+      entryPoint,
+      storageUnitId: assetVariant.asset.storageUnitId,
     });
 
     const hasTransformParams =
@@ -77,15 +88,50 @@ export class FileDeliveryService {
 
     if (!hasTransformParams) {
       try {
-        const stream = await provider.getFileStream(originalPath);
+        const range = req.headers.range;
 
-        const contentType = getContentType(filename);
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Cache-Control', 'public, max-age=31536000');
-        stream.pipe(res);
+        if (range) {
+          if (!assetVariant.size) {
+            throw new BaseError(
+              ErrorCode.INVALID_INPUT,
+              'Cannot serve file with an undetermined size',
+              HttpStatus.BAD_REQUEST
+            );
+          }
+
+          const parts = range.replace(/bytes=/, '').split('-');
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : assetVariant.size - 1;
+          const chunkSize = end - start + 1;
+
+          const stream = await provider.getFileStream(variantEntryPointPath, {
+            start,
+            end,
+          });
+
+          res.status(HttpStatus.PARTIAL_CONTENT);
+          res.setHeader(
+            'Content-Range',
+            `bytes ${start}-${end}/${assetVariant.size}`
+          );
+          res.setHeader('Accept-Ranges', 'bytes');
+          res.setHeader('Content-Type', assetVariant.mimeType);
+          res.setHeader('Content-Length', chunkSize.toString());
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+          stream.pipe(res);
+        } else {
+          const stream = await provider.getFileStream(variantEntryPointPath);
+          res.setHeader('Content-Type', assetVariant.mimeType);
+          if (assetVariant.size) {
+            res.setHeader('Content-Length', assetVariant.size.toString());
+            res.setHeader('Accept-Ranges', 'bytes');
+          }
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+          stream.pipe(res);
+        }
         return;
       } catch (error) {
-        throw new FileNotFound(originalPath);
+        throw new FileNotFound(variantEntryPointPath);
       }
     }
 
@@ -98,7 +144,7 @@ export class FileDeliveryService {
         fit: query.fit,
       };
 
-      const recipeHash = this.generateCacheHash(filename, transformParams);
+      const recipeHash = this.generateCacheHash(entryPoint, transformParams);
 
       // Determine output format: normalize jpg to jpeg, default to webp
       const outputFormat = query.f
@@ -109,8 +155,8 @@ export class FileDeliveryService {
       const outputExt = outputFormat;
 
       const cachePath = await this.getCachePath(
-        assetId,
-        asset.storageUnitId,
+        assetVariant.asset.id,
+        assetVariant.asset.storageUnitId,
         recipeHash,
         outputExt
       );
@@ -125,9 +171,11 @@ export class FileDeliveryService {
         return;
       }
 
-      const originalBuffer = await provider.getFileContents(originalPath);
+      const variantBuffer = await provider.getFileContents(
+        variantEntryPointPath
+      );
       const transformResult = await this.imageTransformService.transform(
-        originalBuffer,
+        variantBuffer,
         {
           width: query.w,
           height: query.h,
@@ -148,13 +196,12 @@ export class FileDeliveryService {
       }
       // If transformation fails, try to serve original
       try {
-        const stream = await provider.getFileStream(originalPath);
-        const contentType = getContentType(filename);
-        res.setHeader('Content-Type', contentType);
+        const stream = await provider.getFileStream(variantEntryPointPath);
+        res.setHeader('Content-Type', assetVariant.mimeType);
         res.setHeader('Cache-Control', 'public, max-age=31536000');
         stream.pipe(res);
       } catch {
-        throw new FileNotFound(originalPath);
+        throw new FileNotFound(variantEntryPointPath);
       }
     }
   }
@@ -198,10 +245,11 @@ export class FileDeliveryService {
     recipeHash: string,
     ext: string
   ) {
-    return getAssetPath(assetId, {
+    return getAssetCachePath({
+      assetId,
       storageUnitId,
       prefix: this.configService.get('storage.pathPrefix'),
-      suffix: `.cache/${recipeHash}.${ext}`,
+      fileName: `${recipeHash}.${ext}`,
     });
   }
 

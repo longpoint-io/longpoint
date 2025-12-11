@@ -2,6 +2,7 @@ import {
   ClassifierContribution,
   LongpointPluginConfig,
   StorageContribution,
+  TransformerContribution,
   VectorContribution,
 } from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
@@ -37,6 +38,12 @@ export interface StorageProviderRegistryEntry
   contribution: StorageContribution<any>;
 }
 
+export interface TransformerRegistryEntry
+  extends BaseContributionRegistryEntry {
+  transformerKey: string;
+  contribution: TransformerContribution;
+}
+
 export interface PluginRegistryEntry {
   pluginId: string;
   packageName: string;
@@ -58,6 +65,10 @@ export class PluginRegistryService implements OnModuleInit {
   private readonly storageProviderRegistry = new Map<
     string,
     StorageProviderRegistryEntry
+  >();
+  private readonly transformerRegistry = new Map<
+    string,
+    TransformerRegistryEntry
   >();
 
   async onModuleInit() {
@@ -118,6 +129,23 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
+   * Get all transformers.
+   * @returns Array of transformer registry entries
+   */
+  listTransformers(): TransformerRegistryEntry[] {
+    return Array.from(this.transformerRegistry.values());
+  }
+
+  /**
+   * Get a transformer by its fully qualified ID (e.g., 'transformers/transformers').
+   * @param id - The fully qualified transformer ID
+   * @returns The transformer registry entry or null if not found
+   */
+  getTransformerById(id: string): TransformerRegistryEntry | null {
+    return this.transformerRegistry.get(id) || null;
+  }
+
+  /**
    * Get a plugin by its plugin ID (e.g., 'openai', 's3').
    * Aggregates from all provider registries and returns the first matching plugin.
    * @param pluginId - The plugin ID
@@ -150,6 +178,18 @@ export class PluginRegistryService implements OnModuleInit {
 
     // Check storage providers
     for (const entry of this.storageProviderRegistry.values()) {
+      if (entry.pluginId === pluginId) {
+        return {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        };
+      }
+    }
+
+    // Check transformers
+    for (const entry of this.transformerRegistry.values()) {
       if (entry.pluginId === pluginId) {
         return {
           pluginId: entry.pluginId,
@@ -207,6 +247,18 @@ export class PluginRegistryService implements OnModuleInit {
       }
     }
 
+    // Add transformer plugins
+    for (const entry of this.transformerRegistry.values()) {
+      if (!pluginMap.has(entry.pluginId)) {
+        pluginMap.set(entry.pluginId, {
+          pluginId: entry.pluginId,
+          packageName: entry.packageName,
+          packagePath: entry.packagePath,
+          pluginConfig: entry.pluginConfig,
+        });
+      }
+    }
+
     return Array.from(pluginMap.values());
   }
 
@@ -252,9 +304,18 @@ export class PluginRegistryService implements OnModuleInit {
       }
     }
 
+    this.logger.log('Contributions:');
     this.logger.log(
-      `${this.classificationProviderRegistry.size} classification providers loaded, ${this.vectorProviderRegistry.size} vector providers loaded, ${this.storageProviderRegistry.size} storage providers loaded`
+      `  ${this.classificationProviderRegistry.size} classification providers`
     );
+    this.logger.log(`  ${this.vectorProviderRegistry.size} vector providers`);
+    this.logger.log(`  ${this.storageProviderRegistry.size} storage providers`);
+    this.logger.log(`  ${this.transformerRegistry.size} transformers`);
+    this.logger.log('Plugins:');
+    for (const plugin of this.listPlugins()) {
+      this.logger.log(`  ${plugin.pluginId}`);
+    }
+    this.logger.log('');
   }
 
   /**
@@ -376,6 +437,27 @@ export class PluginRegistryService implements OnModuleInit {
 
         this.logger.debug(
           `Loaded storage provider: ${fullyQualifiedId} (${packageName})`
+        );
+      }
+    }
+
+    // Extract transformers
+    if (pluginConfig.contributes?.transformers) {
+      for (const [transformerKey, contribution] of Object.entries(
+        pluginConfig.contributes.transformers
+      )) {
+        const fullyQualifiedId = `${pluginId}/${transformerKey}`;
+        this.transformerRegistry.set(fullyQualifiedId, {
+          packageName,
+          packagePath,
+          pluginId,
+          transformerKey,
+          fullyQualifiedId,
+          contribution,
+          pluginConfig: processedPluginConfig,
+        });
+        this.logger.debug(
+          `Loaded transformer: ${fullyQualifiedId} (${packageName})`
         );
       }
     }

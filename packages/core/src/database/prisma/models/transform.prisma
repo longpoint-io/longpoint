@@ -1,0 +1,14 @@
+model TransformTemplate {
+  id            String   @id @default(cuid(2))
+  name          String   @unique
+  displayName   String?
+  description   String?
+  transformerId String
+  /// The user-defined input values passed to the transformer
+  input         Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([name])
+  @@index([transformerId])
+}

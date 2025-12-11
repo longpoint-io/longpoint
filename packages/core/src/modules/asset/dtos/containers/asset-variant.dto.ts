@@ -1,11 +1,11 @@
 import { AssetVariantStatus } from '@/database';
 import { type SelectedAssetVariant } from '@/modules/asset/asset.selectors';
-import { ClassifierRunDto } from '@/modules/classifier/dtos';
 import { JsonObject } from '@/shared/types/object.types';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-export type AssetVariantParams = SelectedAssetVariant & {
+export type AssetVariantParams = Omit<SelectedAssetVariant, 'assetId'> & {
+  aspectRatio: number | null;
   url?: string;
 };
 
@@ -16,6 +16,14 @@ export class AssetVariantDto {
     example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
+
+  @ApiProperty({
+    description: 'The display name of the asset variant',
+    example: 'Original',
+    type: 'string',
+    nullable: true,
+  })
+  displayName: string | null;
 
   @ApiProperty({
     description: 'The status of the asset variant',
@@ -89,30 +97,22 @@ export class AssetVariantDto {
     description: 'The URL of the asset variant',
     type: 'string',
     example:
-      'https://longpoint.example.com/storage/default/abc123/original.jpg',
+      'https://longpoint.example.com/v/r2qwyd76nvd98cu6ewg8ync2/original.jpg',
     nullable: true,
   })
   url: string | null;
 
-  @ApiProperty({
-    description: 'The classifier runs for the asset variant',
-    type: [ClassifierRunDto],
-  })
-  classifierRuns: ClassifierRunDto[];
-
   constructor(data: AssetVariantParams) {
     this.id = data.id;
+    this.displayName = data.displayName;
     this.status = data.status;
     this.mimeType = data.mimeType as SupportedMimeType;
     this.width = data.width;
     this.height = data.height;
     this.size = data.size;
-    this.aspectRatio = data.aspectRatio;
+    this.aspectRatio = data.aspectRatio ?? null;
     this.duration = data.duration;
     this.metadata = (data.metadata as JsonObject | null) ?? null;
     this.url = data.url ?? null;
-    this.classifierRuns = data.classifierRuns.map(
-      (classifierRun) => new ClassifierRunDto(classifierRun)
-    );
   }
 }

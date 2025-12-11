@@ -1,14 +1,7 @@
 import { ConfigSchemaService } from '@/modules/common/services';
-import {
-  ClassificationProviderRegistryEntry,
-  PluginRegistryService,
-} from '@/modules/plugin/services';
-import { InvalidInput } from '@/shared/errors';
-import {
-  ClassificationProvider,
-  ClassificationProviderArgs,
-} from '@longpoint/devkit/classifier';
+import { PluginRegistryService } from '@/modules/plugin/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
+import { ClassificationProviderArgs } from '@longpoint/devkit/classifier';
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import { ClassificationProviderNotFound } from '../classifier.errors';
@@ -38,7 +31,9 @@ export class ClassificationProviderService {
     const providers: ClassificationProviderEntity[] = [];
 
     for (const registryEntry of registryEntries) {
-      const provider = await this.getProviderEntity(registryEntry.fullyQualifiedId);
+      const provider = await this.getProviderEntity(
+        registryEntry.fullyQualifiedId
+      );
       if (provider) {
         providers.push(provider);
       }
@@ -75,47 +70,6 @@ export class ClassificationProviderService {
   }
 
   /**
-   * Update the configuration values for a plugin.
-   * @param pluginId - The ID of the plugin to update.
-   * @param configValues - The configuration values to update.
-   * @returns The updated plugin settings config.
-   */
-  async updatePluginSettings(
-    pluginId: string,
-    configValues: ConfigValues
-  ): Promise<ConfigValues> {
-    const registryEntries =
-      this.pluginRegistryService.listClassificationProviders();
-    const pluginEntry = registryEntries.find(
-      (entry) => entry.pluginId === pluginId
-    );
-
-    if (!pluginEntry) {
-      throw new ClassificationProviderNotFound(pluginId);
-    }
-
-    const settingsSchema = pluginEntry.pluginConfig.contributes?.settings;
-    if (!settingsSchema) {
-      throw new InvalidInput('Plugin does not support configuration');
-    }
-
-    const inboundConfig = await this.configSchemaService
-      .get(settingsSchema)
-      .processInboundValues(configValues);
-
-    await this.prismaService.pluginSettings.upsert({
-      where: { pluginId },
-      update: { config: inboundConfig },
-      create: { pluginId, config: inboundConfig },
-    });
-
-    // Evict all classification providers for this plugin from cache
-    this.evictPluginCache(pluginId);
-
-    return inboundConfig;
-  }
-
-  /**
    * Get or create a provider entity, loading config lazily.
    */
   private async getProviderEntity(
@@ -127,7 +81,9 @@ export class ClassificationProviderService {
     }
 
     const registryEntry =
-      this.pluginRegistryService.getClassificationProviderById(fullyQualifiedId);
+      this.pluginRegistryService.getClassificationProviderById(
+        fullyQualifiedId
+      );
     if (!registryEntry) {
       return null;
     }
@@ -150,17 +106,6 @@ export class ClassificationProviderService {
 
     this.providerEntityCache.set(fullyQualifiedId, entity);
     return entity;
-  }
-
-  /**
-   * Evict classification provider entities from cache for a plugin.
-   */
-  private evictPluginCache(pluginId: string): void {
-    for (const [fullyQualifiedId] of this.providerEntityCache.entries()) {
-      if (fullyQualifiedId.startsWith(`${pluginId}/`)) {
-        this.providerEntityCache.delete(fullyQualifiedId);
-      }
-    }
   }
 
   private async getPluginSettingsFromDb(
@@ -195,4 +140,3 @@ export class ClassificationProviderService {
     }
   }
 }
-

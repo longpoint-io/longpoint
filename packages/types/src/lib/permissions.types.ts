@@ -26,6 +26,10 @@ export const Permission = {
   STORAGE_UNITS_DELETE: 'storage-units:delete',
   SUPER: 'super',
   SYSTEM_SETTINGS_UPDATE: 'system-settings:update',
+  TRANSFORM_TEMPLATES_CREATE: 'transform-templates:create',
+  TRANSFORM_TEMPLATES_READ: 'transform-templates:read',
+  TRANSFORM_TEMPLATES_UPDATE: 'transform-templates:update',
+  TRANSFORM_TEMPLATES_DELETE: 'transform-templates:delete',
   USERS_CREATE: 'users:create',
   USERS_READ: 'users:read',
   USERS_UPDATE: 'users:update',
@@ -70,6 +74,10 @@ const ADMIN = {
   [Permission.USERS_READ]: true,
   [Permission.USERS_UPDATE]: true,
   [Permission.USERS_DELETE]: true,
+  [Permission.TRANSFORM_TEMPLATES_CREATE]: true,
+  [Permission.TRANSFORM_TEMPLATES_READ]: true,
+  [Permission.TRANSFORM_TEMPLATES_UPDATE]: true,
+  [Permission.TRANSFORM_TEMPLATES_DELETE]: true,
 } as const;
 
 const SUPER_ADMIN = {

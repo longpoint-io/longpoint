@@ -60,3 +60,21 @@ export function findPackagePath(
   }
   return null;
 }
+
+/**
+ * Always use forward slashes in the returned path, regardless of the operating system.
+ * @param paths - The paths to join
+ * @returns The joined path with forward slashes
+ * @example
+ * ```ts
+ * forwardSlashJoin('path', 'to', 'file');
+ * // returns 'path/to/file'
+ *
+ * forwardSlashJoin('path', 'to', 'file', 'index.html');
+ * // returns 'path/to/file/index.html'
+ * ```
+ */
+export function forwardSlashJoin(...paths: string[]): string {
+  const joined = join(...paths);
+  return joined.replace(/\\/g, '/');
+}

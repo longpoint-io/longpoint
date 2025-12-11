@@ -13,6 +13,7 @@ import {
   SearchModule,
   StorageModule,
   SystemModule,
+  TransformModule,
   UploadModule,
   UserModule,
 } from './modules';
@@ -37,6 +38,7 @@ import { EventModule } from './modules/event';
     SearchModule,
     SystemModule,
     StorageModule,
+    TransformModule,
     UploadModule,
     UserModule,
   ],

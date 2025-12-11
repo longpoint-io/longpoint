@@ -53,3 +53,21 @@ export interface StorageContribution<
    */
   configSchema?: ConfigSchemaDefinition;
 }
+
+export interface GetFileStreamOptions {
+  /**
+   * The start byte of the file to stream
+   */
+  start?: number;
+  /**
+   * The end byte of the file to stream
+   */
+  end?: number;
+}
+
+export interface FilePathStats {
+  /**
+   * The size of the file or directory in bytes
+   */
+  size: number;
+}

@@ -1,5 +1,5 @@
 import { Classifier, ClassifierRunStatus, Prisma } from '@/database';
-import { AssetService, AssetVariantDto } from '@/modules/asset';
+import { AssetService, AssetVariantEntity } from '@/modules/asset';
 import { selectClassifier } from '@/modules/classifier/classifier.selectors';
 import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
@@ -67,9 +67,12 @@ export class ClassifierEntity {
     const asset = await this.assetService.getAssetByVariantIdOrThrow(
       assetVariantId
     );
+    const variant = await this.assetService.getAssetVariantByIdOrThrow(
+      assetVariantId
+    );
     const assetId = asset.id;
-    const serialized = await asset.toDto();
-    const variant = serialized.variants.primary;
+    // const serialized = await asset.toDto();
+    // const variant = serialized.original;
 
     if (!variant.url) {
       this.logger.warn(
@@ -238,7 +241,7 @@ export class ClassifierEntity {
     });
   }
 
-  private async getAssetSource(variant: AssetVariantDto) {
+  private async getAssetSource(variant: AssetVariantEntity) {
     if (!variant.url) {
       throw new Unexpected('Variant URL is required');
     }

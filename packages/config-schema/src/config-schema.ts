@@ -181,7 +181,8 @@ export class ConfigSchema {
       const typeError = this.validateFieldType(
         fieldPath,
         fieldValue,
-        fieldSchema.type
+        fieldSchema.type,
+        fieldSchema.enum
       );
       if (typeError) {
         errors.push(typeError);
@@ -231,7 +232,8 @@ export class ConfigSchema {
               const itemTypeError = this.validateFieldType(
                 itemPath,
                 arrayValue[i],
-                fieldSchema.items.type
+                fieldSchema.items.type,
+                fieldSchema.items.enum
               );
               if (itemTypeError) {
                 errors.push(itemTypeError);
@@ -422,18 +424,26 @@ export class ConfigSchema {
    * @param path - The field path for error messages
    * @param value - The value to validate
    * @param expectedType - The expected type from the schema
+   * @param enumValues - Optional array of allowed enum values
    * @returns Error message if invalid, null if valid
    */
   private validateFieldType(
     path: string,
     value: unknown,
-    expectedType: string
+    expectedType: string,
+    enumValues?: string[]
   ): string | null {
     switch (expectedType) {
       case 'string':
       case 'secret':
         if (typeof value !== 'string') {
           return `${path} must be a string`;
+        }
+        // Validate enum if provided
+        if (enumValues && enumValues.length > 0) {
+          if (!enumValues.includes(value)) {
+            return `${path} must be one of: ${enumValues.join(', ')}`;
+          }
         }
         break;
 

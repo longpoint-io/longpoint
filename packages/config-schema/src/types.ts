@@ -7,12 +7,14 @@ export interface ConfigSchemaValue {
   placeholder?: string;
   minLength?: number;
   maxLength?: number;
+  enum?: string[];
   items?: {
     type: string;
     properties?: ConfigSchemaDefinition;
     minLength?: number;
     maxLength?: number;
     immutable?: boolean;
+    enum?: string[];
   };
   properties?: ConfigSchemaDefinition;
 }
@@ -21,6 +23,7 @@ export interface ConfigSchemaDefinition {
   [key: string]: ConfigSchemaValue;
 }
 
+// TODO: This inference doesn't really work, it just expects any return type for fields.
 export type ConfigValues<
   T extends ConfigSchemaDefinition | undefined = Record<string, any>
 > = T extends ConfigSchemaDefinition

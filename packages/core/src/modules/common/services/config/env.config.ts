@@ -26,7 +26,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().optional(),
 
   // Storage
-  STORAGE_PATH_PREFIX: z.string().default('units'),
+  STORAGE_PATH_PREFIX: z.string().optional(),
   STORAGE_URL_SECRET: z.string().default('storage-secret'),
 
   // Encryption

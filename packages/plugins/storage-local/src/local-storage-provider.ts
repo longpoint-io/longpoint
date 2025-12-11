@@ -1,7 +1,14 @@
-import { StorageProvider } from '@longpoint/devkit';
+import {
+  FileStats,
+  GetFileStreamOptions,
+  StorageProvider,
+} from '@longpoint/devkit';
 import fs from 'fs';
 import { dirname, join } from 'path';
-import { Readable } from 'stream';
+import { Readable, pipeline } from 'stream';
+import { promisify } from 'util';
+
+const pipelineAsync = promisify(pipeline);
 
 export class LocalStorageProvider extends StorageProvider {
   async upload(
@@ -11,7 +18,15 @@ export class LocalStorageProvider extends StorageProvider {
     const fullPath = this.getFullPath(path);
     const dirPath = dirname(fullPath);
     await fs.promises.mkdir(dirPath, { recursive: true });
-    await fs.promises.writeFile(fullPath, body);
+
+    if (body instanceof Buffer || typeof body === 'string') {
+      await fs.promises.writeFile(fullPath, body);
+      return true;
+    }
+
+    const writeStream = fs.createWriteStream(fullPath);
+    await pipelineAsync(body, writeStream);
+
     return true;
   }
 
@@ -20,9 +35,15 @@ export class LocalStorageProvider extends StorageProvider {
     await fs.promises.rm(fullPath, { recursive: true, force: true });
   }
 
-  async getFileStream(path: string): Promise<Readable> {
+  async getFileStream(
+    path: string,
+    options?: GetFileStreamOptions
+  ): Promise<Readable> {
     const fullPath = this.getFullPath(path);
-    return fs.createReadStream(fullPath);
+    return fs.createReadStream(fullPath, {
+      start: options?.start,
+      end: options?.end,
+    });
   }
 
   async exists(path: string): Promise<boolean> {
@@ -33,6 +54,40 @@ export class LocalStorageProvider extends StorageProvider {
     } catch {
       return false;
     }
+  }
+
+  async getPathStats(path: string): Promise<FileStats> {
+    const fullPath = this.getFullPath(path);
+    const stats = await fs.promises.stat(fullPath);
+
+    if (stats.isDirectory()) {
+      const totalSize = await this.calculateDirectorySize(fullPath);
+      return {
+        size: totalSize,
+      };
+    }
+
+    return {
+      size: stats.size,
+    };
+  }
+
+  private async calculateDirectorySize(dirPath: string): Promise<number> {
+    let totalSize = 0;
+    const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullEntryPath = join(dirPath, entry.name);
+
+      if (entry.isDirectory()) {
+        totalSize += await this.calculateDirectorySize(fullEntryPath);
+      } else {
+        const stats = await fs.promises.stat(fullEntryPath);
+        totalSize += stats.size;
+      }
+    }
+
+    return totalSize;
   }
 
   /**

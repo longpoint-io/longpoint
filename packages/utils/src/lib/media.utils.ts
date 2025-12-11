@@ -1,5 +1,4 @@
 import { SupportedMimeType } from '@longpoint/types';
-import { join } from 'path';
 
 type AssetType = 'IMAGE' | 'VIDEO';
 
@@ -17,43 +16,6 @@ export function mimeTypeToAssetType(mimeType: string): AssetType {
   }
 
   throw new Error(`Unsupported media type: ${mimeType}`);
-}
-
-export interface GetAssetPathOptions {
-  /**
-   * The storage unit ID to use in the path
-   */
-  storageUnitId: string;
-  /**
-   * The prefix to add to the path (e.g., "units")
-   * @default "units"
-   * @example
-   * ```
-   * getAssetPath('123', { storageUnitId: 'unit-abc', prefix: 'units' });
-   * // returns 'units/unit-abc/123'
-   * ```
-   */
-  prefix?: string;
-  /**
-   * The suffix to add to the path
-   * @example
-   * ```
-   * getAssetPath('123', { storageUnitId: 'unit-abc', suffix: 'primary.jpg' });
-   * // returns 'units/unit-abc/123/primary.jpg'
-   * ```
-   */
-  suffix?: string;
-}
-
-/**
- * Gets the storage path for an asset
- * @param assetId The id of the asset
- * @param options The options for the path, including storageUnitId
- * @returns The path in format: {prefix}/{storageUnitId}/{assetId}/{suffix}
- */
-export function getAssetPath(assetId: string, options: GetAssetPathOptions) {
-  const { storageUnitId, prefix = 'units', suffix = '' } = options;
-  return join(prefix, storageUnitId, assetId, suffix);
 }
 
 /**

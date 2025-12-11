@@ -10,5 +10,6 @@ export { RoleModule } from './role';
 export { SearchModule } from './search';
 export { StorageModule } from './storage';
 export { SystemModule } from './system';
+export { TransformModule } from './transform';
 export { UploadModule } from './upload';
 export { UserModule } from './user';

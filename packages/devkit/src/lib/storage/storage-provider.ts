@@ -1,5 +1,6 @@
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Readable } from 'stream';
+import { FilePathStats, GetFileStreamOptions } from './types.js';
 
 export interface StorageProviderArgs<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
@@ -24,16 +25,20 @@ export abstract class StorageProvider {
     path: string,
     body: Readable | Buffer | string
   ): Promise<boolean>;
-  abstract getFileStream(path: string): Promise<Readable>;
+  abstract getFileStream(
+    path: string,
+    options: GetFileStreamOptions
+  ): Promise<Readable>;
   abstract exists(path: string): Promise<boolean>;
   abstract deleteDirectory(path: string): Promise<void>;
+  abstract getPathStats(path: string): Promise<FilePathStats>;
 
   /**
    * Helper method to consume the entire stream and return as Buffer.
    * Use this when you need the full file contents in memory.
    */
   async getFileContents(path: string): Promise<Buffer> {
-    const stream = await this.getFileStream(path);
+    const stream = await this.getFileStream(path, {});
     const chunks: Uint8Array[] = [];
 
     for await (const chunk of stream) {

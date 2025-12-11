@@ -1,5 +1,10 @@
 import { Storage } from '@google-cloud/storage';
-import { StorageProvider, StorageProviderArgs } from '@longpoint/devkit';
+import {
+  FileStats,
+  GetFileStreamOptions,
+  StorageProvider,
+  StorageProviderArgs,
+} from '@longpoint/devkit';
 import { Readable, pipeline } from 'stream';
 import { promisify } from 'util';
 
@@ -64,7 +69,10 @@ export class GoogleCloudStorageProvider extends StorageProvider {
     return true;
   }
 
-  async getFileStream(path: string): Promise<Readable> {
+  async getFileStream(
+    path: string,
+    options?: GetFileStreamOptions
+  ): Promise<Readable> {
     const objectName = this.normalizeGCSKey(path);
     const file = this.storage.bucket(this.bucketName).file(objectName);
 
@@ -73,7 +81,7 @@ export class GoogleCloudStorageProvider extends StorageProvider {
       throw new Error(`Object not found: ${objectName}`);
     }
 
-    return file.createReadStream();
+    return file.createReadStream({ start: options?.start, end: options?.end });
   }
 
   async exists(path: string): Promise<boolean> {
@@ -124,6 +132,61 @@ export class GoogleCloudStorageProvider extends StorageProvider {
         batch.map((fileName) => bucket.file(fileName).delete())
       );
     }
+  }
+
+  async getPathStats(path: string): Promise<FileStats> {
+    const objectName = this.normalizeGCSKey(path);
+    const bucket = this.storage.bucket(this.bucketName);
+    const isExplicitDirectory = path.endsWith('/');
+
+    if (!isExplicitDirectory) {
+      const file = bucket.file(objectName);
+      try {
+        const [metadata] = await file.getMetadata();
+        const size =
+          typeof metadata.size === 'string'
+            ? parseInt(metadata.size, 10)
+            : metadata.size ?? 0;
+        return { size };
+      } catch (error: any) {
+        // If file doesn't exist (404), fall through to directory check
+        if (error.code !== 404) {
+          throw error;
+        }
+      }
+    }
+
+    return this.getDirectoryStats(objectName);
+  }
+
+  private async getDirectoryStats(prefix: string): Promise<FileStats> {
+    // Ensure prefix ends with / for directory-like behavior
+    const directoryPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
+
+    const bucket = this.storage.bucket(this.bucketName);
+    let totalSize = 0;
+    let pageToken: string | undefined;
+
+    do {
+      const [files, response] = await bucket.getFiles({
+        prefix: directoryPrefix,
+        pageToken,
+      });
+
+      for (const file of files) {
+        const fileSize =
+          typeof file.metadata?.size === 'string'
+            ? parseInt(file.metadata.size, 10)
+            : file.metadata?.size || 0;
+        totalSize += fileSize;
+      }
+
+      pageToken = response.pageToken;
+    } while (pageToken);
+
+    return {
+      size: totalSize,
+    };
   }
 
   /**

@@ -5,10 +5,10 @@ import type { Request, Response } from 'express';
 import { SignedUrlParamsDto } from './dtos';
 import { FileDeliveryService } from './services/file-delivery.service';
 
-@Controller('a')
+@Controller('v')
 @Public()
 @ApiExcludeController()
-export class StorageController {
+export class FileDeliveryController {
   constructor(private readonly fileDeliveryService: FileDeliveryService) {}
 
   @Get('*path')

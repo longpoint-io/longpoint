@@ -1,6 +1,10 @@
 import { ConfigSchemaService } from '@/modules/common/services';
 import { StorageProviderRegistryEntry } from '@/modules/plugin/services';
-import { StorageProvider } from '@longpoint/devkit';
+import {
+  FileStats,
+  GetFileStreamOptions,
+  StorageProvider,
+} from '@longpoint/devkit';
 import { Readable } from 'stream';
 import { BaseStorageProviderEntity } from './base-storage-provider.entity';
 
@@ -32,8 +36,11 @@ export class StorageProviderEntity extends BaseStorageProviderEntity {
     return this.pluginInstance.upload(path, body);
   }
 
-  getFileStream(path: string): Promise<Readable> {
-    return this.pluginInstance.getFileStream(path);
+  getFileStream(
+    path: string,
+    options: GetFileStreamOptions = {}
+  ): Promise<Readable> {
+    return this.pluginInstance.getFileStream(path, options);
   }
 
   getFileContents(path: string): Promise<Buffer> {
@@ -46,5 +53,9 @@ export class StorageProviderEntity extends BaseStorageProviderEntity {
 
   deleteDirectory(path: string): Promise<void> {
     return this.pluginInstance.deleteDirectory(path);
+  }
+
+  getPathStats(path: string): Promise<FileStats> {
+    return this.pluginInstance.getPathStats(path);
   }
 }

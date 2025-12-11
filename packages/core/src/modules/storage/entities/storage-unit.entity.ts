@@ -41,12 +41,12 @@ export class StorageUnitEntity {
   private _updatedAt: Date;
   private provider: StorageProviderEntity | null = null;
   private configFromDb: ConfigValues | null;
+  readonly pathPrefix: string;
   private readonly providerId: string;
 
   private readonly prismaService: PrismaService;
   private readonly storageUnitService: StorageUnitService;
   private readonly storageProviderService: StorageProviderService;
-  private readonly pathPrefix: string;
 
   constructor(args: StorageUnitEntityArgs) {
     this.id = args.id;

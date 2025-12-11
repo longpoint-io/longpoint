@@ -13,7 +13,8 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
-    }
+    },
+    "./resource-identifiers": "./src/lib/resource-identifiers.validation.ts"
   },
   "dependencies": {
     "tslib": "^2.3.0"
