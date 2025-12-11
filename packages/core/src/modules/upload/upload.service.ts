@@ -7,13 +7,10 @@ import {
 import { ConfigService, PrismaService } from '@/modules/common/services';
 import { StorageUnitService } from '@/modules/storage';
 import { getAssetVariantPath } from '@/shared/utils/asset.utils';
-import { mimeTypeToAssetType } from '@longpoint/utils/media';
 import { Injectable } from '@nestjs/common';
 import { isAfter } from 'date-fns';
 import { Request } from 'express';
-import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
 import { EventPublisher } from '../event';
-import { UrlSigningService } from '../file-delivery/services/url-signing.service';
 import { StorageProviderEntity } from '../storage/entities';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
 import { TokenExpired } from './upload.errors';
@@ -23,9 +20,7 @@ export class UploadService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly storageUnitService: StorageUnitService,
-    private readonly probeService: MediaProbeService,
     private readonly configService: ConfigService,
-    private readonly urlSigningService: UrlSigningService,
     private readonly eventPublisher: EventPublisher
   ) {}
 
@@ -90,26 +85,7 @@ export class UploadService {
     storageUnitId: string
   ) {
     try {
-      const url = this.urlSigningService.generateSignedUrl(
-        variant.id,
-        variant.entryPoint
-      );
-      const baseUrl = this.configService.get('server.baseUrl');
-      const fullUrl = new URL(url, baseUrl).href;
-
-      const assetType = mimeTypeToAssetType(variant.mimeType);
-
       let variantUpdateData: Prisma.AssetVariantUpdateInput = {};
-
-      if (assetType === 'IMAGE') {
-        const imageProbe = await this.probeService.probeImage(fullUrl);
-        variantUpdateData = {
-          width: imageProbe.width,
-          height: imageProbe.height,
-          aspectRatio: imageProbe.aspectRatio,
-          size: imageProbe.size.bytes,
-        };
-      }
 
       const fileStats = await provider.getPathStats(
         getAssetVariantPath({

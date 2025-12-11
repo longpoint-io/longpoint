@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MediaProbeService } from '../common/services/media-probe/media-probe.service';
 import { EventModule } from '../event';
 import { FileDeliveryModule } from '../file-delivery';
 import { StorageModule } from '../storage';
@@ -12,12 +11,7 @@ import { AssetService } from './services/asset.service';
 @Module({
   imports: [StorageModule, FileDeliveryModule, EventModule],
   controllers: [AssetController, AssetLinkGeneratorController],
-  providers: [
-    AssetService,
-    MediaProbeService,
-    AssetLinkGeneratorService,
-    MediaMetadataListeners,
-  ],
+  providers: [AssetService, AssetLinkGeneratorService, MediaMetadataListeners],
   exports: [AssetService, AssetLinkGeneratorService],
 })
 export class AssetModule {}
