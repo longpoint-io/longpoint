@@ -9,3 +9,4 @@ export { AssetPreview } from './asset-preview';
 export { DeleteAssetDialog } from './delete-asset-dialog';
 export { RenameAssetDialog } from './rename-asset-dialog';
 export { SelectTransformTemplate } from './select-transform-template';
+export { VariantsTab } from './variants-tab';

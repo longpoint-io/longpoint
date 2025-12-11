@@ -6,12 +6,19 @@ import {
   DeleteAssetDialog,
   RenameAssetDialog,
   useAssetDetailsStore,
+  VariantsTab,
   type AssetDetailsStore,
 } from '@/components/asset-details';
 import { useClient } from '@/hooks/common';
 import { Permission } from '@longpoint/types';
 import { Card, CardContent, CardHeader } from '@longpoint/ui/components/card';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@longpoint/ui/components/tabs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -259,10 +266,22 @@ export function AssetDetails() {
         generateVariantMutationPending={generateVariantMutation.isPending}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <AssetPreview asset={media} isVideo={isVideo} />
-        <AssetDetailsPanel asset={media} hasDerivatives={hasDerivatives} />
-      </div>
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="variants">Variants</TabsTrigger>
+        </TabsList>
+        <TabsContent value="details" className="mt-3">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <AssetPreview asset={media} isVideo={isVideo} />
+            <AssetDetailsPanel asset={media} hasDerivatives={hasDerivatives} />
+          </div>
+        </TabsContent>
+        <TabsContent value="variants" className="mt-3">
+          <VariantsTab asset={media} />
+        </TabsContent>
+      </Tabs>
+      <div className="mt-16" />
 
       <RenameAssetDialog
         open={renameDialogOpen}

@@ -63,9 +63,9 @@ export function AssetDetailsHeader({
   const hasDerivatives = asset?.derivatives && asset.derivatives.length > 0;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold">{asset.name}</h2>
+        <h2 className="text-2xl font-bold">{asset.name}</h2>
         <div className="flex items-center gap-2">
           <Popover
             open={addToCollectionOpen}

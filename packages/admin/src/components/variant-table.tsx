@@ -1,33 +1,32 @@
-import { components } from '@longpoint/sdk';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { TableCell, TableRow } from '@longpoint/ui/components/table';
-import { AssetTableRow } from './asset-table-row';
 import { BaseDataTable } from './data-table/base-data-table';
+import { VariantTableRow, type VariantWithType } from './variant-table-row';
 
-export interface AssetTableProps {
-  items: components['schemas']['AssetSummary'][];
+export interface VariantTableProps {
+  items: VariantWithType[];
   isLoading?: boolean;
-  links: Record<string, string>;
   multiSelect?: boolean;
   selectedIds?: Set<string>;
   onSelectionChange?: (selectedIds: Set<string>) => void;
+  onVariantClick?: (variantId: string) => void;
 }
 
-export function AssetTable({
+export function VariantTable({
   items,
   isLoading,
-  links,
   multiSelect = false,
   selectedIds = new Set(),
   onSelectionChange,
-}: AssetTableProps) {
-  const handleRowSelectionChange = (itemId: string, selected: boolean) => {
+  onVariantClick,
+}: VariantTableProps) {
+  const handleRowSelectionChange = (variantId: string, selected: boolean) => {
     if (!onSelectionChange) return;
     const newSelection = new Set(selectedIds);
     if (selected) {
-      newSelection.add(itemId);
+      newSelection.add(variantId);
     } else {
-      newSelection.delete(itemId);
+      newSelection.delete(variantId);
     }
     onSelectionChange(newSelection);
   };
@@ -35,20 +34,21 @@ export function AssetTable({
   const columns = [
     { header: 'Name' },
     { header: 'Type' },
-    { header: 'Updated' },
-    { header: 'Created' },
+    { header: 'Status' },
+    { header: 'Dimensions' },
+    { header: 'Size' },
   ];
 
-  const renderRow = (item: components['schemas']['AssetSummary']) => {
+  const renderRow = (variant: VariantWithType) => {
     return (
-      <AssetTableRow
-        item={item}
-        thumbnailLink={item.type === 'IMAGE' ? links[item.id] : undefined}
+      <VariantTableRow
+        variant={variant}
         multiSelect={multiSelect}
-        selected={selectedIds.has(item.id)}
+        selected={selectedIds.has(variant.id)}
         onSelectChange={(selected) =>
-          handleRowSelectionChange(item.id, selected)
+          handleRowSelectionChange(variant.id, selected)
         }
+        onVariantClick={onVariantClick}
       />
     );
   };
@@ -73,7 +73,10 @@ export function AssetTable({
         <Skeleton className="h-5 w-20" />
       </TableCell>
       <TableCell>
-        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-20" />
       </TableCell>
     </TableRow>
   );
@@ -87,7 +90,7 @@ export function AssetTable({
       multiSelect={multiSelect}
       selectedIds={selectedIds}
       onSelectionChange={onSelectionChange}
-      getItemId={(item) => item.id}
+      getItemId={(variant) => variant.id}
       renderLoadingRow={renderLoadingRow}
     />
   );

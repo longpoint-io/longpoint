@@ -1,46 +1,46 @@
-import { components } from '@longpoint/sdk';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
-import { AssetGridItem } from './asset-grid-item';
 import { BaseDataGrid } from './data-table/base-data-grid';
+import { VariantGridItem } from './variant-grid-item';
+import { type VariantWithType } from './variant-table-row';
 
-export interface AssetGridProps {
-  items: components['schemas']['AssetSummary'][];
+export interface VariantGridProps {
+  items: VariantWithType[];
   isLoading?: boolean;
-  links: Record<string, string>;
   multiSelect?: boolean;
   selectedIds?: Set<string>;
   onSelectionChange?: (selectedIds: Set<string>) => void;
+  onVariantClick?: (variantId: string) => void;
 }
 
-export function AssetGrid({
+export function VariantGrid({
   items,
   isLoading,
-  links,
   multiSelect = false,
   selectedIds = new Set(),
   onSelectionChange,
-}: AssetGridProps) {
-  const handleItemSelectionChange = (itemId: string, selected: boolean) => {
+  onVariantClick,
+}: VariantGridProps) {
+  const handleItemSelectionChange = (variantId: string, selected: boolean) => {
     if (!onSelectionChange) return;
     const newSelection = new Set(selectedIds);
     if (selected) {
-      newSelection.add(itemId);
+      newSelection.add(variantId);
     } else {
-      newSelection.delete(itemId);
+      newSelection.delete(variantId);
     }
     onSelectionChange(newSelection);
   };
 
-  const renderItem = (item: components['schemas']['AssetSummary']) => {
+  const renderItem = (variant: VariantWithType) => {
     return (
-      <AssetGridItem
-        item={item}
-        thumbnailLink={item.type === 'IMAGE' ? links[item.id] : undefined}
+      <VariantGridItem
+        variant={variant}
         multiSelect={multiSelect}
-        selected={selectedIds.has(item.id)}
+        selected={selectedIds.has(variant.id)}
         onSelectChange={(selected) =>
-          handleItemSelectionChange(item.id, selected)
+          handleItemSelectionChange(variant.id, selected)
         }
+        onVariantClick={onVariantClick}
       />
     );
   };
@@ -61,7 +61,7 @@ export function AssetGrid({
       multiSelect={multiSelect}
       selectedIds={selectedIds}
       onSelectionChange={onSelectionChange}
-      getItemId={(item) => item.id}
+      getItemId={(variant) => variant.id}
       gridClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
       renderLoadingItem={renderLoadingItem}
     />
