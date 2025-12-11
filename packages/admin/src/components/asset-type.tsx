@@ -4,7 +4,7 @@ import { enumToTitleCase } from '@longpoint/utils/string';
 import { ImageIcon, VideoIcon } from 'lucide-react';
 
 export interface AssetTypeProps {
-  type: components['schemas']['Asset']['type'];
+  type: components['schemas']['Asset']['type'] | string;
   className?: string;
   showText?: boolean;
   showIcon?: boolean;
@@ -17,13 +17,14 @@ export function AssetType({
   showIcon = true,
 }: AssetTypeProps) {
   const assetType = enumToTitleCase(type);
+  const normalizedType = type.toLowerCase().split('/')[0];
 
   let icon = null;
-  switch (type) {
-    case 'IMAGE':
+  switch (normalizedType) {
+    case 'image':
       icon = <ImageIcon className="h-4 w-4 text-muted-foreground" />;
       break;
-    case 'VIDEO':
+    case 'video':
       icon = <VideoIcon className="h-4 w-4 text-muted-foreground" />;
       break;
     default:
