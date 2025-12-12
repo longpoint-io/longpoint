@@ -1,35 +1,29 @@
 import { ConfigSchemaService } from '@/modules/common/services';
-import { ClassificationProviderRegistryEntry } from '@/modules/plugin/services';
+import { ClassifierRegistryEntry } from '@/modules/plugin/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { ClassifyResult } from '@longpoint/devkit';
-import {
-  ClassificationProvider,
-  ClassifyArgs,
-} from '@longpoint/devkit/classifier';
+import { Classifier, ClassifyArgs } from '@longpoint/devkit/classifier';
 import { parseBytes } from '@longpoint/utils/format';
-import {
-  ClassificationProviderDto,
-  ClassificationProviderSummaryDto,
-} from '../dtos';
+import { ClassifierDto, ClassifierSummaryDto } from '../dtos';
 
-export interface ClassificationProviderEntityArgs {
-  registryEntry: ClassificationProviderRegistryEntry;
-  providerInstance: ClassificationProvider<any>;
+export interface ClassifierEntityArgs {
+  registryEntry: ClassifierRegistryEntry;
+  providerInstance: Classifier<any>;
   configSchemaService: ConfigSchemaService;
 }
 
-export class ClassificationProviderEntity {
+export class ClassifierEntity {
   readonly id: string;
   readonly fullyQualifiedId: string;
   readonly displayName: string;
   readonly description: string | null;
   readonly maxFileSize?: number;
   readonly supportedMimeTypes: string[];
-  private readonly registryEntry: ClassificationProviderRegistryEntry;
-  private readonly providerInstance: ClassificationProvider<any>;
+  private readonly registryEntry: ClassifierRegistryEntry;
+  private readonly providerInstance: Classifier<any>;
   private readonly configSchemaService: ConfigSchemaService;
 
-  constructor(args: ClassificationProviderEntityArgs) {
+  constructor(args: ClassifierEntityArgs) {
     const { contribution, fullyQualifiedId } = args.registryEntry;
     this.id = contribution.displayName ?? args.registryEntry.classifierId;
     this.fullyQualifiedId = fullyQualifiedId;
@@ -62,9 +56,7 @@ export class ClassificationProviderEntity {
   /**
    * Validates and processes the classifier input values.
    */
-  async processInboundClassifierInput(
-    input: ConfigValues = {}
-  ): Promise<ConfigValues> {
+  async processInboundInput(input: ConfigValues = {}): Promise<ConfigValues> {
     const inputSchema = this.classifierInputSchema;
     if (!inputSchema || Object.keys(inputSchema).length === 0) {
       return input;
@@ -78,8 +70,8 @@ export class ClassificationProviderEntity {
     return this.registryEntry.contribution.input ?? {};
   }
 
-  toDto(): ClassificationProviderDto {
-    return new ClassificationProviderDto({
+  toDto(): ClassifierDto {
+    return new ClassifierDto({
       id: this.registryEntry.classifierId,
       fullyQualifiedId: this.fullyQualifiedId,
       displayName: this.displayName,
@@ -91,8 +83,8 @@ export class ClassificationProviderEntity {
     });
   }
 
-  toSummaryDto(): ClassificationProviderSummaryDto {
-    return new ClassificationProviderSummaryDto({
+  toSummaryDto(): ClassifierSummaryDto {
+    return new ClassifierSummaryDto({
       id: this.registryEntry.classifierId,
       fullyQualifiedId: this.fullyQualifiedId,
       displayName: this.displayName,

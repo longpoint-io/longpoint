@@ -4,6 +4,7 @@ import {
 } from '@/components/config-schema';
 import { useClient } from '@/hooks/common/use-client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { components } from '@longpoint/sdk';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Card,
@@ -23,13 +24,15 @@ import { Input } from '@longpoint/ui/components/input';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@longpoint/ui/components/select';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -41,8 +44,8 @@ export function CreateClassifier() {
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const { data: providers, isLoading: providersLoading } = useQuery({
-    queryKey: ['classification-providers'],
-    queryFn: () => client.analysis.listClassificationProviders(),
+    queryKey: ['classifiers'],
+    queryFn: () => client.classifiers.listClassifiers(),
   });
 
   const selectedProvider = providers?.find(
@@ -95,16 +98,16 @@ export function CreateClassifier() {
       // Include dynamic modelInput when present
       const payload: any = {
         ...data,
-        modelId: selectedModelId,
+        classifierId: selectedModelId,
       };
       if (payload.description === '') payload.description = null;
       if (values?.modelInput) {
         payload.modelInput = values.modelInput;
       }
-      const result = await client.analysis.createClassifier(payload);
+      const result = await client.classifiers.createClassifierTemplate(payload);
 
-      toast.success('Classifier created successfully');
-      navigate(`/classifiers/${result.id}`);
+      toast.success('Classifier template created successfully');
+      navigate(`/classifier-templates/${result.id}`);
     } catch (error) {
       toast.error('Failed to create classifier', {
         description:
@@ -115,21 +118,22 @@ export function CreateClassifier() {
     }
   };
 
+  const classifiersByPluginId = useMemo(() => {
+    return providers?.reduce((acc, provider) => {
+      acc[provider.pluginId] = [...(acc[provider.pluginId] || []), provider];
+      return acc;
+    }, {} as Record<string, components['schemas']['ClassifierSummary'][]>);
+  }, [providers]);
+
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <h2 className="text-3xl font-bold">Create Classifier</h2>
+        <h2 className="text-3xl font-bold">Create Classifier Template</h2>
       </div>
 
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <div className="grid gap-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>
-                Name and describe your classifier
-              </CardDescription>
-            </CardHeader>
             <CardContent>
               <FieldGroup>
                 <Controller
@@ -137,16 +141,14 @@ export function CreateClassifier() {
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="classifier-name">
-                        Classifier Name
-                      </FieldLabel>
+                      <FieldLabel htmlFor="template-name">Name</FieldLabel>
                       <Input
                         {...field}
-                        id="classifier-name"
+                        id="template-name"
                         placeholder="general-tagging"
                       />
                       <FieldDescription>
-                        A unique identifier for your classifier (lowercase,
+                        An identifier for the classifier template (lowercase,
                         hyphens only)
                       </FieldDescription>
                       {fieldState.invalid && (
@@ -160,108 +162,107 @@ export function CreateClassifier() {
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="classifier-description">
+                      <FieldLabel htmlFor="template-description">
                         Description
                       </FieldLabel>
                       <Input
                         {...field}
-                        id="classifier-description"
+                        id="template-description"
                         placeholder="Tag general subjects like people, places, and things"
                       />
-                      <FieldDescription>
-                        Optional description of what this classifier does
-                      </FieldDescription>
+
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
                     </Field>
                   )}
                 />
+                {providersLoading ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <Field>
+                    <FieldLabel htmlFor="classifier-model">
+                      Classifier
+                    </FieldLabel>
+                    <Select
+                      value={selectedModelId || undefined}
+                      onValueChange={setSelectedModelId}
+                    >
+                      <SelectTrigger
+                        id="classifier-model"
+                        className="text-left max-w-xs !h-12"
+                      >
+                        <SelectValue placeholder="Select an installed classifier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(classifiersByPluginId || {}).map(
+                          ([pluginId, classifiers]) => (
+                            <SelectGroup key={pluginId}>
+                              <SelectLabel>{pluginId}</SelectLabel>
+                              {classifiers.map((classifier) => (
+                                <SelectItem
+                                  key={classifier.id}
+                                  value={classifier.fullyQualifiedId}
+                                >
+                                  <div className="flex flex-col">
+                                    <span>{classifier.displayName}</span>
+                                    <span className="text-xs text-muted-foreground line-clamp-1">
+                                      {classifier.description}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
               </FieldGroup>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Provider</CardTitle>
-              <CardDescription>
-                Choose the classification provider to use
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {providersLoading ? (
-                <Skeleton className="h-10 w-full" />
-              ) : (
-                <Field>
-                  <FieldLabel htmlFor="classifier-model">
-                    Classification Provider
-                  </FieldLabel>
-                  <Select
-                    value={selectedModelId || undefined}
-                    onValueChange={setSelectedModelId}
-                  >
-                    <SelectTrigger id="classifier-model" className="w-full">
-                      <SelectValue placeholder="Select a classification provider" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {providers?.map((provider) => (
-                        <SelectItem
-                          key={provider.id}
-                          value={provider.fullyQualifiedId}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span>{provider.displayName}</span>
-                            <span className="text-xs text-muted-foreground">
-                              ({provider.pluginId})
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              )}
-            </CardContent>
-          </Card>
-
-          {selectedModelId && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Model Input</CardTitle>
-                <CardDescription>
-                  Provide configuration required by the selected model
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!selectedProvider ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-6 w-48" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-6 w-32" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                ) : (
-                  selectedProvider &&
-                  selectedProvider.classifierInputSchema && (
-                    <ConfigSchemaForm
-                      schema={selectedProvider.classifierInputSchema as any}
-                      control={form.control}
-                      namePrefix="modelInput"
-                      setError={form.setError}
-                      allowImmutableFields={true}
-                    />
-                  )
-                )}
-              </CardContent>
-            </Card>
-          )}
+          {selectedModelId &&
+            selectedProvider &&
+            Object.keys(selectedProvider.classifierInputSchema).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Input</CardTitle>
+                  <CardDescription>
+                    Provide input values for the selected classifier
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!selectedProvider ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-6 w-48" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-6 w-32" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ) : (
+                    selectedProvider &&
+                    selectedProvider.classifierInputSchema && (
+                      <ConfigSchemaForm
+                        schema={selectedProvider.classifierInputSchema as any}
+                        control={form.control}
+                        namePrefix="modelInput"
+                        setError={form.setError}
+                        allowImmutableFields={true}
+                      />
+                    )
+                  )}
+                </CardContent>
+              </Card>
+            )}
         </div>
 
         <div className="flex justify-end gap-4 mt-6">
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/classifiers')}
+            onClick={() => navigate('/classifier-templates')}
           >
             Cancel
           </Button>

@@ -1,18 +1,18 @@
 import { ConfigSchemaService } from '@/modules/common/services';
 import { PluginRegistryService } from '@/modules/plugin/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import { ClassificationProviderArgs } from '@longpoint/devkit/classifier';
+import { ClassifierArgs } from '@longpoint/devkit/classifier';
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
-import { ClassificationProviderNotFound } from '../classifier.errors';
-import { ClassificationProviderEntity } from '../entities/classification-provider.entity';
+import { ClassifierNotFound } from '../classifier.errors';
+import { ClassifierEntity } from '../entities/classifier.entity';
 
 @Injectable()
-export class ClassificationProviderService {
-  private readonly logger = new Logger(ClassificationProviderService.name);
+export class ClassifierService {
+  private readonly logger = new Logger(ClassifierService.name);
   private readonly providerEntityCache = new Map<
     string,
-    ClassificationProviderEntity
+    ClassifierEntity
   >();
 
   constructor(
@@ -22,13 +22,13 @@ export class ClassificationProviderService {
   ) {}
 
   /**
-   * List all installed classification providers.
-   * @returns A list of classification provider entities.
+   * List all installed classifiers.
+   * @returns A list of classifier entities.
    */
-  async listClassificationProviders(): Promise<ClassificationProviderEntity[]> {
+  async listClassifiers(): Promise<ClassifierEntity[]> {
     const registryEntries =
-      this.pluginRegistryService.listClassificationProviders();
-    const providers: ClassificationProviderEntity[] = [];
+      this.pluginRegistryService.listClassifiers();
+    const providers: ClassifierEntity[] = [];
 
     for (const registryEntry of registryEntries) {
       const provider = await this.getProviderEntity(
@@ -43,45 +43,45 @@ export class ClassificationProviderService {
   }
 
   /**
-   * Get a classification provider by its fully qualified ID.
-   * @param fullyQualifiedId - The fully qualified ID of the provider (e.g., 'openai/gpt-5-nano-2025-08-07').
-   * @returns The classification provider entity, or `null` if not found.
+   * Get a classifier by its fully qualified ID.
+   * @param fullyQualifiedId - The fully qualified ID of the classifier (e.g., 'openai/gpt-5-nano-2025-08-07').
+   * @returns The classifier entity, or `null` if not found.
    */
-  async getClassificationProviderById(
+  async getClassifierById(
     fullyQualifiedId: string
-  ): Promise<ClassificationProviderEntity | null> {
+  ): Promise<ClassifierEntity | null> {
     return this.getProviderEntity(fullyQualifiedId);
   }
 
   /**
-   * Get a classification provider by its fully qualified ID and throw an error if it is not found.
-   * @param fullyQualifiedId - The fully qualified ID of the provider.
-   * @returns The classification provider entity.
-   * @throws {ClassificationProviderNotFound} If the provider is not found.
+   * Get a classifier by its fully qualified ID and throw an error if it is not found.
+   * @param fullyQualifiedId - The fully qualified ID of the classifier.
+   * @returns The classifier entity.
+   * @throws {ClassifierNotFound} If the classifier is not found.
    */
-  async getClassificationProviderByIdOrThrow(
+  async getClassifierByIdOrThrow(
     fullyQualifiedId: string
-  ): Promise<ClassificationProviderEntity> {
-    const provider = await this.getClassificationProviderById(fullyQualifiedId);
+  ): Promise<ClassifierEntity> {
+    const provider = await this.getClassifierById(fullyQualifiedId);
     if (!provider) {
-      throw new ClassificationProviderNotFound(fullyQualifiedId);
+      throw new ClassifierNotFound(fullyQualifiedId);
     }
     return provider;
   }
 
   /**
-   * Get or create a provider entity, loading config lazily.
+   * Get or create a classifier entity, loading config lazily.
    */
   private async getProviderEntity(
     fullyQualifiedId: string
-  ): Promise<ClassificationProviderEntity | null> {
+  ): Promise<ClassifierEntity | null> {
     const cached = this.providerEntityCache.get(fullyQualifiedId);
     if (cached) {
       return cached;
     }
 
     const registryEntry =
-      this.pluginRegistryService.getClassificationProviderById(
+      this.pluginRegistryService.getClassifierById(
         fullyQualifiedId
       );
     if (!registryEntry) {
@@ -93,12 +93,12 @@ export class ClassificationProviderService {
       registryEntry.pluginConfig.contributes?.settings
     );
 
-    const providerInstance = new registryEntry.contribution.provider({
+    const providerInstance = new registryEntry.contribution.classifier({
       pluginSettings: pluginSettings ?? {},
       providerId: registryEntry.classifierId,
-    } as ClassificationProviderArgs<any>);
+    } as ClassifierArgs<any>);
 
-    const entity = new ClassificationProviderEntity({
+    const entity = new ClassifierEntity({
       registryEntry,
       providerInstance,
       configSchemaService: this.configSchemaService,

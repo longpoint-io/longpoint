@@ -1,14 +1,14 @@
-model Classifier {
-  id          String          @id @default(cuid(2))
-  name        String          @unique
-  description String?
-  modelId     String
-  modelInput  Json?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  runs        ClassifierRun[]
+model ClassifierTemplate {
+  id           String          @id @default(cuid(2))
+  name         String          @unique
+  description  String?
+  classifierId String
+  modelInput   Json?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  runs         ClassifierRun[]
 
-  @@index([modelId])
+  @@index([classifierId])
 }
 
 model ClassifierRun {
@@ -20,12 +20,12 @@ model ClassifierRun {
   startedAt    DateTime?
   completedAt  DateTime?
 
-  classifierId   String
-  classifier     Classifier   @relation(fields: [classifierId], references: [id], onDelete: Cascade)
-  assetVariantId String
-  assetVariant   AssetVariant @relation(fields: [assetVariantId], references: [id], onDelete: Cascade)
+  classifierTemplateId String
+  classifierTemplate   ClassifierTemplate @relation(fields: [classifierTemplateId], references: [id], onDelete: Cascade)
+  assetVariantId       String
+  assetVariant         AssetVariant       @relation(fields: [assetVariantId], references: [id], onDelete: Cascade)
 
-  @@index([classifierId])
+  @@index([classifierTemplateId])
   @@index([assetVariantId])
   @@index([createdAt])
 }

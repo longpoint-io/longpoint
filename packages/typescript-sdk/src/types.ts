@@ -4,23 +4,6 @@
  */
 
 export interface paths {
-    "/analysis/classification-providers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List classification providers */
-        get: operations["listClassificationProviders"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/analysis/classifiers": {
         parameters: {
             query?: never;
@@ -31,31 +14,11 @@ export interface paths {
         /** List classifiers */
         get: operations["listClassifiers"];
         put?: never;
-        /** Create a classifier */
-        post: operations["createClassifier"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/analysis/classifiers/{classifierId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a classifier */
-        get: operations["getClassifier"];
-        put?: never;
-        post?: never;
-        /** Delete a classifier */
-        delete: operations["deleteClassifier"];
-        options?: never;
-        head?: never;
-        /** Update a classifier */
-        patch: operations["updateClassifier"];
         trace?: never;
     };
     "/asset-links": {
@@ -133,6 +96,43 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/classifier-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List classifier templates */
+        get: operations["listClassifierTemplates"];
+        put?: never;
+        /** Create a classifier template */
+        post: operations["createClassifierTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/classifier-templates/{templateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a classifier template */
+        get: operations["getClassifierTemplate"];
+        put?: never;
+        post?: never;
+        /** Delete a classifier template */
+        delete: operations["deleteClassifierTemplate"];
+        options?: never;
+        head?: never;
+        /** Update a classifier template */
+        patch: operations["updateClassifierTemplate"];
         trace?: never;
     };
     "/collections": {
@@ -887,25 +887,25 @@ export interface components {
              */
             width: number | null;
         };
-        ClassificationProvider: {
-            /** @description The schema for classifier input */
+        Classifier: {
+            /** @description The schema for the classifier input */
             classifierInputSchema: {
                 [key: string]: components["schemas"]["ConfigSchemaValue"];
             };
-            /** @description A brief description of the classification provider */
+            /** @description A brief description of the classifier */
             description: string | null;
             /**
-             * @description The display name of the classification provider
+             * @description The display name of the classifier
              * @example GPT-5 Nano
              */
             displayName: string;
             /**
-             * @description The fully qualified ID of the classification provider
+             * @description The fully qualified ID of the classifier
              * @example openai/gpt-5-nano-2025-08-07
              */
             fullyQualifiedId: string;
             /**
-             * @description The ID of the classification provider
+             * @description The ID of the classifier
              * @example gpt-5-nano-2025-08-07
              */
             id: string;
@@ -915,7 +915,7 @@ export interface components {
              */
             maxFileSize: number | null;
             /**
-             * @description The plugin ID that provides this classification provider
+             * @description The plugin ID that provides this classifier
              * @example openai
              */
             pluginId: string;
@@ -928,49 +928,49 @@ export interface components {
              */
             supportedMimeTypes: string[];
         };
-        ClassificationProviderSummary: {
-            /** @description A brief description of the classification provider */
+        ClassifierSummary: {
+            /** @description A brief description of the classifier */
             description: string | null;
             /**
-             * @description The display name of the classification provider
+             * @description The display name of the classifier
              * @example GPT-5 Nano
              */
             displayName: string;
             /**
-             * @description The fully qualified ID of the classification provider
+             * @description The fully qualified ID of the classifier
              * @example openai/gpt-5-nano-2025-08-07
              */
             fullyQualifiedId: string;
             /**
-             * @description The ID of the classification provider
+             * @description The ID of the classifier
              * @example gpt-5-nano-2025-08-07
              */
             id: string;
             /**
-             * @description The plugin ID that provides this classification provider
+             * @description The plugin ID that provides this classifier
              * @example openai
              */
             pluginId: string;
         };
-        Classifier: {
+        ClassifierTemplate: {
             /**
              * Format: date-time
-             * @description When the classifier was created
+             * @description When the classifier template was created
              * @example 2025-01-01T00:00:00.000Z
              */
             createdAt: string;
             /**
-             * @description A brief description of the classifier
+             * @description A brief description of the classifier template
              * @example Tag general subjects like people, places, and things
              */
             description: Record<string, never> | null;
             /**
-             * @description The ID of the classifier
+             * @description The ID of the classifier template
              * @example sajl1kih6emtwozh8y0zenkj
              */
             id: string;
             /**
-             * @description The input values to use for the model
+             * @description The input values to use for the classifier
              * @example {
              *       "name": "John Doe"
              *     }
@@ -990,46 +990,46 @@ export interface components {
                 [key: string]: components["schemas"]["ConfigSchemaValue"];
             };
             /**
-             * @description The name of the classifier
+             * @description The name of the classifier template
              * @example general-tagging
              */
             name: string;
-            /** @description The classification provider used by the classifier */
-            provider: components["schemas"]["ClassificationProviderSummary"];
+            /** @description The classifier used by the classifier template */
+            provider: components["schemas"]["ClassifierSummary"];
             /**
              * Format: date-time
-             * @description When the classifier was last updated
+             * @description When the classifier template was last updated
              * @example 2025-01-01T00:00:00.000Z
              */
             updatedAt: string;
         };
-        ClassifierSummary: {
+        ClassifierTemplateSummary: {
             /**
              * Format: date-time
-             * @description When the classifier was created
+             * @description When the classifier template was created
              * @example 2025-01-01T00:00:00.000Z
              */
             createdAt: string;
             /**
-             * @description A brief description of the classifier
+             * @description A brief description of the classifier template
              * @example Tag general subjects like people, places, and things
              */
             description: Record<string, never> | null;
             /**
-             * @description The ID of the classifier
+             * @description The ID of the classifier template
              * @example sajl1kih6emtwozh8y0zenkj
              */
             id: string;
             /**
-             * @description The name of the classifier
+             * @description The name of the classifier template
              * @example general-tagging
              */
             name: string;
-            /** @description The classification provider used by the classifier */
-            provider: components["schemas"]["ClassificationProviderSummary"];
+            /** @description The classifier used by the classifier template */
+            provider: components["schemas"]["ClassifierSummary"];
             /**
              * Format: date-time
-             * @description When the classifier was last updated
+             * @description When the classifier template was last updated
              * @example 2025-01-01T00:00:00.000Z
              */
             updatedAt: string;
@@ -1252,26 +1252,26 @@ export interface components {
              */
             url: string;
         };
-        CreateClassifier: {
+        CreateClassifierTemplate: {
             /**
-             * @description A brief description of the classifier
+             * @description The ID of the classifier to use for the classifier template
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            classifierId: string;
+            /**
+             * @description A brief description of the classifier template
              * @example Tag general subjects like people, places, and things
              */
             description: Record<string, never> | null;
             /**
-             * @description The ID of the model to use for the classifier
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            modelId: string;
-            /**
-             * @description The input values to use for the model
+             * @description The input values to use for the classifier
              * @example {
              *       "name": "John Doe"
              *     }
              */
             modelInput?: Record<string, never>;
             /**
-             * @description The name of the classifier
+             * @description The name of the classifier template
              * @example general-tagging
              */
             name: string;
@@ -2059,26 +2059,26 @@ export interface components {
              */
             name?: string;
         };
-        UpdateClassifier: {
+        UpdateClassifierTemplate: {
             /**
-             * @description A brief description of the classifier
+             * @description The ID of the classifier to use for the classifier template
+             * @example anthropic/claude-haiku-4-5-20251001
+             */
+            classifierId?: string;
+            /**
+             * @description A brief description of the classifier template
              * @example Tag general subjects like people, places, and things
              */
             description?: Record<string, never> | null;
             /**
-             * @description The ID of the model to use for the classifier
-             * @example anthropic/claude-haiku-4-5-20251001
-             */
-            modelId?: string;
-            /**
-             * @description The input values to use for the model
+             * @description The input values to use for the classifier
              * @example {
              *       "name": "John Doe"
              *     }
              */
             modelInput?: Record<string, never>;
             /**
-             * @description The name of the classifier
+             * @description The name of the classifier template
              * @example general-tagging
              */
             name?: string;
@@ -2348,25 +2348,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    listClassificationProviders: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClassificationProvider"][];
-                };
-            };
-        };
-    };
     listClassifiers: {
         parameters: {
             query?: never;
@@ -2381,150 +2362,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ClassifierSummary"][];
-                };
-            };
-        };
-    };
-    createClassifier: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateClassifier"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Classifier"];
-                };
-            };
-        };
-    };
-    getClassifier: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                classifierId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Classifier"];
-                };
-            };
-            /** @description The classifier was not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "Classifier with id ukt4084q1kaqmsq74f2fxg43 not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    deleteClassifier: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                classifierId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The classifier was deleted */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description The classifier was not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "Classifier with id ukt4084q1kaqmsq74f2fxg43 not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
-                };
-            };
-        };
-    };
-    updateClassifier: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                classifierId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateClassifier"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Classifier"];
-                };
-            };
-            /** @description The classifier was not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "errorCode": "RESOURCE_NOT_FOUND",
-                     *       "messages": [
-                     *         "Classifier with id ukt4084q1kaqmsq74f2fxg43 not found"
-                     *       ]
-                     *     } */
-                    "application/json": {
-                        errorCode?: string;
-                        messages?: string[];
-                    };
+                    "application/json": components["schemas"]["Classifier"][];
                 };
             };
         };
@@ -2760,6 +2598,168 @@ export interface operations {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Asset with id mbjq36xe6397dsi6x9nq4ghc not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    listClassifierTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassifierTemplateSummary"][];
+                };
+            };
+        };
+    };
+    createClassifierTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClassifierTemplate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassifierTemplate"];
+                };
+            };
+        };
+    };
+    getClassifierTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassifierTemplate"];
+                };
+            };
+            /** @description The classifier template was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "ClassifierTemplate with id ukt4084q1kaqmsq74f2fxg43 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteClassifierTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The classifier template was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The classifier template was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "ClassifierTemplate with id ukt4084q1kaqmsq74f2fxg43 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateClassifierTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateClassifierTemplate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassifierTemplate"];
+                };
+            };
+            /** @description The classifier template was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "ClassifierTemplate with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
                      *     } */
                     "application/json": {

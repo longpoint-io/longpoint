@@ -23,7 +23,9 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export function ClassifierDetail() {
-  const { classifierId } = useParams<{ classifierId: string }>();
+  const { classifierTemplateId } = useParams<{
+    classifierTemplateId: string;
+  }>();
   const client = useClient();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
@@ -31,13 +33,14 @@ export function ClassifierDetail() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
-    data: classifier,
+    data: classifierTemplate,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['classifier', classifierId],
-    queryFn: () => client.analysis.getClassifier(classifierId!),
-    enabled: !!classifierId,
+    queryKey: ['classifier-template', classifierTemplateId],
+    queryFn: () =>
+      client.classifiers.getClassifierTemplate(classifierTemplateId!),
+    enabled: !!classifierTemplateId,
   });
 
   if (isLoading) {
@@ -60,16 +63,19 @@ export function ClassifierDetail() {
     );
   }
 
-  if (error || !classifier) {
+  if (error || !classifierTemplate) {
     return (
       <div className="space-y-8">
-        <Button variant="ghost" onClick={() => navigate('/classifiers')}>
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/classifier-templates')}
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Classifiers
+          Back to Classifier Templates
         </Button>
         <div className="text-center py-12">
           <p className="text-destructive">
-            Failed to load classifier or classifier not found
+            Failed to load classifier template or classifier template not found
           </p>
         </div>
       </div>
@@ -83,10 +89,10 @@ export function ClassifierDetail() {
           <ScanSearchIcon className="h-6 w-6 text-muted-foreground mt-2" />
           <div>
             {' '}
-            <h2 className="text-3xl font-bold">{classifier.name}</h2>
-            {classifier.description && (
+            <h2 className="text-3xl font-bold">{classifierTemplate.name}</h2>
+            {classifierTemplate.description && (
               <p className="text-muted-foreground mt-2">
-                {String(classifier.description)}
+                {String(classifierTemplate.description)}
               </p>
             )}
           </div>
@@ -105,40 +111,38 @@ export function ClassifierDetail() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Provider Information</CardTitle>
-            <CardDescription>
-              Details about the classification provider used
-            </CardDescription>
+            <CardTitle>Classifier Information</CardTitle>
+            <CardDescription>Details about the classifier used</CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
               <Field>
-                <FieldLabel>Provider Name</FieldLabel>
+                <FieldLabel>Classifier Name</FieldLabel>
                 <p className="text-sm">
-                  {String(classifier.provider.displayName)}
+                  {String(classifierTemplate.provider.displayName)}
                 </p>
-                {classifier.provider.description && (
+                {classifierTemplate.provider.description && (
                   <FieldDescription>
-                    {String(classifier.provider.description)}
+                    {String(classifierTemplate.provider.description)}
                   </FieldDescription>
                 )}
               </Field>
               <Field>
-                <FieldLabel>Provider ID</FieldLabel>
+                <FieldLabel>Classifier ID</FieldLabel>
                 <p className="text-sm font-mono text-muted-foreground">
-                  {String(classifier.provider.id)}
+                  {String(classifierTemplate.provider.id)}
                 </p>
               </Field>
               <Field>
                 <FieldLabel>Fully Qualified ID</FieldLabel>
                 <p className="text-sm font-mono text-muted-foreground">
-                  {String(classifier.provider.fullyQualifiedId)}
+                  {String(classifierTemplate.provider.fullyQualifiedId)}
                 </p>
               </Field>
               <Field>
                 <FieldLabel>Plugin</FieldLabel>
                 <p className="text-sm">
-                  {String(classifier.provider.pluginId)}
+                  {String(classifierTemplate.provider.pluginId)}
                 </p>
               </Field>
             </FieldGroup>
@@ -157,7 +161,7 @@ export function ClassifierDetail() {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {new Date(classifier.createdAt).toLocaleString()}
+                    {new Date(classifierTemplate.createdAt).toLocaleString()}
                   </span>
                 </div>
               </Field>
@@ -166,7 +170,7 @@ export function ClassifierDetail() {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {new Date(classifier.updatedAt).toLocaleString()}
+                    {new Date(classifierTemplate.updatedAt).toLocaleString()}
                   </span>
                 </div>
               </Field>
@@ -175,7 +179,7 @@ export function ClassifierDetail() {
         </Card>
       </div>
 
-      {Object.keys(classifier.modelInputSchema || {}).length > 0 && (
+      {Object.keys(classifierTemplate.modelInputSchema || {}).length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Configuration Schema</CardTitle>
@@ -183,7 +187,7 @@ export function ClassifierDetail() {
           </CardHeader>
           <CardContent>
             <FieldGroup>
-              {Object.entries(classifier.modelInputSchema).map(
+              {Object.entries(classifierTemplate.modelInputSchema).map(
                 ([key, field]) => (
                   <Field key={key}>
                     <FieldLabel>
@@ -209,8 +213,8 @@ export function ClassifierDetail() {
       )}
 
       <DeleteClassifierDialog
-        classifierId={classifier.id}
-        classifierName={classifier.name}
+        classifierId={classifierTemplate.id}
+        classifierName={classifierTemplate.name}
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
       />

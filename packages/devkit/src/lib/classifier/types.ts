@@ -1,18 +1,13 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import {
-  ClassificationProvider,
-  ClassificationProviderArgs,
-} from './classification-provider.js';
+import { Classifier, ClassifierArgs } from './classifier.js';
 
 export interface ClassifierContribution<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
 > {
   /**
-   * Classification provider implementation
+   * Classifier implementation
    */
-  provider: new (
-    args: ClassificationProviderArgs<T>
-  ) => ClassificationProvider<T>;
+  classifier: new (args: ClassifierArgs<T>) => Classifier<T>;
   /**
    * A display name for the classifier.
    */

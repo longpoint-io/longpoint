@@ -1,12 +1,12 @@
 import {
-  ClassificationProvider,
+  Classifier,
   ClassifyArgs,
   ClassifyResult,
   LongpointPluginError,
 } from '@longpoint/devkit';
 import { FFprobeCommand } from '../lib/ffmpeg.js';
 
-export default class MetadataExtractor extends ClassificationProvider {
+export default class MetadataExtractor extends Classifier {
   async classify(args: ClassifyArgs): Promise<ClassifyResult> {
     const { source } = args;
 

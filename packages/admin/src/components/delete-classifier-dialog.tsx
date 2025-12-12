@@ -32,15 +32,15 @@ export function DeleteClassifierDialog({
   const navigate = useNavigate();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.analysis.deleteClassifier(classifierId),
+    mutationFn: () => client.classifiers.deleteClassifierTemplate(classifierId),
     onSuccess: () => {
-      toast.success('Classifier deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['classifiers'] });
+      toast.success('Classifier template deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['classifier-templates'] });
       onOpenChange(false);
-      navigate('/classifiers');
+      navigate('/classifier-templates');
     },
     onError: (error) => {
-      toast.error('Failed to delete classifier', {
+      toast.error('Failed to delete classifier template', {
         description:
           error instanceof Error
             ? error.message
@@ -59,9 +59,9 @@ export function DeleteClassifierDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Classifier</DialogTitle>
+          <DialogTitle>Delete Classifier Template</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the classifier{' '}
+            Are you sure you want to delete the classifier template{' '}
             <span className="font-semibold">{classifierName}</span>? This action
             cannot be undone.
           </DialogDescription>

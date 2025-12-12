@@ -20,8 +20,7 @@ interface BaseContributionRegistryEntry {
   fullyQualifiedId: string;
   pluginConfig: LongpointPluginConfig<any>;
 }
-export interface ClassificationProviderRegistryEntry
-  extends BaseContributionRegistryEntry {
+export interface ClassifierRegistryEntry extends BaseContributionRegistryEntry {
   classifierId: string;
   contribution: ClassifierContribution<any>;
 }
@@ -54,9 +53,9 @@ export interface PluginRegistryEntry {
 @Injectable()
 export class PluginRegistryService implements OnModuleInit {
   private readonly logger = new Logger(PluginRegistryService.name);
-  private readonly classificationProviderRegistry = new Map<
+  private readonly classifierRegistry = new Map<
     string,
-    ClassificationProviderRegistryEntry
+    ClassifierRegistryEntry
   >();
   private readonly vectorProviderRegistry = new Map<
     string,
@@ -76,22 +75,20 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
-   * Get all classification providers.
-   * @returns Array of classification provider registry entries
+   * Get all classifiers.
+   * @returns Array of classifier registry entries
    */
-  listClassificationProviders(): ClassificationProviderRegistryEntry[] {
-    return Array.from(this.classificationProviderRegistry.values());
+  listClassifiers(): ClassifierRegistryEntry[] {
+    return Array.from(this.classifierRegistry.values());
   }
 
   /**
-   * Get a classification provider by its fully qualified ID (e.g., 'openai/gpt-5-nano-2025-08-07').
-   * @param id - The fully qualified classification provider ID
-   * @returns The classification provider registry entry or null if not found
+   * Get a classifier by its fully qualified ID (e.g., 'openai/gpt-5-nano-2025-08-07').
+   * @param id - The fully qualified classifier ID
+   * @returns The classifier registry entry or null if not found
    */
-  getClassificationProviderById(
-    id: string
-  ): ClassificationProviderRegistryEntry | null {
-    return this.classificationProviderRegistry.get(id) || null;
+  getClassifierById(id: string): ClassifierRegistryEntry | null {
+    return this.classifierRegistry.get(id) || null;
   }
 
   /**
@@ -152,8 +149,8 @@ export class PluginRegistryService implements OnModuleInit {
    * @returns The plugin registry entry or null if not found
    */
   getPluginById(pluginId: string): PluginRegistryEntry | null {
-    // Check classification providers
-    for (const entry of this.classificationProviderRegistry.values()) {
+    // Check classifiers
+    for (const entry of this.classifierRegistry.values()) {
       if (entry.pluginId === pluginId) {
         return {
           pluginId: entry.pluginId,
@@ -211,8 +208,8 @@ export class PluginRegistryService implements OnModuleInit {
   listPlugins(): PluginRegistryEntry[] {
     const pluginMap = new Map<string, PluginRegistryEntry>();
 
-    // Add classification provider plugins
-    for (const entry of this.classificationProviderRegistry.values()) {
+    // Add classifier plugins
+    for (const entry of this.classifierRegistry.values()) {
       if (!pluginMap.has(entry.pluginId)) {
         pluginMap.set(entry.pluginId, {
           pluginId: entry.pluginId,
@@ -305,9 +302,7 @@ export class PluginRegistryService implements OnModuleInit {
     }
 
     this.logger.log('Contributions:');
-    this.logger.log(
-      `  ${this.classificationProviderRegistry.size} classification providers`
-    );
+    this.logger.log(`  ${this.classifierRegistry.size} classifiers`);
     this.logger.log(`  ${this.vectorProviderRegistry.size} vector providers`);
     this.logger.log(`  ${this.storageProviderRegistry.size} storage providers`);
     this.logger.log(`  ${this.transformerRegistry.size} transformers`);
@@ -372,14 +367,14 @@ export class PluginRegistryService implements OnModuleInit {
       icon: processedIcon,
     };
 
-    // Extract classification providers
+    // Extract classifiers
     if (pluginConfig.contributes?.classifiers) {
       for (const [classifierId, contribution] of Object.entries(
         pluginConfig.contributes.classifiers
       )) {
         const fullyQualifiedId = `${pluginId}/${classifierId}`;
 
-        this.classificationProviderRegistry.set(fullyQualifiedId, {
+        this.classifierRegistry.set(fullyQualifiedId, {
           packageName,
           packagePath,
           pluginId,
@@ -390,7 +385,7 @@ export class PluginRegistryService implements OnModuleInit {
         });
 
         this.logger.debug(
-          `Loaded classification provider: ${fullyQualifiedId} (${packageName})`
+          `Loaded classifier: ${fullyQualifiedId} (${packageName})`
         );
       }
     }

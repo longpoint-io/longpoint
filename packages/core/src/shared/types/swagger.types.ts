@@ -1,5 +1,5 @@
 export const SdkTag = {
-  Analysis: 'analysis',
+  Classifiers: 'classifiers',
   Assets: 'assets',
   Collections: 'collections',
   Plugins: 'plugins',

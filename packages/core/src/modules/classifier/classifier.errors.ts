@@ -18,8 +18,18 @@ export const ApiClassifierNotFoundResponse = () =>
     })
   );
 
-export class ClassificationProviderNotFound extends ResourceNotFound {
+export class ClassifierTemplateNotFound extends ResourceNotFound {
   constructor(id: string) {
-    super('ClassificationProvider', id);
+    super('ClassifierTemplate', id);
   }
 }
+export const classifierTemplateNotFoundDoc = apiErrorDoc(
+  new ClassifierTemplateNotFound('ukt4084q1kaqmsq74f2fxg43')
+);
+export const ApiClassifierTemplateNotFoundResponse = () =>
+  applyDecorators(
+    ApiNotFoundResponse({
+      description: 'The classifier template was not found',
+      ...classifierTemplateNotFoundDoc,
+    })
+  );
