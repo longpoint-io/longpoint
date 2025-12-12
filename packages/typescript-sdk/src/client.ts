@@ -11,7 +11,7 @@ export interface ClientConfig {
 export class Longpoint {
   private httpClient: AxiosInstance;
   plugins: PluginsClient;
-  analysis: AnalysisClient;
+  classifiers: ClassifiersClient;
   assets: AssetsClient;
   storage: StorageClient;
   collections: CollectionsClient;
@@ -42,7 +42,7 @@ export class Longpoint {
     );
 
     this.plugins = new PluginsClient(this.httpClient);
-    this.analysis = new AnalysisClient(this.httpClient);
+    this.classifiers = new ClassifiersClient(this.httpClient);
     this.assets = new AssetsClient(this.httpClient);
     this.storage = new StorageClient(this.httpClient);
     this.collections = new CollectionsClient(this.httpClient);
@@ -84,60 +84,60 @@ class PluginsClient {
   }
 }
 
-class AnalysisClient {
+class ClassifiersClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * Create a classifier
+   * List classifiers
    */
-    async createClassifier(data: components['schemas']['CreateClassifier']): Promise<components['schemas']['Classifier']> {
+    async listClassifiers(): Promise<components['schemas']['Classifier'][]> {
         const url = `analysis/classifiers`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Create a classifier template
+   */
+    async createClassifierTemplate(data: components['schemas']['CreateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
+        const url = `classifier-templates`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
 
     /**
-   * List classifiers
+   * List classifier templates
    */
-    async listClassifiers(): Promise<components['schemas']['ClassifierSummary'][]> {
-        const url = `analysis/classifiers`;
+    async listClassifierTemplates(): Promise<components['schemas']['ClassifierTemplateSummary'][]> {
+        const url = `classifier-templates`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Get a classifier
+   * Get a classifier template
    */
-    async getClassifier(classifierId: string): Promise<components['schemas']['Classifier']> {
-        const url = `analysis/classifiers/${encodeURIComponent(String(classifierId))}`;
+    async getClassifierTemplate(templateId: string): Promise<components['schemas']['ClassifierTemplate']> {
+        const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Update a classifier
+   * Update a classifier template
    */
-    async updateClassifier(classifierId: string, data: components['schemas']['UpdateClassifier']): Promise<components['schemas']['Classifier']> {
-        const url = `analysis/classifiers/${encodeURIComponent(String(classifierId))}`;
+    async updateClassifierTemplate(templateId: string, data: components['schemas']['UpdateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
+        const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
 
     /**
-   * Delete a classifier
+   * Delete a classifier template
    */
-    async deleteClassifier(classifierId: string): Promise<void> {
-        const url = `analysis/classifiers/${encodeURIComponent(String(classifierId))}`;
+    async deleteClassifierTemplate(templateId: string): Promise<void> {
+        const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.delete(url);
-        return response.data;
-  }
-
-    /**
-   * List classification providers
-   */
-    async listClassificationProviders(): Promise<components['schemas']['ClassificationProvider'][]> {
-        const url = `analysis/classification-providers`;
-        const response = await this.httpClient.get(url);
         return response.data;
   }
 }

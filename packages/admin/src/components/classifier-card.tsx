@@ -10,7 +10,7 @@ import {
 import { Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type ClassifierSummary = components['schemas']['ClassifierSummary'];
+type ClassifierSummary = components['schemas']['ClassifierTemplateSummary'];
 
 interface ClassifierCardProps {
   classifier: ClassifierSummary;
@@ -25,7 +25,7 @@ export function ClassifierCard({ classifier }: ClassifierCardProps) {
         <CardTitle className="text-lg">{classifier.name}</CardTitle>
       </CardHeader>
       <CardContent
-        onClick={() => navigate(`/classifiers/${classifier.id}`)}
+        onClick={() => navigate(`/classifier-templates/${classifier.id}`)}
         className="space-y-3"
       >
         {/* {classifier.description && (
@@ -48,7 +48,7 @@ export function ClassifierCard({ classifier }: ClassifierCardProps) {
           className="w-full"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/classifiers/${classifier.id}`);
+            navigate(`/classifier-templates/${classifier.id}`);
           }}
         >
           View Details

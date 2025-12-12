@@ -1,5 +1,5 @@
 import { llmFieldCapture, LongpointPluginConfig } from '@longpoint/devkit';
-import { OpenAIClassificationProvider } from './openai-classification-provider.js';
+import { OpenAIClassifier } from './openai-classifier.js';
 import { OpenAIPluginSettings, settings } from './settings.js';
 
 export default {
@@ -10,7 +10,7 @@ export default {
     settings,
     classifiers: {
       'gpt-5-nano-2025-08-07': {
-        provider: OpenAIClassificationProvider,
+        classifier: OpenAIClassifier,
         displayName: 'GPT-5 Nano',
         description: 'The smallest and fastest model in the GPT-5 family',
         input: llmFieldCapture,

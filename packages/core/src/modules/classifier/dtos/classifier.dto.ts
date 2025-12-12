@@ -1,59 +1,63 @@
-import { SelectedClassifier } from '@/modules/classifier/classifier.selectors';
+import { ConfigSchemaValueDto } from '@/shared/dtos';
 import {
-  ConfigSchemaItemsDto,
-  ConfigSchemaValueDto,
   type ConfigSchemaForDto,
-} from '@/shared/dtos';
-import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import { IsResourceName } from '@longpoint/validations/resource-identifiers';
-import {
-  ApiExtraModels,
-  ApiProperty,
-  ApiSchema,
-  getSchemaPath,
-} from '@nestjs/swagger';
-import { IsObject, IsOptional, IsString } from 'class-validator';
-import { ClassificationProviderSummaryDto } from './classification-provider-summary.dto';
+  toConfigSchemaForDto,
+} from '@/shared/dtos/config-schema';
+import { ConfigSchemaDefinition } from '@longpoint/config-schema';
+import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 
-export interface ClassifierParams extends Omit<SelectedClassifier, 'modelId'> {
-  provider: ClassificationProviderSummaryDto;
-  modelInputSchema: ConfigSchemaDefinition;
+export interface ClassifierParams {
+  id: string;
+  fullyQualifiedId: string;
+  displayName: string;
+  description?: string | null;
+  supportedMimeTypes: string[];
+  maxFileSize?: number;
+  classifierInputSchema: ConfigSchemaDefinition;
+  pluginId: string;
 }
 
 @ApiSchema({ name: 'Classifier' })
-@ApiExtraModels(ConfigSchemaValueDto, ConfigSchemaItemsDto)
 export class ClassifierDto {
   @ApiProperty({
     description: 'The ID of the classifier',
-    example: 'sajl1kih6emtwozh8y0zenkj',
+    example: 'gpt-5-nano-2025-08-07',
   })
   id: string;
 
-  @IsResourceName('classifier')
   @ApiProperty({
-    description: 'The name of the classifier',
-    example: 'general-tagging',
+    description: 'The fully qualified ID of the classifier',
+    example: 'openai/gpt-5-nano-2025-08-07',
   })
-  name: string;
+  fullyQualifiedId: string;
+
+  @ApiProperty({
+    description: 'The display name of the classifier',
+    example: 'GPT-5 Nano',
+  })
+  displayName: string;
 
   @ApiProperty({
     description: 'A brief description of the classifier',
-    example: 'Tag general subjects like people, places, and things',
+    type: 'string',
     nullable: true,
   })
-  @IsString()
-  @IsOptional()
   description: string | null;
 
-  @IsObject()
-  @IsOptional()
   @ApiProperty({
-    description: 'The input values to use for the model',
-    example: {
-      name: 'John Doe',
-    },
+    description: 'Supported MIME types',
+    type: [String],
+    example: ['image/jpeg', 'image/png'],
   })
-  modelInput?: ConfigValues | null;
+  supportedMimeTypes: string[];
+
+  @ApiProperty({
+    description: 'Maximum file size in bytes',
+    example: 52428800,
+    nullable: true,
+    type: 'number',
+  })
+  maxFileSize: number | null;
 
   @ApiProperty({
     description: 'The schema for the classifier input',
@@ -61,48 +65,25 @@ export class ClassifierDto {
     additionalProperties: {
       $ref: getSchemaPath(ConfigSchemaValueDto),
     },
-    example: {
-      name: {
-        label: 'Name',
-        type: 'string',
-        required: true,
-      },
-    },
   })
-  modelInputSchema: ConfigSchemaForDto;
+  classifierInputSchema: ConfigSchemaForDto;
 
   @ApiProperty({
-    description: 'The classification provider used by the classifier',
-    type: ClassificationProviderSummaryDto,
+    description: 'The plugin ID that provides this classifier',
+    example: 'openai',
   })
-  provider: ClassificationProviderSummaryDto;
-
-  @ApiProperty({
-    description: 'When the classifier was created',
-    example: '2025-01-01T00:00:00.000Z',
-  })
-  createdAt: Date;
-
-  @ApiProperty({
-    description: 'When the classifier was last updated',
-    example: '2025-01-01T00:00:00.000Z',
-  })
-  updatedAt: Date;
+  pluginId: string;
 
   constructor(data: ClassifierParams) {
     this.id = data.id;
-    this.name = data.name;
-    this.description = data.description;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
-    this.modelInput = data.modelInput as ConfigValues | null;
-    this.provider = data.provider;
-    this.modelInputSchema = Object.entries(data.modelInputSchema).reduce(
-      (acc, [key, value]) => {
-        acc[key] = new ConfigSchemaValueDto(value);
-        return acc;
-      },
-      {} as ConfigSchemaForDto
+    this.fullyQualifiedId = data.fullyQualifiedId;
+    this.displayName = data.displayName;
+    this.description = data.description ?? null;
+    this.supportedMimeTypes = data.supportedMimeTypes;
+    this.maxFileSize = data.maxFileSize ?? null;
+    this.classifierInputSchema = toConfigSchemaForDto(
+      data.classifierInputSchema
     );
+    this.pluginId = data.pluginId;
   }
 }

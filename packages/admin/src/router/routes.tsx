@@ -201,7 +201,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/classifiers"
+        path="/classifier-templates"
         element={
           <SetupGuard>
             <AuthGuard>
@@ -215,7 +215,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/classifiers/create"
+        path="/classifier-templates/create"
         element={
           <SetupGuard>
             <AuthGuard>
@@ -229,7 +229,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/classifiers/:classifierId"
+        path="/classifier-templates/:classifierTemplateId"
         element={
           <SetupGuard>
             <AuthGuard>

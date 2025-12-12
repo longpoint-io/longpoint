@@ -7,9 +7,6 @@
       "path": "../../config-schema"
     },
     {
-      "path": "../../types"
-    },
-    {
       "path": "../../devkit"
     },
     {

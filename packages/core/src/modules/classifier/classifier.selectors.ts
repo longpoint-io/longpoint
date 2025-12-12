@@ -5,7 +5,7 @@ export const selectClassifierShort = () => {
     id: true,
     name: true,
     description: true,
-  } satisfies Prisma.ClassifierSelect;
+  } satisfies Prisma.ClassifierTemplateSelect;
 };
 
 export const selectClassifierSummary = () => {
@@ -13,18 +13,18 @@ export const selectClassifierSummary = () => {
     ...selectClassifierShort(),
     createdAt: true,
     updatedAt: true,
-    modelId: true,
-  } satisfies Prisma.ClassifierSelect;
+    classifierId: true,
+  } satisfies Prisma.ClassifierTemplateSelect;
 };
 
 export const selectClassifier = () => {
   return {
     ...selectClassifierSummary(),
     modelInput: true,
-  } satisfies Prisma.ClassifierSelect;
+  } satisfies Prisma.ClassifierTemplateSelect;
 };
 
-export type SelectedClassifier = Prisma.ClassifierGetPayload<{
+export type SelectedClassifier = Prisma.ClassifierTemplateGetPayload<{
   select: ReturnType<typeof selectClassifier>;
 }>;
 
@@ -37,7 +37,7 @@ export const selectClassifierRun = () => {
     createdAt: true,
     startedAt: true,
     completedAt: true,
-    classifier: {
+    classifierTemplate: {
       select: selectClassifierShort(),
     },
   } satisfies Prisma.ClassifierRunSelect;

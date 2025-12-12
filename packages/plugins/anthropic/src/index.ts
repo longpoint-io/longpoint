@@ -1,5 +1,5 @@
 import { llmFieldCapture, LongpointPluginConfig } from '@longpoint/devkit';
-import { ClaudeClassificationProvider } from './claude-classification-provider.js';
+import { ClaudeClassifier } from './claude-classifier.js';
 import { AnthropicPluginSettings, settings } from './settings.js';
 
 export default {
@@ -10,7 +10,7 @@ export default {
     settings,
     classifiers: {
       'claude-haiku-4-5-20251001': {
-        provider: ClaudeClassificationProvider,
+        classifier: ClaudeClassifier,
         displayName: 'Claude Haiku 4.5',
         description: 'Fastest for quick tasks',
         maxFileSize: '5MB',
@@ -24,7 +24,7 @@ export default {
         input: llmFieldCapture,
       },
       'claude-sonnet-4-5-20250929': {
-        provider: ClaudeClassificationProvider,
+        classifier: ClaudeClassifier,
         displayName: 'Claude Sonnet 4.5',
         description: 'Smartest for everyday tasks',
         supportedMimeTypes: [

@@ -1,15 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk';
 import {
   AssetSource,
-  ClassificationProvider,
-  ClassificationProviderArgs,
+  Classifier,
+  ClassifierArgs,
   ClassifyArgs,
   LLMFieldCaptureInputValues,
 } from '@longpoint/devkit';
 import { AnthropicPluginSettings } from './settings.js';
 
-export class ClaudeClassificationProvider extends ClassificationProvider<AnthropicPluginSettings> {
-  constructor(args: ClassificationProviderArgs<AnthropicPluginSettings>) {
+export class ClaudeClassifier extends Classifier<AnthropicPluginSettings> {
+  constructor(args: ClassifierArgs<AnthropicPluginSettings>) {
     super(args);
   }
 

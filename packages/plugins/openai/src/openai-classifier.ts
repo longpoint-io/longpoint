@@ -1,23 +1,23 @@
 import {
-  ClassificationProvider,
-  ClassificationProviderArgs,
+  Classifier,
+  ClassifierArgs,
   ClassifyArgs,
+  ClassifyResult,
   LLMFieldCaptureInputValues,
 } from '@longpoint/devkit/classifier';
-import { JsonObject } from '@longpoint/types';
 import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod.mjs';
 import z from 'zod';
 import { OpenAIPluginSettings } from './settings.js';
 
-export class OpenAIClassificationProvider extends ClassificationProvider<OpenAIPluginSettings> {
-  constructor(args: ClassificationProviderArgs<OpenAIPluginSettings>) {
+export class OpenAIClassifier extends Classifier<OpenAIPluginSettings> {
+  constructor(args: ClassifierArgs<OpenAIPluginSettings>) {
     super(args);
   }
 
   async classify(
     args: ClassifyArgs<LLMFieldCaptureInputValues>
-  ): Promise<JsonObject> {
+  ): Promise<ClassifyResult> {
     const client = new OpenAI({
       apiKey: this.pluginSettings.apiKey,
     });
@@ -57,6 +57,6 @@ export class OpenAIClassificationProvider extends ClassificationProvider<OpenAIP
       },
     });
 
-    return (response.output_parsed as JsonObject) ?? {};
+    return (response.output_parsed as ClassifyResult) ?? {};
   }
 }

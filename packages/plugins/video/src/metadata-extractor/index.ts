@@ -2,7 +2,7 @@ import { ClassifierContribution, LongpointMimeType } from '@longpoint/devkit';
 import MetadataExtractor from './metadata-extractor.js';
 
 const metadataExtractorContribution = {
-  provider: MetadataExtractor,
+  classifier: MetadataExtractor,
   displayName: 'Metadata Extractor',
   description: 'Extract key metadata from multimedia files.',
   supportedMimeTypes: [

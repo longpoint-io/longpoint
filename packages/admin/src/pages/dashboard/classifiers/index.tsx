@@ -22,8 +22,8 @@ export function Classifiers() {
   const canCreate = hasPermission(Permission.CLASSIFIERS_CREATE);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['classifiers'],
-    queryFn: () => client.analysis.listClassifiers(),
+    queryKey: ['classifier-templates'],
+    queryFn: () => client.classifiers.listClassifierTemplates(),
   });
 
   if (isLoading) {
@@ -83,9 +83,9 @@ export function Classifiers() {
           </p>
         </div>
         {canCreate && (
-          <Button onClick={() => navigate('/classifiers/create')}>
+          <Button onClick={() => navigate('/classifier-templates/create')}>
             <Plus className="h-4 w-4" />
-            Create Classifier
+            Create Classifier Template
           </Button>
         )}
       </div>
@@ -104,7 +104,7 @@ export function Classifiers() {
             {canCreate && (
               <EmptyContent>
                 <Button
-                  onClick={() => navigate('/classifiers/create')}
+                  onClick={() => navigate('/classifier-templates/create')}
                   size="lg"
                 >
                   <Plus className="h-5 w-5" />

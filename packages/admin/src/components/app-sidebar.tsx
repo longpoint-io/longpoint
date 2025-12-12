@@ -75,7 +75,7 @@ export function AppSidebar() {
     },
     {
       label: 'Classifiers',
-      url: '/classifiers',
+      url: '/classifier-templates',
       icon: ScanSearchIcon,
       visible: () => {
         return hasPermission(Permission.CLASSIFIERS_READ);

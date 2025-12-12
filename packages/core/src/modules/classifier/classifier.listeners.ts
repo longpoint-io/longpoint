@@ -2,14 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { AssetVariantReadyEventPayload } from '../asset';
 import { PrismaService } from '../common/services';
 import { HandleEvent } from '../event';
-import { ClassifierService } from './classifier.service';
+import { ClassifierTemplateService } from './services/classifier-template.service';
 
 @Injectable()
 export class ClassifierListeners {
   private readonly logger = new Logger(ClassifierListeners.name);
 
   constructor(
-    private readonly classifierService: ClassifierService,
+    private readonly classifierTemplateService: ClassifierTemplateService,
     private readonly prismaService: PrismaService
   ) {}
 
@@ -28,17 +28,18 @@ export class ClassifierListeners {
       return;
     }
 
-    const classifiers = await this.classifierService.listClassifiers();
-    const entities = classifiers.filter((classifier) =>
-      variant.classifiersOnUpload.includes(classifier.name)
+    const classifierTemplates =
+      await this.classifierTemplateService.listClassifierTemplates();
+    const entities = classifierTemplates.filter((classifierTemplate) =>
+      variant.classifiersOnUpload.includes(classifierTemplate.name)
     );
 
-    // Run classifiers in parallel (fire and forget - each classifier will publish its own completion event on success)
+    // Run classifiers in parallel (fire and forget - each one will publish its own completion event on success)
     Promise.all(entities.map((entity) => entity.run(variant.id))).catch(
       (error) => {
         // Log error but don't throw - we don't want to block the event handler
         this.logger.error(
-          `Error running classifiers for variant ${variant.id}:`,
+          `Error running classifier templates for variant ${variant.id}:`,
           error
         );
       }
