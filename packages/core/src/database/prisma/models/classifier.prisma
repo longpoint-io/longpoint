@@ -1,29 +1,28 @@
 model ClassifierTemplate {
-  id           String          @id @default(cuid(2))
-  name         String          @unique
+  id           String   @id @default(cuid(2))
+  name         String   @unique
   description  String?
   classifierId String
-  modelInput   Json?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  runs         ClassifierRun[]
+  /// The user-defined input values passed to the classifier
+  input        Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([classifierId])
 }
 
 model ClassifierRun {
-  id           String              @id @default(cuid(2))
-  status       ClassifierRunStatus
-  result       Json?
-  errorMessage String?
-  createdAt    DateTime            @default(now())
-  startedAt    DateTime?
-  completedAt  DateTime?
-
+  id                   String              @id @default(cuid(2))
+  status               ClassifierRunStatus
+  result               Json?
+  errorMessage         String?
+  createdAt            DateTime            @default(now())
+  startedAt            DateTime?
+  completedAt          DateTime?
   classifierTemplateId String
-  classifierTemplate   ClassifierTemplate @relation(fields: [classifierTemplateId], references: [id], onDelete: Cascade)
-  assetVariantId       String
-  assetVariant         AssetVariant       @relation(fields: [assetVariantId], references: [id], onDelete: Cascade)
+
+  assetVariantId String
+  assetVariant   AssetVariant @relation(fields: [assetVariantId], references: [id], onDelete: Cascade)
 
   @@index([classifierTemplateId])
   @@index([assetVariantId])

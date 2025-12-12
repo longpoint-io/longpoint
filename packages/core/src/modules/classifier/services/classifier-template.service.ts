@@ -1,12 +1,20 @@
+import { Prisma } from '@/database';
+import { TemplateSource } from '@/shared/types/template.types';
 import { ConfigValues } from '@longpoint/config-schema';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AssetService } from '../../asset';
 import { PrismaService } from '../../common/services';
 import { EventPublisher } from '../../event';
+import { PluginRegistryService } from '../../plugin/services';
 import { ClassifierTemplateNotFound } from '../classifier.errors';
-import { selectClassifier } from '../classifier.selectors';
+import { selectClassifierTemplate } from '../classifier.selectors';
+import { ListClassifierTemplatesQueryDto } from '../dtos';
 import { CreateClassifierTemplateDto } from '../dtos/create-classifier-template.dto';
-import { ClassifierTemplateEntity } from '../entities';
+import {
+  ClassifierEntity,
+  ClassifierTemplateEntity,
+  ClassifierTemplateEntityArgs,
+} from '../entities';
 import { ClassifierService } from './classifier.service';
 
 @Injectable()
@@ -16,16 +24,16 @@ export class ClassifierTemplateService {
     private readonly classifierService: ClassifierService,
     @Inject(forwardRef(() => AssetService))
     private readonly assetService: AssetService,
-    private readonly eventPublisher: EventPublisher
+    private readonly eventPublisher: EventPublisher,
+    private readonly pluginRegistryService: PluginRegistryService
   ) {}
 
   async createClassifierTemplate(data: CreateClassifierTemplateDto) {
-    const modelInput = data.modelInput ?? undefined;
     const classifier = await this.classifierService.getClassifierByIdOrThrow(
       data.classifierId
     );
     const processedModelInput = await classifier.processInboundInput(
-      modelInput
+      data.input
     );
 
     const classifierTemplate =
@@ -34,26 +42,12 @@ export class ClassifierTemplateService {
           name: data.name,
           description: data.description,
           classifierId: data.classifierId,
-          modelInput: processedModelInput,
+          input: processedModelInput,
         },
-        select: selectClassifier(),
+        select: selectClassifierTemplate(),
       });
 
-    const classifierTemplateEntity = new ClassifierTemplateEntity({
-      id: classifierTemplate.id,
-      name: classifierTemplate.name,
-      description: classifierTemplate.description,
-      createdAt: classifierTemplate.createdAt,
-      updatedAt: classifierTemplate.updatedAt,
-      classifier,
-      modelInput: processedModelInput,
-      prismaService: this.prismaService,
-      classifierService: this.classifierService,
-      assetService: this.assetService,
-      eventPublisher: this.eventPublisher,
-    });
-
-    return classifierTemplateEntity;
+    return this.getClassifierTemplateEntity(classifierTemplate, classifier);
   }
 
   async getClassifierTemplateById(id: string) {
@@ -62,26 +56,17 @@ export class ClassifierTemplateService {
         where: {
           id,
         },
-        select: selectClassifier(),
+        select: selectClassifierTemplate(),
       });
 
     if (!classifierTemplate) {
       return null;
     }
 
-    const classifier = await this.classifierService.getClassifierByIdOrThrow(
+    return this.getClassifierTemplateEntity(
+      classifierTemplate,
       classifierTemplate.classifierId
     );
-
-    return new ClassifierTemplateEntity({
-      ...classifierTemplate,
-      classifier,
-      prismaService: this.prismaService,
-      classifierService: this.classifierService,
-      modelInput: classifierTemplate.modelInput as ConfigValues,
-      assetService: this.assetService,
-      eventPublisher: this.eventPublisher,
-    });
   }
 
   async getClassifierTemplateByIdOrThrow(id: string) {
@@ -92,27 +77,97 @@ export class ClassifierTemplateService {
     return classifierTemplate;
   }
 
-  async listClassifierTemplates(): Promise<ClassifierTemplateEntity[]> {
-    const classifierTemplates =
-      await this.prismaService.classifierTemplate.findMany({
-        select: selectClassifier(),
-      });
+  async listClassifierTemplates(
+    query = new ListClassifierTemplatesQueryDto()
+  ): Promise<ClassifierTemplateEntity[]> {
+    const pluginTemplates: ClassifierTemplateEntity[] = [];
+    const registryEntries = this.pluginRegistryService.listClassifiers();
 
-    return Promise.all(
-      classifierTemplates.map(async (classifierTemplate) => {
-        const classifier =
-          await this.classifierService.getClassifierByIdOrThrow(
-            classifierTemplate.classifierId
-          );
-        return new ClassifierTemplateEntity({
-          ...classifierTemplate,
-          classifier,
-          prismaService: this.prismaService,
-          classifierService: this.classifierService,
-          assetService: this.assetService,
-          eventPublisher: this.eventPublisher,
-        });
-      })
+    for (const registryEntry of registryEntries) {
+      const templates = registryEntry.contribution.templates;
+      if (!templates) {
+        continue;
+      }
+
+      const classifier = await this.classifierService.getClassifierByIdOrThrow(
+        registryEntry.fullyQualifiedId
+      );
+
+      for (const [templateKey, template] of Object.entries(templates)) {
+        const templateName = `${registryEntry.pluginId}/${templateKey}`;
+        const templateEntity = await this.getClassifierTemplateEntity(
+          {
+            id: templateName,
+            name: templateName,
+            source: TemplateSource.PLUGIN,
+            description: template.description ?? null,
+            createdAt: null,
+            updatedAt: null,
+            input: template.input as ConfigValues | null,
+          },
+          classifier
+        );
+        pluginTemplates.push(templateEntity);
+      }
+    }
+
+    const dbTemplates = await this.prismaService.classifierTemplate.findMany({
+      select: selectClassifierTemplate(),
+    });
+
+    const customTemplates = await Promise.all(
+      dbTemplates.map((template) =>
+        this.getClassifierTemplateEntity(template, template.classifierId)
+      )
     );
+
+    const allTemplates = [...pluginTemplates, ...customTemplates].sort((a, b) =>
+      a.id.localeCompare(b.id)
+    );
+
+    const pageSize = query.pageSize ?? 1000;
+    let startIndex = 0;
+
+    if (query.cursor) {
+      const cursorIndex = allTemplates.findIndex(
+        (template) => template.id === query.cursor
+      );
+      if (cursorIndex !== -1) {
+        startIndex = cursorIndex + 1;
+      }
+    }
+
+    return allTemplates.slice(startIndex, startIndex + pageSize);
+  }
+
+  private async getClassifierTemplateEntity(
+    data: Pick<
+      ClassifierTemplateEntityArgs,
+      'id' | 'name' | 'description' | 'createdAt' | 'updatedAt'
+    > &
+      Partial<Pick<ClassifierTemplateEntityArgs, 'source'>> & {
+        input: Prisma.JsonValue;
+      },
+    classifier: ClassifierEntity | string
+  ) {
+    if (typeof classifier === 'string') {
+      classifier = await this.classifierService.getClassifierByIdOrThrow(
+        classifier
+      );
+    }
+    return new ClassifierTemplateEntity({
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      source: data.source ?? TemplateSource.CUSTOM,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      classifier,
+      input: data.input as ConfigValues,
+      assetService: this.assetService,
+      classifierService: this.classifierService,
+      eventPublisher: this.eventPublisher,
+      prismaService: this.prismaService,
+    });
   }
 }

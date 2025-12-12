@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,8 +20,9 @@ import { ApiSdkTag, RequirePermission } from '../../../shared/decorators';
 import { ApiClassifierTemplateNotFoundResponse } from '../classifier.errors';
 import {
   ClassifierTemplateDto,
-  ClassifierTemplateSummaryDto,
   CreateClassifierTemplateDto,
+  ListClassifierTemplatesQueryDto,
+  ListClassifierTemplatesResponseDto,
   UpdateClassifierTemplateDto,
 } from '../dtos';
 import { ClassifierTemplateService } from '../services/classifier-template.service';
@@ -67,14 +69,24 @@ export class ClassifierTemplateController {
   @ApiOperation({
     summary: 'List classifier templates',
     operationId: 'listClassifierTemplates',
+    description:
+      'Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").',
   })
-  @ApiOkResponse({ type: [ClassifierTemplateSummaryDto] })
-  async listClassifierTemplates() {
-    const classifierTemplates =
-      await this.classifierTemplateService.listClassifierTemplates();
-    return classifierTemplates.map((classifierTemplate) =>
-      classifierTemplate.toSummaryDto()
-    );
+  @ApiOkResponse({
+    description:
+      'Returns both plugin-defined templates and custom templates. Plugin templates have type="plugin" and custom templates have type="custom".',
+    type: ListClassifierTemplatesResponseDto,
+  })
+  async listClassifierTemplates(
+    @Query() query: ListClassifierTemplatesQueryDto
+  ) {
+    const templates =
+      await this.classifierTemplateService.listClassifierTemplates(query);
+    return new ListClassifierTemplatesResponseDto({
+      items: templates.map((template) => template.toDto()),
+      path: '/classifier-templates',
+      query,
+    });
   }
 
   @Patch(':templateId')

@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@longpoint/ui/components/select';
 import { Skeleton } from '@longpoint/ui/components/skeleton';
+import { cn } from '@longpoint/ui/utils';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -41,15 +42,17 @@ import * as z from 'zod';
 export function CreateClassifier() {
   const client = useClient();
   const navigate = useNavigate();
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+  const [selectedClassifierId, setSelectedClassifierId] = useState<
+    string | null
+  >(null);
 
-  const { data: providers, isLoading: providersLoading } = useQuery({
+  const { data: classifiers, isLoading: classifiersLoading } = useQuery({
     queryKey: ['classifiers'],
     queryFn: () => client.classifiers.listClassifiers(),
   });
 
-  const selectedProvider = providers?.find(
-    (p) => p.fullyQualifiedId === selectedModelId
+  const selectedClassifier = classifiers?.find(
+    (c) => c.id === selectedClassifierId
   );
 
   const formSchema = z.object({
@@ -77,14 +80,14 @@ export function CreateClassifier() {
   const handleSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
     data
   ) => {
-    if (!selectedModelId) {
+    if (!selectedClassifierId) {
       toast.error('Please select a model');
       return;
     }
 
     // Validate model input (including nested objects/arrays)
     const schema: Record<string, any> | undefined =
-      selectedProvider?.classifierInputSchema;
+      selectedClassifier?.inputSchema;
     const values = form.getValues() as any;
     const isValid = validateConfigSchemaForm(
       schema,
@@ -95,16 +98,12 @@ export function CreateClassifier() {
     if (!isValid) return;
 
     try {
-      // Include dynamic modelInput when present
-      const payload: any = {
-        ...data,
-        classifierId: selectedModelId,
-      };
-      if (payload.description === '') payload.description = null;
-      if (values?.modelInput) {
-        payload.modelInput = values.modelInput;
-      }
-      const result = await client.classifiers.createClassifierTemplate(payload);
+      const result = await client.classifiers.createClassifierTemplate({
+        name: data.name,
+        description: data.description ?? null,
+        input: values?.modelInput,
+        classifierId: selectedClassifierId,
+      });
 
       toast.success('Classifier template created successfully');
       navigate(`/classifier-templates/${result.id}`);
@@ -119,11 +118,12 @@ export function CreateClassifier() {
   };
 
   const classifiersByPluginId = useMemo(() => {
-    return providers?.reduce((acc, provider) => {
-      acc[provider.pluginId] = [...(acc[provider.pluginId] || []), provider];
+    return classifiers?.reduce((acc, classifier) => {
+      const pluginId = classifier.id.split('/')[0];
+      acc[pluginId] = [...(acc[pluginId] || []), classifier];
       return acc;
-    }, {} as Record<string, components['schemas']['ClassifierSummary'][]>);
-  }, [providers]);
+    }, {} as Record<string, components['schemas']['Classifier'][]>);
+  }, [classifiers]);
 
   return (
     <div className="space-y-8">
@@ -177,7 +177,7 @@ export function CreateClassifier() {
                     </Field>
                   )}
                 />
-                {providersLoading ? (
+                {classifiersLoading ? (
                   <Skeleton className="h-10 w-full" />
                 ) : (
                   <Field>
@@ -185,12 +185,14 @@ export function CreateClassifier() {
                       Classifier
                     </FieldLabel>
                     <Select
-                      value={selectedModelId || undefined}
-                      onValueChange={setSelectedModelId}
+                      value={selectedClassifierId || undefined}
+                      onValueChange={setSelectedClassifierId}
                     >
                       <SelectTrigger
                         id="classifier-model"
-                        className="text-left max-w-xs !h-12"
+                        className={cn('text-left max-w-xs', {
+                          '!h-12': selectedClassifierId,
+                        })}
                       >
                         <SelectValue placeholder="Select an installed classifier" />
                       </SelectTrigger>
@@ -202,7 +204,7 @@ export function CreateClassifier() {
                               {classifiers.map((classifier) => (
                                 <SelectItem
                                   key={classifier.id}
-                                  value={classifier.fullyQualifiedId}
+                                  value={classifier.id}
                                 >
                                   <div className="flex flex-col">
                                     <span>{classifier.displayName}</span>
@@ -223,9 +225,9 @@ export function CreateClassifier() {
             </CardContent>
           </Card>
 
-          {selectedModelId &&
-            selectedProvider &&
-            Object.keys(selectedProvider.classifierInputSchema).length > 0 && (
+          {selectedClassifierId &&
+            selectedClassifier &&
+            Object.keys(selectedClassifier.inputSchema).length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Input</CardTitle>
@@ -234,7 +236,7 @@ export function CreateClassifier() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {!selectedProvider ? (
+                  {!selectedClassifier ? (
                     <div className="space-y-3">
                       <Skeleton className="h-6 w-48" />
                       <Skeleton className="h-10 w-full" />
@@ -242,10 +244,10 @@ export function CreateClassifier() {
                       <Skeleton className="h-10 w-full" />
                     </div>
                   ) : (
-                    selectedProvider &&
-                    selectedProvider.classifierInputSchema && (
+                    selectedClassifier &&
+                    selectedClassifier.inputSchema && (
                       <ConfigSchemaForm
-                        schema={selectedProvider.classifierInputSchema as any}
+                        schema={selectedClassifier.inputSchema as any}
                         control={form.control}
                         namePrefix="modelInput"
                         setError={form.setError}
@@ -266,7 +268,7 @@ export function CreateClassifier() {
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={!selectedModelId}>
+          <Button type="submit" disabled={!selectedClassifierId}>
             Create Classifier
           </Button>
         </div>

@@ -1,31 +1,25 @@
 import { Prisma } from '@/database';
 
-export const selectClassifierShort = () => {
+export const selectClassifierReference = () => {
   return {
     id: true,
     name: true,
-    description: true,
   } satisfies Prisma.ClassifierTemplateSelect;
 };
 
-export const selectClassifierSummary = () => {
+export const selectClassifierTemplate = () => {
   return {
-    ...selectClassifierShort(),
+    ...selectClassifierReference(),
+    description: true,
     createdAt: true,
     updatedAt: true,
     classifierId: true,
+    input: true,
   } satisfies Prisma.ClassifierTemplateSelect;
 };
 
-export const selectClassifier = () => {
-  return {
-    ...selectClassifierSummary(),
-    modelInput: true,
-  } satisfies Prisma.ClassifierTemplateSelect;
-};
-
-export type SelectedClassifier = Prisma.ClassifierTemplateGetPayload<{
-  select: ReturnType<typeof selectClassifier>;
+export type SelectedClassifierTemplate = Prisma.ClassifierTemplateGetPayload<{
+  select: ReturnType<typeof selectClassifierTemplate>;
 }>;
 
 export const selectClassifierRun = () => {
@@ -37,9 +31,6 @@ export const selectClassifierRun = () => {
     createdAt: true,
     startedAt: true,
     completedAt: true,
-    classifierTemplate: {
-      select: selectClassifierShort(),
-    },
   } satisfies Prisma.ClassifierRunSelect;
 };
 

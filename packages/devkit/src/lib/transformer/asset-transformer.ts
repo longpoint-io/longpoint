@@ -1,4 +1,4 @@
-import { ConfigValues } from '@longpoint/config-schema';
+import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Readable } from 'stream';
 import { AssetSource } from '../types/asset.js';
 
@@ -8,8 +8,10 @@ export interface FileOperations {
   delete(path: string): Promise<void>;
 }
 
-export interface AssetTransformerArgs {
-  pluginSettings: ConfigValues;
+export interface AssetTransformerArgs<
+  T extends ConfigSchemaDefinition = ConfigSchemaDefinition
+> {
+  pluginSettings: ConfigValues<T>;
 }
 
 export interface HandshakeArgs<T extends ConfigValues = ConfigValues> {
@@ -43,10 +45,12 @@ export interface TransformResult {
   }>;
 }
 
-export abstract class AssetTransformer {
-  protected readonly pluginSettings: ConfigValues;
+export abstract class AssetTransformer<
+  T extends ConfigSchemaDefinition = ConfigSchemaDefinition
+> {
+  protected readonly pluginSettings: ConfigValues<T>;
 
-  constructor(args: AssetTransformerArgs) {
+  constructor(args: AssetTransformerArgs<T>) {
     this.pluginSettings = args.pluginSettings;
   }
 

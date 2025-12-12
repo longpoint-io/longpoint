@@ -107,9 +107,21 @@ class ClassifiersClient {
 
     /**
    * List classifier templates
+   *
+   * Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").
    */
-    async listClassifierTemplates(): Promise<components['schemas']['ClassifierTemplateSummary'][]> {
-        const url = `classifier-templates`;
+    async listClassifierTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListClassifierTemplatesResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `classifier-templates${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
