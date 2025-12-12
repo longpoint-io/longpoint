@@ -1,6 +1,6 @@
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import { JsonObject } from '@longpoint/types';
 import { AssetSource } from '../types/asset.js';
+import { ClassifyResult } from './types.js';
 
 export interface ClassificationProviderArgs<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
@@ -25,5 +25,5 @@ export abstract class ClassificationProvider<
     this.providerId = args.providerId;
   }
 
-  abstract classify(args: ClassifyArgs): Promise<JsonObject>;
+  abstract classify(args: ClassifyArgs): Promise<ClassifyResult>;
 }

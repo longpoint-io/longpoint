@@ -1,14 +1,16 @@
-import {
-  ClassificationProvider,
-  ClassificationProviderArgs,
-  ClassifyArgs,
-} from '@longpoint/devkit/classifier';
 import { ConfigSchemaService } from '@/modules/common/services';
 import { ClassificationProviderRegistryEntry } from '@/modules/plugin/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import { JsonObject } from '@longpoint/types';
+import { ClassifyResult } from '@longpoint/devkit';
+import {
+  ClassificationProvider,
+  ClassifyArgs,
+} from '@longpoint/devkit/classifier';
 import { parseBytes } from '@longpoint/utils/format';
-import { ClassificationProviderDto, ClassificationProviderSummaryDto } from '../dtos';
+import {
+  ClassificationProviderDto,
+  ClassificationProviderSummaryDto,
+} from '../dtos';
 
 export interface ClassificationProviderEntityArgs {
   registryEntry: ClassificationProviderRegistryEntry;
@@ -21,7 +23,7 @@ export class ClassificationProviderEntity {
   readonly fullyQualifiedId: string;
   readonly displayName: string;
   readonly description: string | null;
-  readonly maxFileSize: number;
+  readonly maxFileSize?: number;
   readonly supportedMimeTypes: string[];
   private readonly registryEntry: ClassificationProviderRegistryEntry;
   private readonly providerInstance: ClassificationProvider<any>;
@@ -31,9 +33,12 @@ export class ClassificationProviderEntity {
     const { contribution, fullyQualifiedId } = args.registryEntry;
     this.id = contribution.displayName ?? args.registryEntry.classifierId;
     this.fullyQualifiedId = fullyQualifiedId;
-    this.displayName = contribution.displayName ?? args.registryEntry.classifierId;
+    this.displayName =
+      contribution.displayName ?? args.registryEntry.classifierId;
     this.description = contribution.description ?? null;
-    this.maxFileSize = parseBytes(contribution.maxFileSize ?? '0B');
+    this.maxFileSize = contribution.maxFileSize
+      ? parseBytes(contribution.maxFileSize)
+      : undefined;
     this.supportedMimeTypes = contribution.supportedMimeTypes ?? [];
     this.registryEntry = args.registryEntry;
     this.providerInstance = args.providerInstance;
@@ -43,7 +48,7 @@ export class ClassificationProviderEntity {
   /**
    * Runs the classification on the provided source.
    */
-  async classify(args: ClassifyArgs): Promise<JsonObject> {
+  async classify(args: ClassifyArgs): Promise<ClassifyResult> {
     return this.providerInstance.classify(args);
   }
 
@@ -96,4 +101,3 @@ export class ClassificationProviderEntity {
     });
   }
 }
-

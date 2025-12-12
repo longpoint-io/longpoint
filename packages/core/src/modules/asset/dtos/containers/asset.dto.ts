@@ -13,6 +13,7 @@ import { AssetVariantDto } from './asset-variant.dto';
 
 export type AssetParams = Omit<SelectedAsset, 'variants'> & {
   totalSize: number;
+  totalVariants: number;
   original: AssetVariantDto;
   derivatives: AssetVariantDto[];
   thumbnails: AssetVariantDto[];
@@ -68,6 +69,13 @@ export class AssetDto {
   totalSize: number;
 
   @ApiProperty({
+    description: 'The total number of asset variants',
+    example: 5,
+    type: 'number',
+  })
+  totalVariants: number;
+
+  @ApiProperty({
     description: 'The original asset variant',
     type: AssetVariantDto,
     example: {
@@ -110,6 +118,7 @@ export class AssetDto {
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
     this.totalSize = data.totalSize;
+    this.totalVariants = data.totalVariants;
     this.original = data.original;
     this.derivatives = data.derivatives;
     this.thumbnails = data.thumbnails;

@@ -227,6 +227,7 @@ export class AssetEntity {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       totalSize: this.totalSize,
+      totalVariants: this.totalVariants,
       original: this.original.toDto(),
       derivatives: this.derivatives.map((d) => d.toDto()),
       thumbnails: this.thumbnails.map((t) => t.toDto()),
@@ -323,8 +324,13 @@ export class AssetEntity {
   get totalSize() {
     return (
       (this.original.size ?? 0) +
-      this.derivatives.reduce((acc, d) => acc + (d.size ?? 0), 0)
+      this.derivatives.reduce((acc, d) => acc + (d.size ?? 0), 0) +
+      this.thumbnails.reduce((acc, t) => acc + (t.size ?? 0), 0)
     );
+  }
+
+  get totalVariants() {
+    return 1 + this.derivatives.length + this.thumbnails.length; // 1 for original
   }
 
   get createdAt() {

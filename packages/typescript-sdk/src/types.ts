@@ -763,6 +763,11 @@ export interface components {
              */
             totalSize: number;
             /**
+             * @description The total number of asset variants
+             * @example 5
+             */
+            totalVariants: number;
+            /**
              * @description The primary asset type.
              * @example IMAGE
              * @enum {string}
@@ -908,7 +913,7 @@ export interface components {
              * @description Maximum file size in bytes
              * @example 52428800
              */
-            maxFileSize: number;
+            maxFileSize: number | null;
             /**
              * @description The plugin ID that provides this classification provider
              * @example openai
