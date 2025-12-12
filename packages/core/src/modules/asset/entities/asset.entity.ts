@@ -324,7 +324,8 @@ export class AssetEntity {
   get totalSize() {
     return (
       (this.original.size ?? 0) +
-      this.derivatives.reduce((acc, d) => acc + (d.size ?? 0), 0)
+      this.derivatives.reduce((acc, d) => acc + (d.size ?? 0), 0) +
+      this.thumbnails.reduce((acc, t) => acc + (t.size ?? 0), 0)
     );
   }
 
