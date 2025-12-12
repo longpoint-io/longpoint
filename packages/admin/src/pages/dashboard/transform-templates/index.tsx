@@ -71,6 +71,8 @@ export function TransformTemplates() {
   }
 
   const templates = data?.items || [];
+  const pluginTemplates = templates.filter((t) => t.source === 'plugin');
+  const customTemplates = templates.filter((t) => t.source === 'custom');
   const isEmpty = templates.length === 0;
 
   return (
@@ -115,10 +117,44 @@ export function TransformTemplates() {
           </Empty>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {templates.map((template) => (
-            <TransformTemplateCard key={template.id} template={template} />
-          ))}
+        <div className="space-y-8">
+          {pluginTemplates.length > 0 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold">Plugin Templates</h3>
+                <p className="text-sm text-muted-foreground">
+                  Templates provided by installed plugins
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {pluginTemplates.map((template) => (
+                  <TransformTemplateCard
+                    key={template.id}
+                    template={template}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {customTemplates.length > 0 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold">Custom Templates</h3>
+                <p className="text-sm text-muted-foreground">
+                  Templates you've created
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {customTemplates.map((template) => (
+                  <TransformTemplateCard
+                    key={template.id}
+                    template={template}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

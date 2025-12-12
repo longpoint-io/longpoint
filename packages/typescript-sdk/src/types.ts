@@ -1922,11 +1922,10 @@ export interface components {
         };
         TransformTemplate: {
             /**
-             * Format: date-time
-             * @description The date and time the transform template was created
+             * @description The date and time the transform template was created (only for custom templates)
              * @example 2021-01-01T00:00:00.000Z
              */
-            createdAt: string;
+            createdAt?: string | null;
             /**
              * @description A brief description of the transform template
              * @example Convert videos to a watchable format for 5th generation iPods
@@ -1960,6 +1959,12 @@ export interface components {
              */
             name: string;
             /**
+             * @description The source of the transform template definition
+             * @example plugin
+             * @enum {string}
+             */
+            source: "plugin" | "custom";
+            /**
              * @description The supported MIME types as input to the transformer
              * @example [
              *       "video/mp4",
@@ -1973,11 +1978,10 @@ export interface components {
              */
             transformerId: string;
             /**
-             * Format: date-time
-             * @description The date and time the transform template was updated
+             * @description The date and time the transform template was updated (only for custom templates)
              * @example 2021-01-01T00:00:00.000Z
              */
-            updatedAt: string;
+            updatedAt?: string | null;
         };
         UpdateAsset: {
             /**

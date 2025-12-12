@@ -18,5 +18,8 @@ export interface TransformerContribution<
    * A schema defining the user-provided input to the transformer.
    */
   input?: ConfigSchemaDefinition;
-  templates?: ContributionTemplate[];
+  /**
+   * A list of plugin-provided templates for the transformer.
+   */
+  templates?: Record<string, ContributionTemplate>;
 }

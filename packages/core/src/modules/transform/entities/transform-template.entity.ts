@@ -1,5 +1,7 @@
 import { AssetService, AssetVariantEntity } from '@/modules/asset';
 import { PrismaService } from '@/modules/common/services';
+import { CannotModifyPluginTemplate } from '@/modules/plugin';
+import { TemplateSource } from '@/shared/types/template.types';
 import { ConfigValues } from '@longpoint/config-schema';
 import { formatDuration } from '@longpoint/utils/format';
 import { Logger } from '@nestjs/common';
@@ -11,20 +13,25 @@ import {
 } from '../transform.selectors';
 import { TransformerEntity } from './transformer.entity';
 
-export interface TransformTemplateEntityArgs extends SelectedTransformTemplate {
+export interface TransformTemplateEntityArgs
+  extends Omit<SelectedTransformTemplate, 'createdAt' | 'updatedAt'> {
   transformer: TransformerEntity;
   prismaService: PrismaService;
   assetService: AssetService;
+  source?: TemplateSource;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
 export class TransformTemplateEntity {
   readonly id: string;
+  readonly source: TemplateSource;
   private _name: string;
   private _displayName: string | null;
   private _description: string | null;
   private _inputFromDb: ConfigValues | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  private _createdAt: Date | null;
+  private _updatedAt: Date | null;
   private _transformer: TransformerEntity;
 
   private readonly prismaService: PrismaService;
@@ -33,6 +40,7 @@ export class TransformTemplateEntity {
 
   constructor(args: TransformTemplateEntityArgs) {
     this.id = args.id;
+    this.source = args.source ?? TemplateSource.CUSTOM;
     this._name = args.name;
     this._displayName = args.displayName;
     this._description = args.description;
@@ -140,6 +148,10 @@ export class TransformTemplateEntity {
   }
 
   async update(data: UpdateTransformTemplateDto) {
+    if (this.source === TemplateSource.PLUGIN) {
+      throw new CannotModifyPluginTemplate();
+    }
+
     const updatedTransformTemplate =
       await this.prismaService.transformTemplate.update({
         where: {
@@ -163,6 +175,10 @@ export class TransformTemplateEntity {
   }
 
   async delete() {
+    if (this.source === TemplateSource.PLUGIN) {
+      throw new CannotModifyPluginTemplate();
+    }
+
     try {
       await this.prismaService.transformTemplate.delete({
         where: {
@@ -190,6 +206,7 @@ export class TransformTemplateEntity {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       supportedMimeTypes: this.supportedMimeTypes,
+      source: this.source,
     });
   }
 
@@ -205,11 +222,11 @@ export class TransformTemplateEntity {
     return this._description;
   }
 
-  get createdAt(): Date {
+  get createdAt(): Date | null {
     return this._createdAt;
   }
 
-  get updatedAt(): Date {
+  get updatedAt(): Date | null {
     return this._updatedAt;
   }
 

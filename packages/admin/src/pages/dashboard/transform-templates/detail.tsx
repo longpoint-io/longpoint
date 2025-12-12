@@ -36,6 +36,10 @@ export function TransformTemplateDetail() {
     enabled: !!templateId,
   });
 
+  const isPluginTemplate = template?.source === 'plugin';
+  const canEdit = canUpdate && !isPluginTemplate;
+  const canDeleteTemplate = canDelete && !isPluginTemplate;
+
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -90,7 +94,7 @@ export function TransformTemplateDetail() {
           </div>
         </div>
         <div className="flex gap-2">
-          {canUpdate && (
+          {canEdit && (
             <Button
               variant="outline"
               onClick={() =>
@@ -101,7 +105,7 @@ export function TransformTemplateDetail() {
               Edit
             </Button>
           )}
-          {canDelete && (
+          {canDeleteTemplate && (
             <Button
               variant="destructive"
               onClick={() => setShowDeleteDialog(true)}
@@ -143,38 +147,46 @@ export function TransformTemplateDetail() {
                   {template.transformerId}
                 </p>
               </Field>
+              {isPluginTemplate && (
+                <Field>
+                  <FieldLabel>Plugin</FieldLabel>
+                  <p className="text-sm">{template.id.split('/')[0]}</p>
+                </Field>
+              )}
             </FieldGroup>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Timestamps</CardTitle>
-            <CardDescription>Creation and modification times</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <Field>
-                <FieldLabel>Created</FieldLabel>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {new Date(template.createdAt).toLocaleString()}
-                  </span>
-                </div>
-              </Field>
-              <Field>
-                <FieldLabel>Last Updated</FieldLabel>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {new Date(template.updatedAt).toLocaleString()}
-                  </span>
-                </div>
-              </Field>
-            </FieldGroup>
-          </CardContent>
-        </Card>
+        {template.createdAt && template.updatedAt && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Timestamps</CardTitle>
+              <CardDescription>Creation and modification times</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel>Created</FieldLabel>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {new Date(template.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                </Field>
+                <Field>
+                  <FieldLabel>Last Updated</FieldLabel>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {new Date(template.updatedAt).toLocaleString()}
+                    </span>
+                  </div>
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {template.input && Object.keys(template.input).length > 0 && (

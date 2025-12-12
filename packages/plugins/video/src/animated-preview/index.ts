@@ -12,6 +12,20 @@ export const animatedPreviewContribution = {
     LongpointMimeType.WEBM,
   ],
   input: animatedPreviewInputSchema,
+  templates: {
+    default: {
+      displayName: 'Animated Preview',
+      description: 'Default animated preview template',
+      input: {
+        fps: 15,
+        duration: 3,
+        dimensions: {
+          width: 450,
+          maintainAspectRatio: true,
+        },
+      },
+    },
+  },
 } satisfies TransformerContribution;
 
 export default animatedPreviewContribution;
