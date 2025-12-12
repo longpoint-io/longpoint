@@ -119,67 +119,70 @@ export function ClassifierDetail() {
               <Field>
                 <FieldLabel>Classifier Name</FieldLabel>
                 <p className="text-sm">
-                  {String(classifierTemplate.provider.displayName)}
+                  {String(classifierTemplate.classifier.displayName)}
                 </p>
-                {classifierTemplate.provider.description && (
+                {classifierTemplate.classifier.description && (
                   <FieldDescription>
-                    {String(classifierTemplate.provider.description)}
+                    {String(classifierTemplate.classifier.description)}
                   </FieldDescription>
                 )}
               </Field>
               <Field>
                 <FieldLabel>Classifier ID</FieldLabel>
                 <p className="text-sm font-mono text-muted-foreground">
-                  {String(classifierTemplate.provider.id)}
+                  {String(classifierTemplate.classifier.id)}
                 </p>
               </Field>
               <Field>
                 <FieldLabel>Fully Qualified ID</FieldLabel>
                 <p className="text-sm font-mono text-muted-foreground">
-                  {String(classifierTemplate.provider.fullyQualifiedId)}
+                  {String(classifierTemplate.classifier.id)}
                 </p>
               </Field>
               <Field>
                 <FieldLabel>Plugin</FieldLabel>
                 <p className="text-sm">
-                  {String(classifierTemplate.provider.pluginId)}
+                  {String(classifierTemplate.classifier.id.split('/')[0])}
                 </p>
               </Field>
             </FieldGroup>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Timestamps</CardTitle>
-            <CardDescription>Creation and modification times</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <Field>
-                <FieldLabel>Created</FieldLabel>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {new Date(classifierTemplate.createdAt).toLocaleString()}
-                  </span>
-                </div>
-              </Field>
-              <Field>
-                <FieldLabel>Last Updated</FieldLabel>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {new Date(classifierTemplate.updatedAt).toLocaleString()}
-                  </span>
-                </div>
-              </Field>
-            </FieldGroup>
-          </CardContent>
-        </Card>
+        {classifierTemplate.createdAt && classifierTemplate.updatedAt && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Timestamps</CardTitle>
+              <CardDescription>Creation and modification times</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel>Created</FieldLabel>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {new Date(classifierTemplate.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                </Field>
+                <Field>
+                  <FieldLabel>Last Updated</FieldLabel>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {new Date(classifierTemplate.updatedAt).toLocaleString()}
+                    </span>
+                  </div>
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {Object.keys(classifierTemplate.modelInputSchema || {}).length > 0 && (
+      {Object.keys(classifierTemplate.classifier.inputSchema || {}).length >
+        0 && (
         <Card>
           <CardHeader>
             <CardTitle>Configuration Schema</CardTitle>
@@ -187,7 +190,7 @@ export function ClassifierDetail() {
           </CardHeader>
           <CardContent>
             <FieldGroup>
-              {Object.entries(classifierTemplate.modelInputSchema).map(
+              {Object.entries(classifierTemplate.classifier.inputSchema).map(
                 ([key, field]) => (
                   <Field key={key}>
                     <FieldLabel>

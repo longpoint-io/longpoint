@@ -10,10 +10,7 @@ import { ClassifierEntity } from '../entities/classifier.entity';
 @Injectable()
 export class ClassifierService {
   private readonly logger = new Logger(ClassifierService.name);
-  private readonly providerEntityCache = new Map<
-    string,
-    ClassifierEntity
-  >();
+  private readonly providerEntityCache = new Map<string, ClassifierEntity>();
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -26,8 +23,7 @@ export class ClassifierService {
    * @returns A list of classifier entities.
    */
   async listClassifiers(): Promise<ClassifierEntity[]> {
-    const registryEntries =
-      this.pluginRegistryService.listClassifiers();
+    const registryEntries = this.pluginRegistryService.listClassifiers();
     const providers: ClassifierEntity[] = [];
 
     for (const registryEntry of registryEntries) {
@@ -81,9 +77,7 @@ export class ClassifierService {
     }
 
     const registryEntry =
-      this.pluginRegistryService.getClassifierById(
-        fullyQualifiedId
-      );
+      this.pluginRegistryService.getClassifierById(fullyQualifiedId);
     if (!registryEntry) {
       return null;
     }
@@ -95,7 +89,7 @@ export class ClassifierService {
 
     const providerInstance = new registryEntry.contribution.classifier({
       pluginSettings: pluginSettings ?? {},
-      providerId: registryEntry.classifierId,
+      providerId: registryEntry.classifierKey,
     } as ClassifierArgs<any>);
 
     const entity = new ClassifierEntity({

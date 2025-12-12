@@ -70,7 +70,9 @@ export function Classifiers() {
     );
   }
 
-  const classifiers = data || [];
+  const classifiers = data?.items || [];
+  const pluginTemplates = classifiers.filter((c) => c.source === 'plugin');
+  const customTemplates = classifiers.filter((c) => c.source === 'custom');
   const isEmpty = classifiers.length === 0;
 
   return (
@@ -115,10 +117,44 @@ export function Classifiers() {
           </Empty>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {classifiers.map((classifier) => (
-            <ClassifierCard key={classifier.id} classifier={classifier} />
-          ))}
+        <div className="space-y-8">
+          {pluginTemplates.length > 0 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold">Plugin Templates</h3>
+                <p className="text-sm text-muted-foreground">
+                  Templates provided by installed plugins
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {pluginTemplates.map((classifier) => (
+                  <ClassifierCard
+                    key={classifier.name}
+                    classifierTemplate={classifier}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {customTemplates.length > 0 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold">Custom Templates</h3>
+                <p className="text-sm text-muted-foreground">
+                  Templates you've created
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {customTemplates.map((classifier) => (
+                  <ClassifierCard
+                    key={classifier.id}
+                    classifierTemplate={classifier}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

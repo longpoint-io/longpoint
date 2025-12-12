@@ -1,13 +1,17 @@
+import { TemplateSource } from '@/shared/types/template.types';
 import { type ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { SelectedTransformTemplate } from '../../transform.selectors';
 
 export type TransformTemplateParams = Omit<
   SelectedTransformTemplate,
-  'displayName'
+  'displayName' | 'createdAt' | 'updatedAt'
 > & {
   displayName: string;
   supportedMimeTypes: string[];
+  source: TemplateSource;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 @ApiSchema({ name: 'TransformTemplate' })
@@ -52,16 +56,29 @@ export class TransformTemplateDto {
   supportedMimeTypes: string[];
 
   @ApiProperty({
-    description: 'The date and time the transform template was created',
-    example: '2021-01-01T00:00:00.000Z',
+    description: 'The source of the transform template definition',
+    enum: TemplateSource,
+    example: TemplateSource.PLUGIN,
   })
-  createdAt: Date;
+  source: TemplateSource;
 
-  @ApiProperty({
-    description: 'The date and time the transform template was updated',
+  @ApiPropertyOptional({
+    description:
+      'The date and time the transform template was created (only for custom templates)',
     example: '2021-01-01T00:00:00.000Z',
+    nullable: true,
+    type: 'string',
   })
-  updatedAt: Date;
+  createdAt: Date | null;
+
+  @ApiPropertyOptional({
+    description:
+      'The date and time the transform template was updated (only for custom templates)',
+    example: '2021-01-01T00:00:00.000Z',
+    nullable: true,
+    type: 'string',
+  })
+  updatedAt: Date | null;
 
   @ApiProperty({
     description: 'The input values passed to the transformer',
@@ -83,6 +100,7 @@ export class TransformTemplateDto {
     this.description = params.description;
     this.transformerId = params.transformerId;
     this.input = params.input as ConfigValues;
+    this.source = params.source;
     this.createdAt = params.createdAt;
     this.updatedAt = params.updatedAt;
     this.supportedMimeTypes = params.supportedMimeTypes;

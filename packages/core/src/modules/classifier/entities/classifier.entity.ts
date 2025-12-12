@@ -4,7 +4,7 @@ import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { ClassifyResult } from '@longpoint/devkit';
 import { Classifier, ClassifyArgs } from '@longpoint/devkit/classifier';
 import { parseBytes } from '@longpoint/utils/format';
-import { ClassifierDto, ClassifierSummaryDto } from '../dtos';
+import { ClassifierDto, ClassifierReferenceDto } from '../dtos';
 
 export interface ClassifierEntityArgs {
   registryEntry: ClassifierRegistryEntry;
@@ -14,7 +14,6 @@ export interface ClassifierEntityArgs {
 
 export class ClassifierEntity {
   readonly id: string;
-  readonly fullyQualifiedId: string;
   readonly displayName: string;
   readonly description: string | null;
   readonly maxFileSize?: number;
@@ -24,11 +23,9 @@ export class ClassifierEntity {
   private readonly configSchemaService: ConfigSchemaService;
 
   constructor(args: ClassifierEntityArgs) {
-    const { contribution, fullyQualifiedId } = args.registryEntry;
-    this.id = contribution.displayName ?? args.registryEntry.classifierId;
-    this.fullyQualifiedId = fullyQualifiedId;
-    this.displayName =
-      contribution.displayName ?? args.registryEntry.classifierId;
+    const { contribution, pluginId, classifierKey } = args.registryEntry;
+    this.id = `${pluginId}/${classifierKey}`;
+    this.displayName = contribution.displayName ?? classifierKey;
     this.description = contribution.description ?? null;
     this.maxFileSize = contribution.maxFileSize
       ? parseBytes(contribution.maxFileSize)
@@ -72,24 +69,19 @@ export class ClassifierEntity {
 
   toDto(): ClassifierDto {
     return new ClassifierDto({
-      id: this.registryEntry.classifierId,
-      fullyQualifiedId: this.fullyQualifiedId,
+      id: this.id,
       displayName: this.displayName,
       description: this.description,
       supportedMimeTypes: this.supportedMimeTypes,
       maxFileSize: this.maxFileSize,
-      classifierInputSchema: this.classifierInputSchema,
-      pluginId: this.registryEntry.pluginId,
+      inputSchema: this.classifierInputSchema,
     });
   }
 
-  toSummaryDto(): ClassifierSummaryDto {
-    return new ClassifierSummaryDto({
-      id: this.registryEntry.classifierId,
-      fullyQualifiedId: this.fullyQualifiedId,
+  toReferenceDto(): ClassifierReferenceDto {
+    return new ClassifierReferenceDto({
+      id: this.id,
       displayName: this.displayName,
-      description: this.description,
-      pluginId: this.registryEntry.pluginId,
     });
   }
 }

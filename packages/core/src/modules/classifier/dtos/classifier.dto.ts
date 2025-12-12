@@ -4,39 +4,44 @@ import {
   toConfigSchemaForDto,
 } from '@/shared/dtos/config-schema';
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
+import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 
-export interface ClassifierParams {
+export interface ClassifierReferenceParams {
   id: string;
-  fullyQualifiedId: string;
-  displayName: string;
-  description?: string | null;
-  supportedMimeTypes: string[];
-  maxFileSize?: number;
-  classifierInputSchema: ConfigSchemaDefinition;
-  pluginId: string;
+  displayName: string | null;
 }
 
-@ApiSchema({ name: 'Classifier' })
-export class ClassifierDto {
+@ApiSchema({ name: 'ClassifierReference' })
+export class ClassifierReferenceDto {
   @ApiProperty({
     description: 'The ID of the classifier',
-    example: 'gpt-5-nano-2025-08-07',
-  })
-  id: string;
-
-  @ApiProperty({
-    description: 'The fully qualified ID of the classifier',
     example: 'openai/gpt-5-nano-2025-08-07',
   })
-  fullyQualifiedId: string;
+  id: string;
 
   @ApiProperty({
     description: 'The display name of the classifier',
-    example: 'GPT-5 Nano',
+    nullable: true,
+    type: 'string',
   })
-  displayName: string;
+  displayName: string | null;
 
+  constructor(data: ClassifierReferenceParams) {
+    this.id = data.id;
+    this.displayName = data.displayName ?? null;
+  }
+}
+
+export interface ClassifierParams extends ClassifierReferenceParams {
+  description?: string | null;
+  supportedMimeTypes: string[];
+  maxFileSize?: number;
+  inputSchema: ConfigSchemaDefinition;
+}
+
+@ApiSchema({ name: 'Classifier' })
+export class ClassifierDto extends ClassifierReferenceDto {
   @ApiProperty({
     description: 'A brief description of the classifier',
     type: 'string',
@@ -46,7 +51,8 @@ export class ClassifierDto {
 
   @ApiProperty({
     description: 'Supported MIME types',
-    type: [String],
+    enum: SupportedMimeType,
+    isArray: true,
     example: ['image/jpeg', 'image/png'],
   })
   supportedMimeTypes: string[];
@@ -66,24 +72,13 @@ export class ClassifierDto {
       $ref: getSchemaPath(ConfigSchemaValueDto),
     },
   })
-  classifierInputSchema: ConfigSchemaForDto;
-
-  @ApiProperty({
-    description: 'The plugin ID that provides this classifier',
-    example: 'openai',
-  })
-  pluginId: string;
+  inputSchema: ConfigSchemaForDto;
 
   constructor(data: ClassifierParams) {
-    this.id = data.id;
-    this.fullyQualifiedId = data.fullyQualifiedId;
-    this.displayName = data.displayName;
+    super(data);
     this.description = data.description ?? null;
     this.supportedMimeTypes = data.supportedMimeTypes;
     this.maxFileSize = data.maxFileSize ?? null;
-    this.classifierInputSchema = toConfigSchemaForDto(
-      data.classifierInputSchema
-    );
-    this.pluginId = data.pluginId;
+    this.inputSchema = toConfigSchemaForDto(data.inputSchema);
   }
 }

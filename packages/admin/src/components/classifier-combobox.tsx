@@ -61,7 +61,7 @@ export function ClassifierCombobox({
     return <Skeleton className="h-10 w-full" />;
   }
 
-  const options = classifiers.map((c) => ({
+  const options = classifiers.items.map((c) => ({
     value: c.name,
     label: c.name,
   }));

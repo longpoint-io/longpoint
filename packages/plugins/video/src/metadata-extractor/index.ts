@@ -15,6 +15,13 @@ const metadataExtractorContribution = {
     LongpointMimeType.GIF,
     LongpointMimeType.WEBP,
   ],
+  templates: {
+    basic: {
+      displayName: 'Basic',
+      description: 'Extract basic metadata from a media file',
+      input: {},
+    },
+  },
 } satisfies ClassifierContribution;
 
 export default metadataExtractorContribution;

@@ -35,10 +35,12 @@ export function TransformTemplateCard({
             {template.description}
           </p>
         )}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Clock className="h-3 w-3" />
-          <span>{new Date(template.createdAt).toLocaleDateString()}</span>
-        </div>
+        {template.createdAt && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            <span>{new Date(template.createdAt).toLocaleDateString()}</span>
+          </div>
+        )}
         <div className="text-sm">
           <span className="text-muted-foreground">Transformer: </span>
           <span className="font-medium">{template.transformerId}</span>

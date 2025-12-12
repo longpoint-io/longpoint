@@ -1,57 +1,64 @@
-import { ClassifierRunStatus, ClassifierTemplate, Prisma } from '@/database';
+import { ClassifierRunStatus, Prisma } from '@/database';
 import { AssetService, AssetVariantEntity } from '@/modules/asset';
-import { selectClassifier } from '@/modules/classifier/classifier.selectors';
+import { selectClassifierTemplate } from '@/modules/classifier/classifier.selectors';
 import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
+import { CannotModifyPluginTemplate } from '@/modules/plugin';
 import { Unexpected } from '@/shared/errors';
+import { TemplateSource } from '@/shared/types/template.types';
 import { ConfigValues } from '@longpoint/config-schema';
 import { toBase64DataUri } from '@longpoint/utils/string';
 import { Logger } from '@nestjs/common';
 import { ClassifierTemplateNotFound } from '../classifier.errors';
 import { ClassifierEvents } from '../classifier.events';
-import {
-  ClassifierTemplateDto,
-  ClassifierTemplateSummaryDto,
-  UpdateClassifierTemplateDto,
-} from '../dtos';
+import { ClassifierTemplateDto, UpdateClassifierTemplateDto } from '../dtos';
 import { ClassifierService } from '../services/classifier.service';
 import { ClassifierEntity } from './classifier.entity';
 
-export interface ClassifierTemplateEntityArgs
-  extends Pick<
-    ClassifierTemplate,
-    'id' | 'name' | 'description' | 'createdAt' | 'updatedAt' | 'modelInput'
-  > {
+export interface ClassifierTemplateEntityArgs {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  input?: ConfigValues | null;
   classifier: ClassifierEntity;
   prismaService: PrismaService;
   classifierService: ClassifierService;
   assetService: AssetService;
   eventPublisher: EventPublisher;
+  displayName?: string;
+  source: TemplateSource;
 }
 
 export class ClassifierTemplateEntity {
+  readonly id: string;
+  readonly source: TemplateSource;
+
+  private _name: string;
+  private _description: string | null;
+  private _createdAt: Date | null;
+  private _updatedAt: Date | null;
+  private _classifier: ClassifierEntity;
+  private _input: ConfigValues | null;
+  private _displayName?: string;
+
   private readonly prismaService: PrismaService;
   private readonly classifierService: ClassifierService;
   private readonly assetService: AssetService;
   private readonly eventPublisher: EventPublisher;
   private readonly logger = new Logger(ClassifierTemplateEntity.name);
 
-  private _id: string;
-  private _name: string;
-  private _description: string | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _classifier: ClassifierEntity;
-  private _modelInput: ConfigValues | null;
-
   constructor(args: ClassifierTemplateEntityArgs) {
-    this._id = args.id;
+    this.id = args.id;
+    this.source = args.source;
     this._name = args.name;
     this._description = args.description;
     this._createdAt = args.createdAt;
     this._updatedAt = args.updatedAt;
     this._classifier = args.classifier;
-    this._modelInput = args.modelInput as ConfigValues;
+    this._input = args.input ?? null;
+    this._displayName = args.displayName;
     this.prismaService = args.prismaService;
     this.classifierService = args.classifierService;
     this.assetService = args.assetService;
@@ -81,7 +88,7 @@ export class ClassifierTemplateEntity {
 
     if (!this.classifier.isMimeTypeSupported(variant.mimeType)) {
       this.logger.warn(
-        `Classifier "${this.classifier.fullyQualifiedId}" does not support mime type "${variant.mimeType}" - skipping classifier run`
+        `Classifier "${this.classifier.id}" does not support mime type "${variant.mimeType}" - skipping classifier run`
       );
       return;
     }
@@ -91,7 +98,7 @@ export class ClassifierTemplateEntity {
       (variant.size ?? 0) > this.classifier.maxFileSize
     ) {
       this.logger.warn(
-        `Asset variant "${assetVariantId}" is too large for classifier "${this.classifier.fullyQualifiedId}" - skipping classifier run`
+        `Asset variant "${assetVariantId}" is too large for classifier "${this.classifier.id}" - skipping classifier run`
       );
       return;
     }
@@ -109,7 +116,7 @@ export class ClassifierTemplateEntity {
       const source = await this.getAssetSource(variant);
       const result = await this.classifier.classify({
         source,
-        classifierInput: this.modelInput as ConfigValues,
+        classifierInput: this.input as ConfigValues,
       });
       const updatedRun = await this.prismaService.classifierRun.update({
         where: {
@@ -149,25 +156,29 @@ export class ClassifierTemplateEntity {
   }
 
   async update(data: UpdateClassifierTemplateDto) {
-    const oldModelInput = this.modelInput as ConfigValues | undefined;
+    if (this.source === TemplateSource.PLUGIN) {
+      throw new CannotModifyPluginTemplate();
+    }
+
+    const oldInput = this.input as ConfigValues | undefined;
     const newClassifierId = data.classifierId;
-    const newModelInput = data.modelInput ?? undefined;
+    const newInput = data.input ?? undefined;
 
     let modelInputToUpdate: ConfigValues | undefined;
     let classifier = this._classifier;
 
-    if (newClassifierId && !newModelInput) {
+    if (newClassifierId && !newInput) {
       classifier = await this.classifierService.getClassifierByIdOrThrow(
         newClassifierId
       );
-      modelInputToUpdate = await classifier.processInboundInput(oldModelInput);
-    } else if (newModelInput && !newClassifierId) {
-      modelInputToUpdate = await classifier.processInboundInput(newModelInput);
-    } else if (newModelInput && newClassifierId) {
+      modelInputToUpdate = await classifier.processInboundInput(oldInput);
+    } else if (newInput && !newClassifierId) {
+      modelInputToUpdate = await classifier.processInboundInput(newInput);
+    } else if (newInput && newClassifierId) {
       classifier = await this.classifierService.getClassifierByIdOrThrow(
         newClassifierId
       );
-      modelInputToUpdate = await classifier.processInboundInput(newModelInput);
+      modelInputToUpdate = await classifier.processInboundInput(newInput);
     }
 
     const updatedClassifier =
@@ -179,21 +190,24 @@ export class ClassifierTemplateEntity {
           name: data.name,
           description: data.description,
           classifierId: data.classifierId,
-          modelInput:
-            data.modelInput === null ? Prisma.JsonNull : modelInputToUpdate,
+          input: data.input === null ? Prisma.JsonNull : modelInputToUpdate,
         },
-        select: selectClassifier(),
+        select: selectClassifierTemplate(),
       });
 
     this._name = updatedClassifier.name;
     this._description = updatedClassifier.description;
-    this._modelInput = updatedClassifier.modelInput as ConfigValues;
+    this._input = updatedClassifier.input as ConfigValues;
     this._updatedAt = updatedClassifier.updatedAt;
     this._createdAt = updatedClassifier.createdAt;
     this._classifier = classifier;
   }
 
   async delete() {
+    if (this.source === TemplateSource.PLUGIN) {
+      throw new CannotModifyPluginTemplate();
+    }
+
     try {
       await this.prismaService.classifierTemplate.delete({
         where: {
@@ -213,22 +227,11 @@ export class ClassifierTemplateEntity {
       id: this.id,
       name: this.name,
       description: this.description,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      provider: this.classifier.toSummaryDto(),
-      modelInputSchema: this.classifier.classifierInputSchema,
-      modelInput: this.modelInput,
-    });
-  }
-
-  toSummaryDto(): ClassifierTemplateSummaryDto {
-    return new ClassifierTemplateSummaryDto({
-      id: this.id,
-      name: this.name,
-      description: this.description,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      provider: this.classifier.toSummaryDto(),
+      source: this.source,
+      createdAt: this.createdAt || null,
+      updatedAt: this.updatedAt || null,
+      classifier: this.classifier.toDto(),
+      input: this.input,
     });
   }
 
@@ -258,8 +261,8 @@ export class ClassifierTemplateEntity {
     };
   }
 
-  get id(): string {
-    return this._id;
+  get displayName(): string | undefined {
+    return this._displayName;
   }
 
   get name(): string {
@@ -270,16 +273,16 @@ export class ClassifierTemplateEntity {
     return this._description;
   }
 
-  get createdAt(): Date {
+  get createdAt(): Date | null {
     return this._createdAt;
   }
 
-  get updatedAt(): Date {
+  get updatedAt(): Date | null {
     return this._updatedAt;
   }
 
-  get modelInput(): ConfigValues | null {
-    return this._modelInput;
+  get input(): ConfigValues | null {
+    return this._input;
   }
 
   get classifier(): ClassifierEntity {

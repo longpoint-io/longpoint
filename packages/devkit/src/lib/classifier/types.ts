@@ -1,4 +1,5 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
+import { ContributionTemplate } from '../types/index.js';
 import { Classifier, ClassifierArgs } from './classifier.js';
 
 export interface ClassifierContribution<
@@ -29,6 +30,10 @@ export interface ClassifierContribution<
    * An input schema for user defined input to the classifier.
    */
   input?: ConfigSchemaDefinition;
+  /**
+   * A list of plugin-provided templates for the classifier.
+   */
+  templates?: Record<string, ContributionTemplate>;
 }
 
 export const KeyAssetMetadataField = {

@@ -2,30 +2,7 @@ import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { ClassifierContribution } from '../classifier/types.js';
 import { StorageContribution } from '../storage/index.js';
 import { TransformerContribution } from '../transformer/types.js';
-import { VectorContribution, VectorPluginManifest } from '../vector/types.js';
-import {
-  VectorProvider,
-  VectorProviderArgs,
-} from '../vector/vector-provider.js';
-
-type PluginType = 'vector';
-
-export interface BasePluginConfig {
-  /**
-   * The plugin type
-   */
-  type: PluginType;
-}
-
-export interface VectorPluginConfig<
-  T extends VectorPluginManifest = VectorPluginManifest
-> extends BasePluginConfig {
-  type: 'vector';
-  manifest: T;
-  provider: new (args: VectorProviderArgs) => VectorProvider;
-}
-
-export type PluginConfig = VectorPluginConfig<any>;
+import { VectorContribution } from '../vector/types.js';
 
 export interface LongpointPluginConfig<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
@@ -54,7 +31,7 @@ export interface LongpointPluginConfig<
       [id: string]: ClassifierContribution<T>;
     };
     transformers?: {
-      [id: string]: TransformerContribution;
+      [id: string]: TransformerContribution<T>;
     };
   };
 }

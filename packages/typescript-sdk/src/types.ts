@@ -105,7 +105,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List classifier templates */
+        /**
+         * List classifier templates
+         * @description Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").
+         */
         get: operations["listClassifierTemplates"];
         put?: never;
         /** Create a classifier template */
@@ -888,37 +891,24 @@ export interface components {
             width: number | null;
         };
         Classifier: {
-            /** @description The schema for the classifier input */
-            classifierInputSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            };
             /** @description A brief description of the classifier */
             description: string | null;
-            /**
-             * @description The display name of the classifier
-             * @example GPT-5 Nano
-             */
-            displayName: string;
-            /**
-             * @description The fully qualified ID of the classifier
-             * @example openai/gpt-5-nano-2025-08-07
-             */
-            fullyQualifiedId: string;
+            /** @description The display name of the classifier */
+            displayName: string | null;
             /**
              * @description The ID of the classifier
-             * @example gpt-5-nano-2025-08-07
+             * @example openai/gpt-5-nano-2025-08-07
              */
             id: string;
+            /** @description The schema for the classifier input */
+            inputSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
             /**
              * @description Maximum file size in bytes
              * @example 52428800
              */
             maxFileSize: number | null;
-            /**
-             * @description The plugin ID that provides this classifier
-             * @example openai
-             */
-            pluginId: string;
             /**
              * @description Supported MIME types
              * @example [
@@ -926,44 +916,21 @@ export interface components {
              *       "image/png"
              *     ]
              */
-            supportedMimeTypes: string[];
-        };
-        ClassifierSummary: {
-            /** @description A brief description of the classifier */
-            description: string | null;
-            /**
-             * @description The display name of the classifier
-             * @example GPT-5 Nano
-             */
-            displayName: string;
-            /**
-             * @description The fully qualified ID of the classifier
-             * @example openai/gpt-5-nano-2025-08-07
-             */
-            fullyQualifiedId: string;
-            /**
-             * @description The ID of the classifier
-             * @example gpt-5-nano-2025-08-07
-             */
-            id: string;
-            /**
-             * @description The plugin ID that provides this classifier
-             * @example openai
-             */
-            pluginId: string;
+            supportedMimeTypes: ("image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "video/mp4" | "video/webm" | "video/quicktime")[];
         };
         ClassifierTemplate: {
+            /** @description The classifier used by the classifier template */
+            classifier: components["schemas"]["Classifier"];
             /**
-             * Format: date-time
-             * @description When the classifier template was created
+             * @description When the classifier template was created (only for custom templates)
              * @example 2025-01-01T00:00:00.000Z
              */
-            createdAt: string;
+            createdAt: string | null;
             /**
              * @description A brief description of the classifier template
              * @example Tag general subjects like people, places, and things
              */
-            description: Record<string, never> | null;
+            description: string | null;
             /**
              * @description The ID of the classifier template
              * @example sajl1kih6emtwozh8y0zenkj
@@ -975,64 +942,23 @@ export interface components {
              *       "name": "John Doe"
              *     }
              */
-            modelInput: Record<string, never>;
-            /**
-             * @description The schema for the classifier input
-             * @example {
-             *       "name": {
-             *         "label": "Name",
-             *         "type": "string",
-             *         "required": true
-             *       }
-             *     }
-             */
-            modelInputSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            };
+            input: Record<string, never>;
             /**
              * @description The name of the classifier template
              * @example general-tagging
              */
             name: string;
-            /** @description The classifier used by the classifier template */
-            provider: components["schemas"]["ClassifierSummary"];
             /**
-             * Format: date-time
-             * @description When the classifier template was last updated
+             * @description The source of the classifier template definition
+             * @example plugin
+             * @enum {string}
+             */
+            source: "plugin" | "custom";
+            /**
+             * @description When the classifier template was last updated (only for custom templates)
              * @example 2025-01-01T00:00:00.000Z
              */
-            updatedAt: string;
-        };
-        ClassifierTemplateSummary: {
-            /**
-             * Format: date-time
-             * @description When the classifier template was created
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * @description A brief description of the classifier template
-             * @example Tag general subjects like people, places, and things
-             */
-            description: Record<string, never> | null;
-            /**
-             * @description The ID of the classifier template
-             * @example sajl1kih6emtwozh8y0zenkj
-             */
-            id: string;
-            /**
-             * @description The name of the classifier template
-             * @example general-tagging
-             */
-            name: string;
-            /** @description The classifier used by the classifier template */
-            provider: components["schemas"]["ClassifierSummary"];
-            /**
-             * Format: date-time
-             * @description When the classifier template was last updated
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            updatedAt: string;
+            updatedAt: string | null;
         };
         Collection: {
             /**
@@ -1255,21 +1181,23 @@ export interface components {
         CreateClassifierTemplate: {
             /**
              * @description The ID of the classifier to use for the classifier template
-             * @example anthropic/claude-haiku-4-5-20251001
+             * @example longpoint/metadata-extractor
              */
             classifierId: string;
             /**
              * @description A brief description of the classifier template
              * @example Tag general subjects like people, places, and things
              */
-            description: Record<string, never> | null;
+            description: string | null;
             /**
-             * @description The input values to use for the classifier
+             * @description The input values passed to the classifier
              * @example {
              *       "name": "John Doe"
              *     }
              */
-            modelInput?: Record<string, never>;
+            input?: {
+                [key: string]: unknown;
+            };
             /**
              * @description The name of the classifier template
              * @example general-tagging
@@ -1489,6 +1417,12 @@ export interface components {
         ListAssetsResponse: {
             /** @description The assets in the response */
             items: components["schemas"]["AssetSummary"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
+        ListClassifierTemplatesResponse: {
+            /** @description The classifier templates in the response */
+            items: components["schemas"]["ClassifierTemplate"][];
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
@@ -1988,11 +1922,10 @@ export interface components {
         };
         TransformTemplate: {
             /**
-             * Format: date-time
-             * @description The date and time the transform template was created
+             * @description The date and time the transform template was created (only for custom templates)
              * @example 2021-01-01T00:00:00.000Z
              */
-            createdAt: string;
+            createdAt?: string | null;
             /**
              * @description A brief description of the transform template
              * @example Convert videos to a watchable format for 5th generation iPods
@@ -2026,6 +1959,12 @@ export interface components {
              */
             name: string;
             /**
+             * @description The source of the transform template definition
+             * @example plugin
+             * @enum {string}
+             */
+            source: "plugin" | "custom";
+            /**
              * @description The supported MIME types as input to the transformer
              * @example [
              *       "video/mp4",
@@ -2039,11 +1978,10 @@ export interface components {
              */
             transformerId: string;
             /**
-             * Format: date-time
-             * @description The date and time the transform template was updated
+             * @description The date and time the transform template was updated (only for custom templates)
              * @example 2021-01-01T00:00:00.000Z
              */
-            updatedAt: string;
+            updatedAt?: string | null;
         };
         UpdateAsset: {
             /**
@@ -2062,21 +2000,23 @@ export interface components {
         UpdateClassifierTemplate: {
             /**
              * @description The ID of the classifier to use for the classifier template
-             * @example anthropic/claude-haiku-4-5-20251001
+             * @example longpoint/metadata-extractor
              */
             classifierId?: string;
             /**
              * @description A brief description of the classifier template
              * @example Tag general subjects like people, places, and things
              */
-            description?: Record<string, never> | null;
+            description?: string | null;
             /**
-             * @description The input values to use for the classifier
+             * @description The input values passed to the classifier
              * @example {
              *       "name": "John Doe"
              *     }
              */
-            modelInput?: Record<string, never>;
+            input?: {
+                [key: string]: unknown;
+            };
             /**
              * @description The name of the classifier template
              * @example general-tagging
@@ -2610,19 +2550,25 @@ export interface operations {
     };
     listClassifierTemplates: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description The number of items per page */
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
+            /** @description Returns both plugin-defined templates and custom templates. Plugin templates have type="plugin" and custom templates have type="custom". */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ClassifierTemplateSummary"][];
+                    "application/json": components["schemas"]["ListClassifierTemplatesResponse"];
                 };
             };
         };

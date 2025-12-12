@@ -21,7 +21,7 @@ interface BaseContributionRegistryEntry {
   pluginConfig: LongpointPluginConfig<any>;
 }
 export interface ClassifierRegistryEntry extends BaseContributionRegistryEntry {
-  classifierId: string;
+  classifierKey: string;
   contribution: ClassifierContribution<any>;
 }
 
@@ -378,7 +378,7 @@ export class PluginRegistryService implements OnModuleInit {
           packageName,
           packagePath,
           pluginId,
-          classifierId,
+          classifierKey: classifierId,
           fullyQualifiedId,
           contribution,
           pluginConfig: processedPluginConfig,

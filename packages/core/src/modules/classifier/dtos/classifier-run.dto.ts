@@ -2,10 +2,7 @@ import { ClassifierRun, ClassifierRunStatus } from '@/database';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { JsonObject } from '../../../shared/types/object.types';
 import { type SelectedClassifierRun } from '../classifier.selectors';
-import {
-  ClassifierTemplateShortDto,
-  ClassifierTemplateShortParams,
-} from './classifier-template-short.dto';
+import { ClassifierTemplateReferenceDto } from './classifier-template.dto';
 
 export interface ClassifierRunParams
   extends Pick<
@@ -18,7 +15,7 @@ export interface ClassifierRunParams
     | 'startedAt'
     | 'completedAt'
   > {
-  classifierTemplate: ClassifierTemplateShortParams;
+  classifierTemplate: ClassifierTemplateReferenceDto;
 }
 
 @ApiSchema({ name: 'ClassifierRun' })
@@ -77,11 +74,10 @@ export class ClassifierRunDto {
   completedAt: Date | null;
 
   @ApiProperty({
-    description:
-      'The classifier template that was used to run the classifier run',
-    type: ClassifierTemplateShortDto,
+    description: 'The classifier template that was used to run the classifier',
+    type: ClassifierTemplateReferenceDto,
   })
-  classifierTemplate: ClassifierTemplateShortDto;
+  classifierTemplate: ClassifierTemplateReferenceDto;
 
   constructor(data: SelectedClassifierRun) {
     this.id = data.id;
@@ -91,7 +87,7 @@ export class ClassifierRunDto {
     this.createdAt = data.createdAt;
     this.startedAt = data.startedAt;
     this.completedAt = data.completedAt;
-    this.classifierTemplate = new ClassifierTemplateShortDto(
+    this.classifierTemplate = new ClassifierTemplateReferenceDto(
       data.classifierTemplate
     );
   }
