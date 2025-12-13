@@ -2,6 +2,7 @@
   "name": "@longpoint/ui",
   "type": "module",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "exports": {
     "./globals.css": "./src/styles/globals.css",

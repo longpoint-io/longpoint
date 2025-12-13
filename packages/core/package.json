@@ -1,6 +1,7 @@
 {
   "name": "@longpoint/core",
   "version": "0.0.6",
+  "license": "SEE LICENSE IN LICENSE",
   "description": "Longpoint core functionality",
   "main": "dist/index.js",
   "scripts": {},

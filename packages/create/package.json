@@ -1,6 +1,7 @@
 {
   "name": "create-longpoint",
   "version": "0.0.6",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

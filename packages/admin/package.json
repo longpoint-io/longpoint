@@ -1,6 +1,7 @@
 {
   "name": "@longpoint/admin",
   "version": "0.0.6",
+  "license": "SEE LICENSE IN LICENSE",
   "description": "Longpoint Admin UI",
   "main": "dist/index.html",
   "devDependencies": {
