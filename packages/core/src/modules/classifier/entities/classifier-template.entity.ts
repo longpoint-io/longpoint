@@ -10,7 +10,7 @@ import { ConfigValues } from '@longpoint/config-schema';
 import { toBase64DataUri } from '@longpoint/utils/string';
 import { Logger } from '@nestjs/common';
 import { ClassifierTemplateNotFound } from '../classifier.errors';
-import { ClassifierEvents } from '../classifier.events';
+import { ClassifierEventKey } from '../classifier.events';
 import { ClassifierTemplateDto, UpdateClassifierTemplateDto } from '../dtos';
 import { ClassifierService } from '../services/classifier.service';
 import { ClassifierEntity } from './classifier.entity';
@@ -129,7 +129,7 @@ export class ClassifierTemplateEntity {
         },
       });
       await this.eventPublisher.publish(
-        ClassifierEvents.CLASSIFIER_RUN_COMPLETE,
+        ClassifierEventKey.CLASSIFIER_RUN_COMPLETE,
         {
           assetId: assetId,
           assetVariantId,

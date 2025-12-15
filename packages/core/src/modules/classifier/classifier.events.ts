@@ -1,12 +1,12 @@
 import { JsonObject } from '@/shared/types/object.types';
 import { EventPayload } from '../event/event.types';
 
-export const ClassifierEvents = {
+export const ClassifierEventKey = {
   CLASSIFIER_RUN_COMPLETE: 'classifier.run.complete',
 } as const;
 
-export type ClassifierEvents =
-  (typeof ClassifierEvents)[keyof typeof ClassifierEvents];
+export type ClassifierEventKey =
+  (typeof ClassifierEventKey)[keyof typeof ClassifierEventKey];
 
 export interface ClassifierRunCompleteEventPayload extends EventPayload {
   assetId: string;
@@ -17,5 +17,5 @@ export interface ClassifierRunCompleteEventPayload extends EventPayload {
 }
 
 export interface ClassifierEventPayloads {
-  [ClassifierEvents.CLASSIFIER_RUN_COMPLETE]: ClassifierRunCompleteEventPayload;
+  [ClassifierEventKey.CLASSIFIER_RUN_COMPLETE]: ClassifierRunCompleteEventPayload;
 }

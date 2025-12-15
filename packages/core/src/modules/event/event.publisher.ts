@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EventPayloads, Events } from './event.types';
+import { EventKey, PlatformEventPayloads } from './event.types';
 
 export abstract class EventPublisher {
-  abstract publish<T extends Events>(
+  abstract publish<T extends EventKey>(
     event: T,
-    payload: EventPayloads[T]
+    payload: PlatformEventPayloads[T]
   ): Promise<void>;
 }
 
@@ -15,9 +15,9 @@ export class InMemoryEventPublisher extends EventPublisher {
     super();
   }
 
-  async publish<T extends Events>(
+  async publish<T extends EventKey>(
     event: T,
-    payload: EventPayloads[T]
+    payload: PlatformEventPayloads[T]
   ): Promise<void> {
     this.eventEmitter.emit(event, payload);
   }

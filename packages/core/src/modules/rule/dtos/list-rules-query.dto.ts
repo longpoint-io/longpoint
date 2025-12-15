@@ -1,11 +1,11 @@
 import { PaginationQueryDto } from '@/shared/dtos';
 import { ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
-import { type RuleTriggerEvent } from '../rule.types';
+import { RuleTriggerEvent } from '../rule.types';
 
 @ApiSchema({ name: 'ListRulesQuery' })
 export class ListRulesQueryDto extends PaginationQueryDto {
-  @IsEnum(['asset.variant.ready'] as const)
+  @IsEnum(RuleTriggerEvent)
   @IsOptional()
   @ApiPropertyOptional({
     description: 'Filter by trigger event',

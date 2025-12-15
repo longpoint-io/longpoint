@@ -42,7 +42,6 @@ export class CompoundConditionDto {
 
   @IsArray()
   @Type((options) => {
-    // CompoundCondition has a 'conditions' array, SingleCondition does not
     const obj = options?.object as Record<string, unknown> | undefined;
     return obj && 'conditions' in obj
       ? CompoundConditionDto

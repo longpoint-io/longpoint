@@ -1,17 +1,23 @@
-export enum ComparisonOperator {
-  EQUALS = 'equals',
-  NOT_EQUALS = 'notEquals',
-  CONTAINS = 'contains',
-  IN = 'in',
-  NOT_IN = 'notIn',
-  GREATER_THAN = 'greaterThan',
-  LESS_THAN = 'lessThan',
-}
+import { AssetEventKey } from '../asset';
 
-export enum LogicalOperator {
-  AND = 'and',
-  OR = 'or',
-}
+export const ComparisonOperator = {
+  EQUALS: 'equals',
+  NOT_EQUALS: 'notEquals',
+  CONTAINS: 'contains',
+  IN: 'in',
+  NOT_IN: 'notIn',
+  GREATER_THAN: 'greaterThan',
+  LESS_THAN: 'lessThan',
+} as const;
+export type ComparisonOperator =
+  (typeof ComparisonOperator)[keyof typeof ComparisonOperator];
+
+export const LogicalOperator = {
+  AND: 'and',
+  OR: 'or',
+} as const;
+export type LogicalOperator =
+  (typeof LogicalOperator)[keyof typeof LogicalOperator];
 
 export interface SingleCondition {
   field: string;
@@ -40,4 +46,9 @@ export interface RunTransformerAction {
 
 export type RuleAction = RunClassifierAction | RunTransformerAction;
 
-export type RuleTriggerEvent = 'asset.variant.ready';
+export const RuleTriggerEvent = {
+  ASSET_VARIANT_READY: AssetEventKey.ASSET_VARIANT_READY,
+} as const;
+
+export type RuleTriggerEvent =
+  (typeof RuleTriggerEvent)[keyof typeof RuleTriggerEvent];
