@@ -28,7 +28,9 @@ export class RuleService {
         enabled: data.enabled ?? true,
         triggerEvent: data.triggerEvent,
         condition: data.condition as unknown as Prisma.InputJsonObject,
-        action: data.action as unknown as Prisma.InputJsonObject,
+        actions: {
+          set: data.actions as unknown as Prisma.InputJsonValue[],
+        },
       },
       select: selectRule(),
     });
@@ -98,7 +100,7 @@ export class RuleService {
       enabled: data.enabled,
       triggerEvent: data.triggerEvent,
       condition: data.condition as RuleCondition | null,
-      action: data.action as unknown as RuleAction,
+      actions: data.actions as unknown as RuleAction[],
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       prismaService: this.prismaService,

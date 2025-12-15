@@ -17,19 +17,11 @@ export interface RuleParams {
   displayName: string;
   enabled: boolean;
   triggerEvent: string;
-  condition: RuleCondition | null;
-  action: RuleActionDto;
   createdAt: Date;
   updatedAt: Date;
 }
 
 @ApiSchema({ name: 'Rule' })
-@ApiExtraModels(
-  SingleConditionDto,
-  CompoundConditionDto,
-  RunClassifierActionDto,
-  RunTransformerActionDto
-)
 export class RuleDto {
   @ApiProperty({
     description: 'The ID of the rule',
@@ -56,25 +48,6 @@ export class RuleDto {
   triggerEvent: string;
 
   @ApiProperty({
-    description: 'The condition to evaluate (optional)',
-    oneOf: [
-      { $ref: getSchemaPath(SingleConditionDto) },
-      { $ref: getSchemaPath(CompoundConditionDto) },
-    ],
-    nullable: true,
-  })
-  condition: RuleCondition | null;
-
-  @ApiProperty({
-    description: 'The action to execute when condition matches',
-    oneOf: [
-      { $ref: getSchemaPath(RunClassifierActionDto) },
-      { $ref: getSchemaPath(RunTransformerActionDto) },
-    ],
-  })
-  action: RuleActionDto;
-
-  @ApiProperty({
     description: 'When the rule was created',
     example: '2025-01-01T00:00:00.000Z',
     type: 'string',
@@ -93,9 +66,49 @@ export class RuleDto {
     this.displayName = data.displayName;
     this.enabled = data.enabled;
     this.triggerEvent = data.triggerEvent;
-    this.condition = data.condition;
-    this.action = data.action;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
+  }
+}
+
+export interface RuleDetailsParams extends RuleParams {
+  condition: RuleCondition | null;
+  actions: RuleActionDto[];
+}
+
+@ApiSchema({ name: 'RuleDetails' })
+@ApiExtraModels(
+  SingleConditionDto,
+  CompoundConditionDto,
+  RunClassifierActionDto,
+  RunTransformerActionDto
+)
+export class RuleDetailsDto extends RuleDto {
+  @ApiProperty({
+    description: 'The condition to evaluate (optional)',
+    oneOf: [
+      { $ref: getSchemaPath(SingleConditionDto) },
+      { $ref: getSchemaPath(CompoundConditionDto) },
+    ],
+    nullable: true,
+  })
+  condition: RuleCondition | null;
+
+  @ApiProperty({
+    description: 'The actions to execute when condition matches',
+    type: 'array',
+    items: {
+      oneOf: [
+        { $ref: getSchemaPath(RunClassifierActionDto) },
+        { $ref: getSchemaPath(RunTransformerActionDto) },
+      ],
+    },
+  })
+  actions: RuleActionDto[];
+
+  constructor(data: RuleDetailsParams) {
+    super(data);
+    this.condition = data.condition;
+    this.actions = data.actions;
   }
 }

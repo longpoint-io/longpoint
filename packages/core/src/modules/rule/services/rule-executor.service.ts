@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import type { AssetVariantReadyEventPayload } from '../../asset/asset.events';
 import { ClassifierTemplateService } from '../../classifier/services/classifier-template.service';
 import { TransformTemplateService } from '../../transform/services/transform-template.service';
-import { RuleAction } from '../rule.types';
+import { RuleAction, RuleActionType } from '../rule.types';
 import { RunClassifierExecutor } from './executors/run-classifier.executor';
 import { RunTransformerExecutor } from './executors/run-transformer.executor';
 
@@ -23,28 +23,40 @@ export class RuleExecutorService {
   ) {}
 
   async execute(
-    action: RuleAction,
+    actions: RuleAction[],
     eventPayload: AssetVariantReadyEventPayload
   ): Promise<void> {
     const context: RuleExecutionContext = {
       eventPayload,
     };
 
-    const executor = this.createExecutor(action.type);
+    const results = await Promise.allSettled(
+      actions.map((action) => {
+        const executor = this.createExecutor(action.type);
+        return executor.execute(action, context);
+      })
+    );
 
-    executor.execute(action, context).catch((error) => {
-      this.logger.error(
-        `Error executing rule action ${action.type} for variant ${eventPayload.id}:`,
-        error
-      );
+    results.forEach((result, index) => {
+      const action = actions[index];
+      if (result.status === 'fulfilled') {
+        this.logger.debug(
+          `Successfully executed rule action ${action.type} for variant ${eventPayload.id}`
+        );
+      } else {
+        this.logger.error(
+          `Error executing rule action ${action.type} for variant ${eventPayload.id}:`,
+          result.reason
+        );
+      }
     });
   }
 
-  private createExecutor(actionType: RuleAction['type']): RuleActionExecutor {
+  private createExecutor(actionType: RuleActionType): RuleActionExecutor {
     switch (actionType) {
-      case 'runClassifier':
+      case RuleActionType.RUN_CLASSIFIER:
         return new RunClassifierExecutor(this.classifierTemplateService);
-      case 'runTransformer':
+      case RuleActionType.RUN_TRANSFORMER:
         return new RunTransformerExecutor(this.transformTemplateService);
       default:
         throw new Error(`Unsupported action type: ${actionType}`);

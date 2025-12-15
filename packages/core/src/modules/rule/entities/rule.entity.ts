@@ -5,6 +5,7 @@ import { ClassifierTemplateService } from '../../classifier/services/classifier-
 import { PrismaService } from '../../common/services';
 import { TransformTemplateService } from '../../transform/services/transform-template.service';
 import {
+  RuleDetailsDto,
   RuleDto,
   RunClassifierActionDto,
   RunTransformerActionDto,
@@ -21,7 +22,7 @@ export interface RuleEntityArgs {
   enabled: boolean;
   triggerEvent: string;
   condition: RuleCondition | null;
-  action: RuleAction;
+  actions: RuleAction[];
   createdAt: Date;
   updatedAt: Date;
   prismaService: PrismaService;
@@ -37,7 +38,7 @@ export class RuleEntity {
   private _enabled: boolean;
   private _triggerEvent: string;
   private _condition: RuleCondition | null;
-  private _action: RuleAction;
+  private _actions: RuleAction[];
   private _createdAt: Date;
   private _updatedAt: Date;
 
@@ -51,7 +52,7 @@ export class RuleEntity {
     this._enabled = args.enabled;
     this._triggerEvent = args.triggerEvent;
     this._condition = args.condition;
-    this._action = args.action;
+    this._actions = args.actions;
     this._createdAt = args.createdAt;
     this._updatedAt = args.updatedAt;
     this.prismaService = args.prismaService;
@@ -69,7 +70,7 @@ export class RuleEntity {
   }
 
   async execute(eventPayload: AssetVariantReadyEventPayload): Promise<void> {
-    return this.executorService.execute(this._action, eventPayload);
+    return this.executorService.execute(this._actions, eventPayload);
   }
 
   async update(data: UpdateRuleDto) {
@@ -81,7 +82,7 @@ export class RuleEntity {
           enabled: data.enabled,
           triggerEvent: data.triggerEvent,
           condition: data.condition as unknown as Prisma.InputJsonObject,
-          action: data.action as unknown as Prisma.InputJsonObject,
+          actions: data.actions as unknown as Prisma.InputJsonValue[],
         },
       });
 
@@ -89,7 +90,7 @@ export class RuleEntity {
       this._enabled = updated.enabled;
       this._triggerEvent = updated.triggerEvent;
       this._condition = updated.condition as RuleCondition | null;
-      this._action = updated.action as unknown as RuleAction;
+      this._actions = updated.actions as unknown as RuleAction[];
       this._updatedAt = updated.updatedAt;
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
@@ -113,17 +114,29 @@ export class RuleEntity {
   }
 
   toDto(): RuleDto {
-    const action =
-      this.action.type === 'runClassifier'
-        ? new RunClassifierActionDto(this.action)
-        : new RunTransformerActionDto(this.action);
     return new RuleDto({
       id: this.id,
       displayName: this.displayName,
       enabled: this.enabled,
       triggerEvent: this.triggerEvent,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    });
+  }
+
+  toDetailsDto(): RuleDetailsDto {
+    const actions = this.actions.map((action) =>
+      action.type === 'runClassifier'
+        ? new RunClassifierActionDto(action)
+        : new RunTransformerActionDto(action)
+    );
+    return new RuleDetailsDto({
+      id: this.id,
+      displayName: this.displayName,
+      enabled: this.enabled,
+      triggerEvent: this.triggerEvent,
       condition: this.condition,
-      action,
+      actions,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     });
@@ -145,8 +158,8 @@ export class RuleEntity {
     return this._condition;
   }
 
-  get action(): RuleAction {
-    return this._action;
+  get actions(): RuleAction[] {
+    return this._actions;
   }
 
   get createdAt(): Date {

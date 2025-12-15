@@ -1,5 +1,5 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
 import type { RunClassifierAction, RunTransformerAction } from '../rule.types';
 
 export enum RuleActionType {
@@ -21,12 +21,10 @@ export class RunClassifierActionDto {
   @ApiProperty({
     description: 'The ID of the classifier template to run',
     example: 'abc123',
-    required: false,
   })
   classifierTemplateId!: string;
 
   constructor(data: RunClassifierAction) {
-    if (!data) return;
     this.type = RuleActionType.RUN_CLASSIFIER;
     this.classifierTemplateId = data.classifierTemplateId;
   }
@@ -43,24 +41,11 @@ export class RunTransformerActionDto {
   type!: RuleActionType.RUN_TRANSFORMER;
 
   @IsString()
-  @IsOptional()
-  @ValidateIf((o) => !o.transformTemplateName)
   @ApiProperty({
     description: 'The ID of the transform template to run',
     example: 'xyz789',
-    required: false,
   })
-  transformTemplateId?: string;
-
-  @IsString()
-  @IsOptional()
-  @ValidateIf((o) => !o.transformTemplateId)
-  @ApiProperty({
-    description: 'The name of the transform template to run',
-    example: 'video-thumbnail',
-    required: false,
-  })
-  transformTemplateName?: string;
+  transformTemplateId!: string;
 
   @IsString()
   @ApiProperty({
@@ -71,10 +56,8 @@ export class RunTransformerActionDto {
   sourceVariantId!: string;
 
   constructor(data: RunTransformerAction) {
-    if (!data) return;
     this.type = RuleActionType.RUN_TRANSFORMER;
     this.transformTemplateId = data.transformTemplateId;
-    this.transformTemplateName = data.transformTemplateName;
     this.sourceVariantId = data.sourceVariantId;
   }
 }

@@ -12,9 +12,9 @@ model Rule {
   /// Example (compound): { operator: "and", conditions: [{ field: "variant.type", operator: "equals", value: "ORIGINAL" }, { field: "variant.metadata.category", operator: "equals", value: "podcast" }] }
   condition Json?
 
-  /// Action to execute when condition matches (JSON)
-  /// Example: { type: "runClassifier", classifierTemplateId: "..." }
-  action Json
+  /// Actions to execute when condition matches (JSON array)
+  /// Example: [{ type: "runClassifier", classifierTemplateId: "..." }, { type: "runTransformer", transformTemplateId: "...", sourceVariantId: "{{variant.id}}" }]
+  actions Json[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

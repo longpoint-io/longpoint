@@ -7,7 +7,7 @@ export const selectRule = () => {
     enabled: true,
     triggerEvent: true,
     condition: true,
-    action: true,
+    actions: true,
     createdAt: true,
     updatedAt: true,
   } satisfies Prisma.RuleSelect;

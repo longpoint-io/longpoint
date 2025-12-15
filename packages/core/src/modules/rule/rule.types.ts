@@ -1,5 +1,9 @@
 import { AssetEventKey } from '../asset';
 
+// ------------------------------------------------------------
+// Conditions
+// ------------------------------------------------------------
+
 export const ComparisonOperator = {
   EQUALS: 'equals',
   NOT_EQUALS: 'notEquals',
@@ -32,19 +36,33 @@ export interface CompoundCondition {
 
 export type RuleCondition = SingleCondition | CompoundCondition;
 
+// ------------------------------------------------------------
+// Actions
+// ------------------------------------------------------------
+
+export const RuleActionType = {
+  RUN_CLASSIFIER: 'runClassifier',
+  RUN_TRANSFORMER: 'runTransformer',
+} as const;
+export type RuleActionType =
+  (typeof RuleActionType)[keyof typeof RuleActionType];
+
 export interface RunClassifierAction {
-  type: 'runClassifier';
+  type: typeof RuleActionType.RUN_CLASSIFIER;
   classifierTemplateId: string;
 }
 
 export interface RunTransformerAction {
-  type: 'runTransformer';
-  transformTemplateId?: string;
-  transformTemplateName?: string;
+  type: typeof RuleActionType.RUN_TRANSFORMER;
+  transformTemplateId: string;
   sourceVariantId: string;
 }
 
 export type RuleAction = RunClassifierAction | RunTransformerAction;
+
+// ------------------------------------------------------------
+// Events
+// ------------------------------------------------------------
 
 export const RuleTriggerEvent = {
   ASSET_VARIANT_READY: AssetEventKey.ASSET_VARIANT_READY,

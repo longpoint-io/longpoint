@@ -5,8 +5,9 @@ import {
   ApiSchema,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsBoolean,
   IsEnum,
   IsObject,
@@ -14,12 +15,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import type { RuleTriggerEvent } from '../rule.types';
-import {
-  RuleActionType,
-  RunClassifierActionDto,
-  RunTransformerActionDto,
-} from './action.dto';
+import { RuleActionType, RuleTriggerEvent } from '../rule.types';
+import { RunClassifierActionDto, RunTransformerActionDto } from './action.dto';
 import { CompoundConditionDto, SingleConditionDto } from './condition.dto';
 
 @ApiSchema({ name: 'CreateRule' })
@@ -46,18 +43,17 @@ export class CreateRuleDto {
   })
   enabled?: boolean;
 
-  @IsEnum(['asset.variant.ready'] as const)
+  @IsEnum(RuleTriggerEvent)
   @ApiProperty({
     description: 'The event that triggers this rule',
-    example: 'asset.variant.ready',
-    enum: ['asset.variant.ready'],
+    example: RuleTriggerEvent.ASSET_VARIANT_READY,
+    enum: RuleTriggerEvent,
   })
   triggerEvent!: RuleTriggerEvent;
 
   @IsObject()
   @IsOptional()
   @Type((options) => {
-    // CompoundCondition has a 'conditions' array, SingleCondition does not
     const obj = options?.object as Record<string, unknown> | undefined;
     return obj && 'conditions' in obj
       ? CompoundConditionDto
@@ -73,26 +69,27 @@ export class CreateRuleDto {
   })
   condition?: SingleConditionDto | CompoundConditionDto;
 
-  @IsObject()
-  @Type((options) => {
-    // Use the 'type' field as discriminator
-    const obj = options?.object;
-    if (obj?.action?.type === RuleActionType.RUN_CLASSIFIER) {
-      return RunClassifierActionDto;
-    }
-    if (obj?.action?.type === RuleActionType.RUN_TRANSFORMER) {
-      return RunTransformerActionDto;
-    }
-    // Default fallback (shouldn't happen with proper validation)
-    return RunClassifierActionDto;
-  })
-  @ValidateNested()
+  @ArrayMinSize(1, { message: 'At least one action is required' })
+  @Transform(({ value }) => value?.map(instantiateAction))
+  @ValidateNested({ each: true })
   @ApiProperty({
-    description: 'The action to execute when condition matches',
-    oneOf: [
-      { $ref: getSchemaPath(RunClassifierActionDto) },
-      { $ref: getSchemaPath(RunTransformerActionDto) },
-    ],
+    description: 'The actions to execute when condition matches',
+    type: 'array',
+    items: {
+      oneOf: [
+        { $ref: getSchemaPath(RunClassifierActionDto) },
+        { $ref: getSchemaPath(RunTransformerActionDto) },
+      ],
+    },
   })
-  action!: RunClassifierActionDto | RunTransformerActionDto;
+  actions!: (RunClassifierActionDto | RunTransformerActionDto)[];
 }
+
+const instantiateAction = (action: any) => {
+  if (action.type === RuleActionType.RUN_CLASSIFIER) {
+    return new RunClassifierActionDto(action);
+  } else if (action.type === RuleActionType.RUN_TRANSFORMER) {
+    return new RunTransformerActionDto(action);
+  }
+  return action;
+};

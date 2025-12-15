@@ -287,6 +287,43 @@ export interface paths {
         patch: operations["updateRole"];
         trace?: never;
     };
+    "/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List rules */
+        get: operations["listRules"];
+        put?: never;
+        /** Create a rule */
+        post: operations["createRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rules/{ruleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a rule */
+        get: operations["getRule"];
+        put?: never;
+        post?: never;
+        /** Delete a rule */
+        delete: operations["deleteRule"];
+        options?: never;
+        head?: never;
+        /** Update a rule */
+        patch: operations["updateRule"];
+        trace?: never;
+    };
     "/search": {
         parameters: {
             query?: never;
@@ -1035,6 +1072,16 @@ export interface components {
              */
             name: string;
         };
+        CompoundCondition: {
+            /** @description The conditions to combine (can be single or compound conditions) */
+            conditions: Record<string, never>[];
+            /**
+             * @description The logical operator to combine conditions
+             * @example and
+             * @enum {string}
+             */
+            operator: "and" | "or";
+        };
         ConfigSchemaItems: {
             /**
              * @description The maximum allowable length of the array
@@ -1235,7 +1282,30 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+        };
+        CreateRule: {
+            /** @description The actions to execute when condition matches */
+            actions: (components["schemas"]["RunClassifierAction"] | components["schemas"]["RunTransformerAction"])[];
+            /** @description The condition to evaluate (optional) */
+            condition?: components["schemas"]["SingleCondition"] | components["schemas"]["CompoundCondition"];
+            /**
+             * @description The display name of the rule
+             * @example Classify on Upload
+             */
+            displayName: string;
+            /**
+             * @description Whether the rule is enabled
+             * @default true
+             * @example true
+             */
+            enabled: boolean;
+            /**
+             * @description The event that triggers this rule
+             * @example asset.variant.ready
+             * @enum {string}
+             */
+            triggerEvent: "asset.variant.ready";
         };
         CreateSearchIndex: {
             /**
@@ -1432,6 +1502,12 @@ export interface components {
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
+        ListRulesResponse: {
+            /** @description The rules in the response */
+            items: components["schemas"]["Rule"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
+        };
         ListStorageUnitsResponse: {
             /** @description The storage units in the response */
             items: components["schemas"]["StorageUnitSummary"][];
@@ -1585,7 +1661,7 @@ export interface components {
              *       "classifiers:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
             /**
              * Format: date-time
              * @description When the role was last updated
@@ -1604,6 +1680,110 @@ export interface components {
              * @example Manager
              */
             name: string;
+        };
+        Rule: {
+            /**
+             * @description When the rule was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The display name of the rule
+             * @example Classify on Upload
+             */
+            displayName: string;
+            /**
+             * @description Whether the rule is enabled
+             * @example true
+             */
+            enabled: boolean;
+            /**
+             * @description The ID of the rule
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The event that triggers this rule
+             * @example asset.variant.ready
+             */
+            triggerEvent: string;
+            /**
+             * @description When the rule was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        RuleDetails: {
+            /** @description The actions to execute when condition matches */
+            actions: (components["schemas"]["RunClassifierAction"] | components["schemas"]["RunTransformerAction"])[];
+            /** @description The condition to evaluate (optional) */
+            condition: (components["schemas"]["SingleCondition"] | components["schemas"]["CompoundCondition"]) | null;
+            /**
+             * @description When the rule was created
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description The display name of the rule
+             * @example Classify on Upload
+             */
+            displayName: string;
+            /**
+             * @description Whether the rule is enabled
+             * @example true
+             */
+            enabled: boolean;
+            /**
+             * @description The ID of the rule
+             * @example sajl1kih6emtwozh8y0zenkj
+             */
+            id: string;
+            /**
+             * @description The event that triggers this rule
+             * @example asset.variant.ready
+             */
+            triggerEvent: string;
+            /**
+             * @description When the rule was last updated
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        RunClassifierAction: {
+            /**
+             * @description The ID of the classifier template to run
+             * @example abc123
+             */
+            classifierTemplateId?: string;
+            /**
+             * @description The type of action
+             * @example runClassifier
+             * @enum {string}
+             */
+            type: "runClassifier" | "runTransformer";
+        };
+        RunTransformerAction: {
+            /**
+             * @description The ID of the source variant to transform. Supports template interpolation: {{variant.id}}
+             * @example {{variant.id}}
+             */
+            sourceVariantId: string;
+            /**
+             * @description The ID of the transform template to run
+             * @example xyz789
+             */
+            transformTemplateId?: string;
+            /**
+             * @description The name of the transform template to run
+             * @example video-thumbnail
+             */
+            transformTemplateName?: string;
+            /**
+             * @description The type of action
+             * @example runTransformer
+             * @enum {string}
+             */
+            type: "runClassifier" | "runTransformer";
         };
         SearchIndex: {
             /**
@@ -1673,6 +1853,24 @@ export interface components {
              * @example false
              */
             isFirstTimeSetup: boolean;
+        };
+        SingleCondition: {
+            /**
+             * @description The field path to evaluate (e.g., "variant.type", "variant.metadata.category")
+             * @example variant.type
+             */
+            field: string;
+            /**
+             * @description The comparison operator
+             * @example equals
+             * @enum {string}
+             */
+            operator: "equals" | "notEquals" | "contains" | "in" | "notIn" | "greaterThan" | "lessThan";
+            /**
+             * @description The value to compare against
+             * @example ORIGINAL
+             */
+            value: Record<string, never>;
         };
         StorageConfig: {
             /**
@@ -2065,7 +2263,30 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+        };
+        UpdateRule: {
+            /** @description The actions to execute when condition matches */
+            actions?: (components["schemas"]["RunClassifierAction"] | components["schemas"]["RunTransformerAction"])[];
+            /** @description The condition to evaluate (optional) */
+            condition?: components["schemas"]["SingleCondition"] | components["schemas"]["CompoundCondition"];
+            /**
+             * @description The display name of the rule
+             * @example Classify on Upload
+             */
+            displayName?: string;
+            /**
+             * @description Whether the rule is enabled
+             * @default true
+             * @example true
+             */
+            enabled: boolean;
+            /**
+             * @description The event that triggers this rule
+             * @example asset.variant.ready
+             * @enum {string}
+             */
+            triggerEvent?: "asset.variant.ready";
         };
         UpdateStorageConfig: {
             /**
@@ -3240,6 +3461,177 @@ export interface operations {
                      *       "errorCode": "RESOURCE_ALREADY_EXISTS",
                      *       "messages": [
                      *         "Role with name 'My Role' already exists"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    listRules: {
+        parameters: {
+            query?: {
+                /** @description The cursor to the next page */
+                cursor?: string;
+                /** @description Filter by enabled status */
+                enabled?: boolean;
+                /** @description The number of items per page */
+                pageSize?: number;
+                /** @description Filter by trigger event */
+                triggerEvent?: "asset.variant.ready";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListRulesResponse"];
+                };
+            };
+        };
+    };
+    createRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRule"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Rule"];
+                };
+            };
+        };
+    };
+    getRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleDetails"];
+                };
+            };
+            /** @description The rule was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Rule with id ukt4084q1kaqmsq74f2fxg43 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    deleteRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rule was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The rule was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Rule with id ukt4084q1kaqmsq74f2fxg43 not found"
+                     *       ]
+                     *     } */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    updateRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRule"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Rule"];
+                };
+            };
+            /** @description The rule was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Rule with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
                      *     } */
                     "application/json": {

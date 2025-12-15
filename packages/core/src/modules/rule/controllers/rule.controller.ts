@@ -21,6 +21,7 @@ import {
   CreateRuleDto,
   ListRulesQueryDto,
   ListRulesResponseDto,
+  RuleDetailsDto,
   RuleDto,
   UpdateRuleDto,
 } from '../dtos';
@@ -42,7 +43,7 @@ export class RuleController {
   @ApiCreatedResponse({ type: RuleDto })
   async createRule(@Body() body: CreateRuleDto) {
     const rule = await this.ruleService.createRule(body);
-    return rule.toDto();
+    return rule.toDetailsDto();
   }
 
   @Get(':ruleId')
@@ -51,11 +52,11 @@ export class RuleController {
     summary: 'Get a rule',
     operationId: 'getRule',
   })
-  @ApiOkResponse({ type: RuleDto })
+  @ApiOkResponse({ type: RuleDetailsDto })
   @ApiRuleNotFoundResponse()
   async getRule(@Param('ruleId') ruleId: string) {
     const rule = await this.ruleService.getRuleByIdOrThrow(ruleId);
-    return rule.toDto();
+    return rule.toDetailsDto();
   }
 
   @Get()
