@@ -1,8 +1,9 @@
 export const SdkTag = {
-  Classifiers: 'classifiers',
   Assets: 'assets',
+  Classifiers: 'classifiers',
   Collections: 'collections',
   Plugins: 'plugins',
+  Rules: 'rules',
   Search: 'search',
   Storage: 'storage',
   System: 'system',
