@@ -10,7 +10,11 @@ import {
   RunClassifierActionDto,
   RunTransformerActionDto,
 } from './action.dto';
-import { CompoundConditionDto, SingleConditionDto } from './condition.dto';
+import {
+  CompoundConditionDto,
+  RuleConditionDto,
+  SingleConditionDto,
+} from './condition.dto';
 
 export interface RuleParams {
   id: string;
@@ -92,7 +96,7 @@ export class RuleDetailsDto extends RuleDto {
     ],
     nullable: true,
   })
-  condition: RuleCondition | null;
+  condition: RuleConditionDto | null;
 
   @ApiProperty({
     description: 'The actions to execute when condition matches',

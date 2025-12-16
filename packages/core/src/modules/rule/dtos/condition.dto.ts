@@ -1,6 +1,17 @@
-import { ApiExtraModels, ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
+import {
+  ApiExtraModels,
+  ApiProperty,
+  ApiSchema,
+  getSchemaPath,
+} from '@nestjs/swagger';
+import { Expose, Transform, Type } from 'class-transformer';
+import {
+  Allow,
+  IsArray,
+  IsEnum,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { ComparisonOperator, LogicalOperator } from '../rule.types';
 
 @ApiSchema({ name: 'SingleCondition' })
@@ -21,9 +32,12 @@ export class SingleConditionDto {
   })
   operator!: ComparisonOperator;
 
-  @IsString()
+  @Allow()
+  @Expose()
+  @Transform(({ value }) => value)
   @ApiProperty({
-    description: 'The value to compare against',
+    description:
+      'The value to compare against (can be string, number, boolean, etc.)',
     example: 'ORIGINAL',
   })
   value!: unknown;
@@ -42,8 +56,10 @@ export class CompoundConditionDto {
 
   @IsArray()
   @Type((options) => {
-    const obj = options?.object as Record<string, unknown> | undefined;
-    return obj && 'conditions' in obj
+    const value = options?.object?.[options?.property as string] as
+      | Record<string, unknown>
+      | undefined;
+    return value && 'conditions' in value
       ? CompoundConditionDto
       : SingleConditionDto;
   })
@@ -51,7 +67,15 @@ export class CompoundConditionDto {
   @ApiProperty({
     description:
       'The conditions to combine (can be single or compound conditions)',
-    type: [Object],
+    type: 'array',
+    items: {
+      oneOf: [
+        { $ref: getSchemaPath(SingleConditionDto) },
+        { $ref: '#/components/schemas/CompoundCondition' },
+      ],
+    },
   })
   conditions!: (SingleConditionDto | CompoundConditionDto)[];
 }
+
+export type RuleConditionDto = SingleConditionDto | CompoundConditionDto;

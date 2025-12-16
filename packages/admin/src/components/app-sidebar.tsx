@@ -38,6 +38,7 @@ import {
   Settings2Icon,
   SettingsIcon,
   UsersIcon,
+  WorkflowIcon,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -87,6 +88,14 @@ export function AppSidebar() {
       icon: Move3dIcon,
       visible: () => {
         return hasPermission(Permission.TRANSFORM_TEMPLATES_READ);
+      },
+    },
+    {
+      label: 'Rules',
+      url: '/rules',
+      icon: WorkflowIcon,
+      visible: () => {
+        return hasPermission(Permission.RULES_READ);
       },
     },
     {

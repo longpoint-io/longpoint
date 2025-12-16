@@ -54,8 +54,10 @@ export class CreateRuleDto {
   @IsObject()
   @IsOptional()
   @Type((options) => {
-    const obj = options?.object as Record<string, unknown> | undefined;
-    return obj && 'conditions' in obj
+    const value = options?.object?.[options?.property as string] as
+      | Record<string, unknown>
+      | undefined;
+    return value && 'conditions' in value
       ? CompoundConditionDto
       : SingleConditionDto;
   })

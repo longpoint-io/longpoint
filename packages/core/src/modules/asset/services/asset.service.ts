@@ -117,7 +117,6 @@ export class AssetService {
             status: 'WAITING_FOR_UPLOAD',
             entryPoint: `original.${mimeTypeToExtension(data.mimeType)}`,
             mimeType: data.mimeType,
-            classifiersOnUpload: data.classifiersOnUpload,
             uploadToken: {
               create: {
                 token: uploadToken.token,

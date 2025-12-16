@@ -1074,7 +1074,7 @@ export interface components {
         };
         CompoundCondition: {
             /** @description The conditions to combine (can be single or compound conditions) */
-            conditions: Record<string, never>[];
+            conditions: (components["schemas"]["SingleCondition"] | components["schemas"]["CompoundCondition"])[];
             /**
              * @description The logical operator to combine conditions
              * @example and
@@ -1165,13 +1165,6 @@ export interface components {
             type: string;
         };
         CreateAsset: {
-            /**
-             * @description Names of classifiers to run on the uploaded variant after processing
-             * @example [
-             *       "general-tagging"
-             *     ]
-             */
-            classifiersOnUpload?: string[];
             /**
              * @description IDs of collections the asset is a member of.
              * @example [
@@ -1754,7 +1747,7 @@ export interface components {
              * @description The ID of the classifier template to run
              * @example abc123
              */
-            classifierTemplateId?: string;
+            classifierTemplateId: string;
             /**
              * @description The type of action
              * @example runClassifier
@@ -1772,12 +1765,7 @@ export interface components {
              * @description The ID of the transform template to run
              * @example xyz789
              */
-            transformTemplateId?: string;
-            /**
-             * @description The name of the transform template to run
-             * @example video-thumbnail
-             */
-            transformTemplateName?: string;
+            transformTemplateId: string;
             /**
              * @description The type of action
              * @example runTransformer
