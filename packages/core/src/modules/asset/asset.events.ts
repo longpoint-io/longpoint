@@ -1,13 +1,11 @@
 import { EventPayload } from '../event/event.types';
 
-export const AssetEventKey = {
-  ASSET_VARIANT_READY: 'asset.variant.ready',
-  ASSET_VARIANT_FAILED: 'asset.variant.failed',
-  ASSET_READY: 'asset.ready',
-  ASSET_DELETED: 'asset.deleted',
-} as const;
-
-export type AssetEventKey = (typeof AssetEventKey)[keyof typeof AssetEventKey];
+export const enum AssetEventKey {
+  ASSET_VARIANT_READY = 'asset.variant.ready',
+  ASSET_VARIANT_FAILED = 'asset.variant.failed',
+  ASSET_READY = 'asset.ready',
+  ASSET_DELETED = 'asset.deleted',
+}
 
 export interface AssetVariantReadyEventPayload extends EventPayload {
   id: string;

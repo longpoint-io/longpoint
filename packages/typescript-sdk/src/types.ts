@@ -3468,12 +3468,8 @@ export interface operations {
             query?: {
                 /** @description The cursor to the next page */
                 cursor?: string;
-                /** @description Filter by enabled status */
-                enabled?: boolean;
                 /** @description The number of items per page */
                 pageSize?: number;
-                /** @description Filter by trigger event */
-                triggerEvent?: "asset.variant.ready";
             };
             header?: never;
             path?: never;

@@ -1,3 +1,4 @@
+import { AssetEventKey } from '@/modules/asset';
 import {
   ApiExtraModels,
   ApiProperty,
@@ -47,7 +48,7 @@ export class RuleDto {
 
   @ApiProperty({
     description: 'The event that triggers this rule',
-    example: 'asset.variant.ready',
+    example: AssetEventKey.ASSET_VARIANT_READY,
   })
   triggerEvent: string;
 

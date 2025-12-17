@@ -15,7 +15,7 @@ export class RuleListeners {
   @HandleEvent(AssetEventKey.ASSET_VARIANT_READY)
   async handleAssetVariantReady(payload: AssetVariantReadyEventPayload) {
     const rules = await this.ruleService.listRulesForEvent(
-      'asset.variant.ready'
+      AssetEventKey.ASSET_VARIANT_READY
     );
 
     if (rules.length === 0) {

@@ -214,7 +214,7 @@ export class UploadService {
     });
 
     if (assetId && !wasReady && isReady) {
-      await this.eventPublisher.publish('asset.ready', {
+      await this.eventPublisher.publish(AssetEventKey.ASSET_READY, {
         assetId,
       });
     }

@@ -1,12 +1,9 @@
 import { JsonObject } from '@/shared/types/object.types';
 import { EventPayload } from '../event/event.types';
 
-export const ClassifierEventKey = {
-  CLASSIFIER_RUN_COMPLETE: 'classifier.run.complete',
-} as const;
-
-export type ClassifierEventKey =
-  (typeof ClassifierEventKey)[keyof typeof ClassifierEventKey];
+export const enum ClassifierEventKey {
+  CLASSIFIER_RUN_COMPLETE = 'classifier.run.complete',
+}
 
 export interface ClassifierRunCompleteEventPayload extends EventPayload {
   assetId: string;

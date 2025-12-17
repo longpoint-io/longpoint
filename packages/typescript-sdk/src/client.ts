@@ -610,7 +610,7 @@ class RulesClient {
     /**
    * List rules
    */
-    async listRules(options?: { cursor?: string; pageSize?: number; triggerEvent?: 'asset.variant.ready'; enabled?: boolean }): Promise<components['schemas']['ListRulesResponse']> {
+    async listRules(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListRulesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -618,12 +618,6 @@ class RulesClient {
           }
           if (options.pageSize !== undefined) {
             params.append('pageSize', String(options.pageSize));
-          }
-          if (options.triggerEvent !== undefined) {
-            params.append('triggerEvent', String(options.triggerEvent));
-          }
-          if (options.enabled !== undefined) {
-            params.append('enabled', String(options.enabled));
           }
         }
         const queryString = params.toString();
