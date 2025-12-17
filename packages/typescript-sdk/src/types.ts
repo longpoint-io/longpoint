@@ -376,15 +376,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/search/vector-providers": {
+    "/search/search-providers": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List installed vector providers */
-        get: operations["listVectorProviders"];
+        /** List installed search providers */
+        get: operations["listSearchProviders"];
         put?: never;
         post?: never;
         delete?: never;
@@ -393,7 +393,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/search/vector-providers/{providerId}": {
+    "/search/search-providers/{providerId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -406,8 +406,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update the config for a vector provider */
-        patch: operations["updateVectorProviderConfig"];
+        /** Update the config for a search provider */
+        patch: operations["updateSearchProviderConfig"];
         trace?: never;
     };
     "/storage/configs": {
@@ -1319,7 +1319,7 @@ export interface components {
              */
             config?: Record<string, never>;
             /**
-             * @description The fully qualified ID of the embedding model to use for the index. Leave blank to use the vector provider's embedding model, if supported.
+             * @description The fully qualified ID of the embedding model to use for the index. Leave blank to use the search provider's embedding model, if supported.
              * @example openai/text-embedding-3-small
              */
             embeddingModelId?: string;
@@ -1329,10 +1329,10 @@ export interface components {
              */
             name: string;
             /**
-             * @description The ID of the vector provider to use for the index
+             * @description The ID of the search provider to use for the index
              * @example pinecone
              */
-            vectorProviderId: string;
+            searchProviderId: string;
         };
         CreateStorageConfig: {
             /**
@@ -1814,14 +1814,70 @@ export interface components {
              */
             name: string;
             /**
-             * @description The vector database provider used by the index
+             * @description The search provider used by the index
              * @example {
              *       "id": "pinecone",
              *       "name": "Pinecone",
              *       "image": null
              *     }
              */
-            vectorProvider: components["schemas"]["VectorProviderShort"];
+            searchProvider: components["schemas"]["SearchProviderShort"];
+        };
+        SearchProvider: {
+            /**
+             * @description The configuration values for the search provider
+             * @example {
+             *       "apiKey": "sk-1234567890"
+             *     }
+             */
+            config: {
+                [key: string]: unknown;
+            } | null;
+            /** @description The schema for the search provider config */
+            configSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description The ID of the search provider
+             * @example pinecone
+             */
+            id: string;
+            /**
+             * @description An optional icon image of the search provider
+             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png
+             */
+            image: string | null;
+            /** @description The schema for the search provider index config */
+            indexConfigSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            };
+            /**
+             * @description The name of the search provider
+             * @example Pinecone
+             */
+            name: string;
+            /**
+             * @description Whether the search provider is capable of embedding documents without an external model
+             * @example true
+             */
+            supportsEmbedding: boolean;
+        };
+        SearchProviderShort: {
+            /**
+             * @description The ID of the search provider
+             * @example pinecone
+             */
+            id: string;
+            /**
+             * @description An optional icon image of the search provider
+             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png
+             */
+            image: string | null;
+            /**
+             * @description The name of the search provider
+             * @example Pinecone
+             */
+            name: string;
         };
         SearchQuery: {
             /**
@@ -2280,6 +2336,15 @@ export interface components {
              */
             triggerEvent?: "asset.variant.ready";
         };
+        UpdateSearchProviderConfig: {
+            /**
+             * @description The configuration values for the search provider
+             * @example {
+             *       "apiKey": "1234567890"
+             *     }
+             */
+            config: Record<string, never>;
+        };
         UpdateStorageConfig: {
             /**
              * @description Provider-specific configuration
@@ -2376,15 +2441,6 @@ export interface components {
              */
             roleIds?: string[];
         };
-        UpdateVectorProviderConfig: {
-            /**
-             * @description The configuration values for the vector provider
-             * @example {
-             *       "apiKey": "1234567890"
-             *     }
-             */
-            config: Record<string, never>;
-        };
         User: {
             /**
              * Format: date-time
@@ -2435,62 +2491,6 @@ export interface components {
             id: string;
             /** @description The roles the user will be assigned to */
             roles: components["schemas"]["RoleReference"][];
-        };
-        VectorProvider: {
-            /**
-             * @description The configuration values for the vector provider
-             * @example {
-             *       "apiKey": "sk-1234567890"
-             *     }
-             */
-            config: {
-                [key: string]: unknown;
-            } | null;
-            /** @description The schema for the vector provider config */
-            configSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            };
-            /**
-             * @description The ID of the vector provider
-             * @example pinecone
-             */
-            id: string;
-            /**
-             * @description An optional icon image of the vector provider
-             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png
-             */
-            image: string | null;
-            /** @description The schema for the vector provider index config */
-            indexConfigSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            };
-            /**
-             * @description The name of the vector provider
-             * @example Pinecone
-             */
-            name: string;
-            /**
-             * @description Whether the vector provider is capable of embedding documents without an external model
-             * @example true
-             */
-            supportsEmbedding: boolean;
-        };
-        VectorProviderShort: {
-            /**
-             * @description The ID of the vector provider
-             * @example pinecone
-             */
-            id: string;
-            /**
-             * @description An optional icon image of the vector provider
-             * @example https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png
-             */
-            image: string | null;
-            /**
-             * @description The name of the vector provider
-             * @example Pinecone
-             */
-            name: string;
         };
     };
     responses: never;
@@ -3756,7 +3756,7 @@ export interface operations {
             };
         };
     };
-    listVectorProviders: {
+    listSearchProviders: {
         parameters: {
             query?: never;
             header?: never;
@@ -3770,12 +3770,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VectorProvider"][];
+                    "application/json": components["schemas"]["SearchProvider"][];
                 };
             };
         };
     };
-    updateVectorProviderConfig: {
+    updateSearchProviderConfig: {
         parameters: {
             query?: never;
             header?: never;
@@ -3786,7 +3786,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateVectorProviderConfig"];
+                "application/json": components["schemas"]["UpdateSearchProviderConfig"];
             };
         };
         responses: {
@@ -3795,7 +3795,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VectorProvider"];
+                    "application/json": components["schemas"]["SearchProvider"];
                 };
             };
         };

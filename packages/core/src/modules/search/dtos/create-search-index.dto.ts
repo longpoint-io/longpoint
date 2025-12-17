@@ -32,7 +32,7 @@ export class CreateSearchIndexDto extends PickType(SearchIndexDto, [
   @IsOptional()
   @ApiPropertyOptional({
     description:
-      "The fully qualified ID of the embedding model to use for the index. Leave blank to use the vector provider's embedding model, if supported.",
+      "The fully qualified ID of the embedding model to use for the index. Leave blank to use the search provider's embedding model, if supported.",
     example: 'openai/text-embedding-3-small',
   })
   embeddingModelId?: string;
@@ -40,10 +40,10 @@ export class CreateSearchIndexDto extends PickType(SearchIndexDto, [
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    description: 'The ID of the vector provider to use for the index',
+    description: 'The ID of the search provider to use for the index',
     example: 'pinecone',
   })
-  vectorProviderId!: string;
+  searchProviderId!: string;
 
   @IsObject()
   @IsOptional()

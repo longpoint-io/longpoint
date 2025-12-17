@@ -1,8 +1,8 @@
 import { ConfigSchemaService } from '@/modules/common/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import { VectorProviderDto, VectorProviderShortDto } from '../dtos';
+import { SearchProviderDto, SearchProviderShortDto } from '../dtos';
 
-export interface BaseVectorProviderEntityArgs {
+export interface BaseSearchProviderEntityArgs {
   id: string;
   displayName?: string;
   image?: string;
@@ -13,7 +13,7 @@ export interface BaseVectorProviderEntityArgs {
   configSchemaService: ConfigSchemaService;
 }
 
-export class BaseVectorProviderEntity {
+export class BaseSearchProviderEntity {
   readonly id: string;
   readonly displayName: string;
   readonly image?: string;
@@ -23,7 +23,7 @@ export class BaseVectorProviderEntity {
   private readonly providerConfigSchema?: ConfigSchemaDefinition;
   private readonly configSchemaService: ConfigSchemaService;
 
-  constructor(args: BaseVectorProviderEntityArgs) {
+  constructor(args: BaseSearchProviderEntityArgs) {
     this.id = args.id;
     this.displayName = args.displayName ?? this.id;
     this.image = args.image;
@@ -53,7 +53,7 @@ export class BaseVectorProviderEntity {
   }
 
   toDto() {
-    return new VectorProviderDto({
+    return new SearchProviderDto({
       id: this.id,
       name: this.displayName,
       image: this.image,
@@ -65,7 +65,7 @@ export class BaseVectorProviderEntity {
   }
 
   toShortDto() {
-    return new VectorProviderShortDto({
+    return new SearchProviderShortDto({
       id: this.id,
       name: this.displayName,
       image: this.image,

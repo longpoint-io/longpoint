@@ -1,21 +1,21 @@
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import {
   PluginRegistryService,
-  VectorProviderRegistryEntry,
+  SearchProviderRegistryEntry,
 } from '@/modules/plugin/services';
 import { InvalidInput, InvalidProviderConfig } from '@/shared/errors';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Injectable, Logger } from '@nestjs/common';
-import { BaseVectorProviderEntity } from '../entities/base-vector-provider.entity';
-import { VectorProviderEntity } from '../entities/vector-provider.entity';
-import { SearchIndexNotFound, VectorProviderNotFound } from '../search.errors';
+import { BaseSearchProviderEntity } from '../entities/base-search-provider.entity';
+import { SearchProviderEntity } from '../entities/search-provider.entity';
+import { SearchIndexNotFound, SearchProviderNotFound } from '../search.errors';
 
 @Injectable()
-export class VectorProviderService {
-  private readonly logger = new Logger(VectorProviderService.name);
+export class SearchProviderService {
+  private readonly logger = new Logger(SearchProviderService.name);
   private readonly providerEntityCache = new Map<
     string,
-    VectorProviderEntity
+    SearchProviderEntity
   >();
 
   constructor(
@@ -25,11 +25,11 @@ export class VectorProviderService {
   ) {}
 
   /**
-   * List all installed vector providers.
-   * @returns A list of base vector provider entities.
+   * List all installed search providers.
+   * @returns A list of base search provider entities.
    */
   async listProviders() {
-    const registryEntries = this.pluginRegistryService.listVectorProviders();
+    const registryEntries = this.pluginRegistryService.listSearchProviders();
 
     return Promise.all(
       registryEntries.map(async (registryEntry) => {
@@ -39,7 +39,7 @@ export class VectorProviderService {
   }
 
   async getProviderById(id: string) {
-    const registryEntry = this.pluginRegistryService.getVectorProviderById(id);
+    const registryEntry = this.pluginRegistryService.getSearchProviderById(id);
     if (!registryEntry) {
       return null;
     }
@@ -50,7 +50,7 @@ export class VectorProviderService {
   async getProviderByIdOrThrow(id: string) {
     const provider = await this.getProviderById(id);
     if (!provider) {
-      throw new VectorProviderNotFound(id);
+      throw new SearchProviderNotFound(id);
     }
     return provider;
   }
@@ -58,18 +58,18 @@ export class VectorProviderService {
   async getProviderBySearchIndexId(indexId: string) {
     const index = await this.prismaService.searchIndex.findUnique({
       where: { id: indexId },
-      select: { vectorProviderId: true },
+      select: { searchProviderId: true },
     });
     if (!index) {
       throw new SearchIndexNotFound(indexId);
     }
-    return await this.getProviderById(index.vectorProviderId);
+    return await this.getProviderById(index.searchProviderId);
   }
 
   async getProviderBySearchIndexIdOrThrow(indexId: string) {
     const provider = await this.getProviderBySearchIndexId(indexId);
     if (!provider) {
-      throw new VectorProviderNotFound(indexId);
+      throw new SearchProviderNotFound(indexId);
     }
     return provider;
   }
@@ -78,13 +78,13 @@ export class VectorProviderService {
    * Update the configuration values for a provider.
    * @param providerId - The ID of the provider to update.
    * @param configValues - The configuration values to update.
-   * @returns A base vector provider entity with the updated configuration.
+   * @returns A base search provider entity with the updated configuration.
    */
   async updateProviderConfig(providerId: string, configValues: ConfigValues) {
     const registryEntry =
-      this.pluginRegistryService.getVectorProviderById(providerId);
+      this.pluginRegistryService.getSearchProviderById(providerId);
     if (!registryEntry) {
-      throw new VectorProviderNotFound(providerId);
+      throw new SearchProviderNotFound(providerId);
     }
 
     const settingsSchema = registryEntry.pluginConfig.contributes?.settings;
@@ -109,12 +109,12 @@ export class VectorProviderService {
       .get(settingsSchema)
       .processOutboundValues(inboundConfig);
 
-    return new BaseVectorProviderEntity({
+    return new BaseSearchProviderEntity({
       id: registryEntry.fullyQualifiedId,
       displayName:
         registryEntry.contribution.displayName ??
         registryEntry.pluginConfig.displayName ??
-        registryEntry.vectorId,
+        registryEntry.searchId,
       image: registryEntry.pluginConfig.icon,
       supportsEmbedding: registryEntry.contribution.supportsEmbedding ?? false,
       providerConfigSchema: settingsSchema,
@@ -129,9 +129,9 @@ export class VectorProviderService {
     configValues: ConfigValues
   ) {
     const registryEntry =
-      this.pluginRegistryService.getVectorProviderById(providerId);
+      this.pluginRegistryService.getSearchProviderById(providerId);
     if (!registryEntry) {
-      throw new VectorProviderNotFound(providerId);
+      throw new SearchProviderNotFound(providerId);
     }
 
     const indexConfigSchema = registryEntry.contribution.indexConfigSchema;
@@ -148,8 +148,8 @@ export class VectorProviderService {
    * Get or create a provider entity.
    */
   private async getProviderEntity(
-    registryEntry: VectorProviderRegistryEntry
-  ): Promise<VectorProviderEntity | null> {
+    registryEntry: SearchProviderRegistryEntry
+  ): Promise<SearchProviderEntity | null> {
     const cached = this.providerEntityCache.get(registryEntry.fullyQualifiedId);
     if (cached) {
       return cached;
@@ -165,7 +165,7 @@ export class VectorProviderService {
         pluginSettings: pluginSettings ?? {},
       });
 
-      const entity = new VectorProviderEntity({
+      const entity = new SearchProviderEntity({
         registryEntry,
         plugin: pluginInstance,
         configSchemaService: this.configSchemaService,
@@ -176,7 +176,7 @@ export class VectorProviderService {
     } catch (e) {
       if (e instanceof InvalidInput) {
         throw new InvalidProviderConfig(
-          'vector',
+          'search',
           registryEntry.fullyQualifiedId,
           e.getMessages()
         );
@@ -189,19 +189,19 @@ export class VectorProviderService {
    * Get base provider entity.
    */
   private async getBaseProviderEntity(
-    registryEntry: VectorProviderRegistryEntry
-  ): Promise<BaseVectorProviderEntity> {
+    registryEntry: SearchProviderRegistryEntry
+  ): Promise<BaseSearchProviderEntity> {
     const pluginSettings = await this.getPluginSettingsFromDb(
       registryEntry.pluginId,
       registryEntry.pluginConfig.contributes?.settings
     );
 
-    return new BaseVectorProviderEntity({
+    return new BaseSearchProviderEntity({
       id: registryEntry.fullyQualifiedId,
       displayName:
         registryEntry.contribution.displayName ??
         registryEntry.pluginConfig.displayName ??
-        registryEntry.vectorId,
+        registryEntry.searchId,
       image: registryEntry.pluginConfig.icon,
       configSchemaService: this.configSchemaService,
       supportsEmbedding: registryEntry.contribution.supportsEmbedding ?? false,

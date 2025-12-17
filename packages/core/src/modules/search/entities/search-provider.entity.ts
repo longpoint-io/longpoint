@@ -1,24 +1,24 @@
 import { ConfigSchemaService } from '@/modules/common/services';
-import { VectorProviderRegistryEntry } from '@/modules/plugin/services';
+import { SearchProviderRegistryEntry } from '@/modules/plugin/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import {
   EmbedAndUpsertDocument,
+  SearchProvider,
   SearchResult,
   VectorDocument,
-  VectorProvider,
 } from '@longpoint/devkit';
-import { BaseVectorProviderEntity } from './base-vector-provider.entity';
+import { BaseSearchProviderEntity } from './base-search-provider.entity';
 
-export interface VectorProviderEntityArgs {
-  registryEntry: VectorProviderRegistryEntry;
-  plugin: VectorProvider;
+export interface SearchProviderEntityArgs {
+  registryEntry: SearchProviderRegistryEntry;
+  plugin: SearchProvider;
   configSchemaService: ConfigSchemaService;
 }
 
-export class VectorProviderEntity extends BaseVectorProviderEntity {
-  private readonly plugin: VectorProvider;
+export class SearchProviderEntity extends BaseSearchProviderEntity {
+  private readonly plugin: SearchProvider;
 
-  constructor(args: VectorProviderEntityArgs) {
+  constructor(args: SearchProviderEntityArgs) {
     const registryEntry = args.registryEntry;
     super({
       id: registryEntry.fullyQualifiedId,

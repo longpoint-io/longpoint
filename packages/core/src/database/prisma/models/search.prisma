@@ -4,10 +4,10 @@ model SearchIndex {
   active           Boolean   @default(true)
   indexing         Boolean   @default(false)
   mediaIndexed     Int       @default(0)
-  /// Fully qualified model ID of the embedding model to use for this index. `null` implies the vector provider is capable of embedding documents without an external model.
+  /// Fully qualified model ID of the embedding model to use for this index. `null` implies the search provider is capable of embedding documents without an external model.
   embeddingModelId String?
-  /// Vector database provider ID
-  vectorProviderId String
+  /// Search provider ID
+  searchProviderId String
   /// Provider-specific configuration
   config           Json?
   createdAt        DateTime  @default(now())
@@ -17,7 +17,7 @@ model SearchIndex {
   items SearchIndexItem[]
 
   @@index([embeddingModelId])
-  @@index([vectorProviderId])
+  @@index([searchProviderId])
 }
 
 model SearchIndexItem {
@@ -30,10 +30,10 @@ model SearchIndexItem {
   createdAt  DateTime              @default(now())
   updatedAt  DateTime              @updatedAt
 
-  indexId   String
-  index     SearchIndex     @relation(fields: [indexId], references: [id], onDelete: Cascade)
-  assetId   String?
-  asset     Asset? @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  indexId String
+  index   SearchIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  assetId String?
+  asset   Asset?      @relation(fields: [assetId], references: [id], onDelete: SetNull)
 
   @@unique([indexId, assetId])
   @@index([indexId])

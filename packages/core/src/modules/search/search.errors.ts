@@ -20,30 +20,30 @@ export const ApiSearchIndexNotFoundResponse = () => {
   );
 };
 
-export class VectorProviderNotFound extends ResourceNotFound {
+export class SearchProviderNotFound extends ResourceNotFound {
   constructor(id: string) {
-    super('Vector provider', id);
+    super('Search provider', id);
   }
 }
-export const vectorProviderNotFoundDoc = apiErrorDoc(
-  new VectorProviderNotFound('r2qwyd76nvd98cu6ewg8ync2')
+export const searchProviderNotFoundDoc = apiErrorDoc(
+  new SearchProviderNotFound('r2qwyd76nvd98cu6ewg8ync2')
 );
-export const ApiVectorProviderNotFoundResponse = () => {
+export const ApiSearchProviderNotFoundResponse = () => {
   return applyDecorators(
     ApiNotFoundResponse({
-      description: 'Vector provider not found',
-      ...vectorProviderNotFoundDoc,
+      description: 'Search provider not found',
+      ...searchProviderNotFoundDoc,
     })
   );
 };
 
 export class NativeEmbeddingNotSupported extends BaseError {
-  constructor(vectorProviderId: string) {
+  constructor(searchProviderId: string) {
     super(
       ErrorCode.OPERATION_NOT_SUPPORTED,
-      `Native embedding not supported for vector provider '${vectorProviderId}'. Please provider an embedding model ID to use for the index.`,
+      `Native embedding not supported for search provider '${searchProviderId}'. Please provider an embedding model ID to use for the index.`,
       HttpStatus.BAD_REQUEST,
-      { vectorProviderId }
+      { searchProviderId }
     );
   }
 }
@@ -53,7 +53,7 @@ export const nativeEmbeddingNotSupportedDoc = apiErrorDoc(
 export const ApiNativeEmbeddingNotSupportedResponse = () => {
   return applyDecorators(
     ApiBadRequestResponse({
-      description: 'Native embedding not supported for this vector provider',
+      description: 'Native embedding not supported for this search provider',
       ...nativeEmbeddingNotSupportedDoc,
     })
   );

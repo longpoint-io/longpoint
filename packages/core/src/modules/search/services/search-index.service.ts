@@ -10,7 +10,7 @@ import {
   SearchIndexNotFound,
 } from '../search.errors';
 import { SelectedSearchIndex, selectSearchIndex } from '../search.selectors';
-import { VectorProviderService } from './vector-provider.service';
+import { SearchProviderService } from './search-provider.service';
 
 @Injectable()
 export class SearchIndexService {
@@ -18,26 +18,26 @@ export class SearchIndexService {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly vectorProviderService: VectorProviderService,
+    private readonly searchProviderService: SearchProviderService,
     private readonly assetService: AssetService,
     private readonly configSchemaService: ConfigSchemaService
   ) {}
 
   async createIndex(data: CreateSearchIndexDto) {
     const indexConfigForDb =
-      await this.vectorProviderService.processIndexConfigForDb(
-        data.vectorProviderId,
+      await this.searchProviderService.processIndexConfigForDb(
+        data.searchProviderId,
         data.config ?? {}
       );
-    const vectorProvider =
-      await this.vectorProviderService.getProviderByIdOrThrow(
-        data.vectorProviderId
+    const searchProvider =
+      await this.searchProviderService.getProviderByIdOrThrow(
+        data.searchProviderId
       );
 
     let embeddingModelId = data.embeddingModelId;
 
-    if (!embeddingModelId && !vectorProvider.supportsEmbedding) {
-      throw new NativeEmbeddingNotSupported(vectorProvider.id);
+    if (!embeddingModelId && !searchProvider.supportsEmbedding) {
+      throw new NativeEmbeddingNotSupported(searchProvider.id);
     }
 
     if (embeddingModelId) {
@@ -48,7 +48,7 @@ export class SearchIndexService {
     let index = await this.prismaService.searchIndex.create({
       data: {
         name: data.name,
-        vectorProviderId: vectorProvider.id,
+        searchProviderId: searchProvider.id,
         embeddingModelId,
         config: indexConfigForDb,
       },
@@ -66,7 +66,7 @@ export class SearchIndexService {
       name: index.name,
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
-      vectorProvider,
+      searchProvider,
       assetService: this.assetService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,
@@ -83,8 +83,8 @@ export class SearchIndexService {
     const indexEntities: SearchIndexEntity[] = [];
 
     for (const index of indexes) {
-      const vectorProvider =
-        await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
+      const searchProvider =
+        await this.searchProviderService.getProviderBySearchIndexIdOrThrow(
           index.id
         );
       indexEntities.push(
@@ -95,7 +95,7 @@ export class SearchIndexService {
           name: index.name,
           lastIndexedAt: index.lastIndexedAt,
           mediaIndexed: index.mediaIndexed,
-          vectorProvider,
+          searchProvider,
           assetService: this.assetService,
           prismaService: this.prismaService,
           configFromDb: index.config as ConfigValues,
@@ -117,8 +117,8 @@ export class SearchIndexService {
       return null;
     }
 
-    const vectorProvider =
-      await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
+    const searchProvider =
+      await this.searchProviderService.getProviderBySearchIndexIdOrThrow(
         index.id
       );
 
@@ -129,7 +129,7 @@ export class SearchIndexService {
       name: index.name,
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
-      vectorProvider,
+      searchProvider,
       assetService: this.assetService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,
@@ -157,8 +157,8 @@ export class SearchIndexService {
       return null;
     }
 
-    const vectorProvider =
-      await this.vectorProviderService.getProviderBySearchIndexIdOrThrow(
+    const searchProvider =
+      await this.searchProviderService.getProviderBySearchIndexIdOrThrow(
         index.id
       );
 
@@ -169,7 +169,7 @@ export class SearchIndexService {
       name: index.name,
       lastIndexedAt: index.lastIndexedAt,
       mediaIndexed: index.mediaIndexed,
-      vectorProvider,
+      searchProvider,
       assetService: this.assetService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,

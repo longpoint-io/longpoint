@@ -1,5 +1,5 @@
 import { LongpointPluginConfig } from '@longpoint/devkit';
-import { PineconeVectorProvider } from './pinecone.js';
+import { PineconeSearchProvider } from './pinecone.js';
 import { PineconePluginSettings, settings } from './settings.js';
 
 export default {
@@ -9,9 +9,9 @@ export default {
   icon: 'icon.png',
   contributes: {
     settings,
-    vector: {
+    search: {
       pinecone: {
-        provider: PineconeVectorProvider,
+        provider: PineconeSearchProvider,
         displayName: 'Pinecone',
         description:
           'The purpose-built vector database delivering relevant results at any scale',

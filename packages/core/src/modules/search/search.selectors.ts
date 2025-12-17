@@ -8,7 +8,7 @@ export const selectSearchIndex = () => {
     indexing: true,
     lastIndexedAt: true,
     mediaIndexed: true,
-    vectorProviderId: true,
+    searchProviderId: true,
     embeddingModelId: true,
     config: true,
   } satisfies Prisma.SearchIndexSelect;

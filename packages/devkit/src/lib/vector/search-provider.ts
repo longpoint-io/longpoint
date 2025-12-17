@@ -5,18 +5,18 @@ import {
   VectorDocument,
 } from './types.js';
 
-export interface VectorProviderArgs<
+export interface SearchProviderArgs<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
 > {
   pluginSettings: ConfigValues<T>;
 }
 
-export abstract class VectorProvider<
+export abstract class SearchProvider<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
 > {
   readonly pluginSettings: ConfigValues;
 
-  constructor(args: VectorProviderArgs<T>) {
+  constructor(args: SearchProviderArgs<T>) {
     this.pluginSettings = args.pluginSettings;
   }
 
@@ -39,7 +39,7 @@ export abstract class VectorProvider<
     indexConfigValues: ConfigValues
   ): Promise<void> {
     throw new Error(
-      `Embed and upsert is not implemented by the vector provider plugin.`
+      `Embed and upsert is not implemented by the search provider plugin.`
     );
   }
 
@@ -48,7 +48,7 @@ export abstract class VectorProvider<
     indexConfigValues: ConfigValues
   ): Promise<SearchResult[]> {
     throw new Error(
-      `Embed and search is not implemented by the vector provider plugin.`
+      `Embed and search is not implemented by the search provider plugin.`
     );
   }
 }

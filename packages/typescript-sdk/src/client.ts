@@ -794,19 +794,19 @@ class SearchClient {
   }
 
     /**
-   * List installed vector providers
+   * List installed search providers
    */
-    async listVectorProviders(): Promise<components['schemas']['VectorProvider'][]> {
-        const url = `search/vector-providers`;
+    async listSearchProviders(): Promise<components['schemas']['SearchProvider'][]> {
+        const url = `search/search-providers`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Update the config for a vector provider
+   * Update the config for a search provider
    */
-    async updateVectorProviderConfig(providerId: string, data: components['schemas']['UpdateVectorProviderConfig']): Promise<components['schemas']['VectorProvider']> {
-        const url = `search/vector-providers/${encodeURIComponent(String(providerId))}`;
+    async updateSearchProviderConfig(providerId: string, data: components['schemas']['UpdateSearchProviderConfig']): Promise<components['schemas']['SearchProvider']> {
+        const url = `search/search-providers/${encodeURIComponent(String(providerId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
