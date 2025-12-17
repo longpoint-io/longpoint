@@ -797,7 +797,7 @@ class SearchClient {
    * List installed search providers
    */
     async listSearchProviders(): Promise<components['schemas']['SearchProvider'][]> {
-        const url = `search/search-providers`;
+        const url = `search/providers`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -806,7 +806,7 @@ class SearchClient {
    * Update the config for a search provider
    */
     async updateSearchProviderConfig(providerId: string, data: components['schemas']['UpdateSearchProviderConfig']): Promise<components['schemas']['SearchProvider']> {
-        const url = `search/search-providers/${encodeURIComponent(String(providerId))}`;
+        const url = `search/providers/${encodeURIComponent(String(providerId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }

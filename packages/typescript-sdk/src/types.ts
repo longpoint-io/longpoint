@@ -376,7 +376,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/search/search-providers": {
+    "/search/providers": {
         parameters: {
             query?: never;
             header?: never;
@@ -393,7 +393,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/search/search-providers/{providerId}": {
+    "/search/providers/{providerId}": {
         parameters: {
             query?: never;
             header?: never;
