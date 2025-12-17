@@ -25,7 +25,7 @@ export class SearchProviderEntity extends BaseSearchProviderEntity {
       displayName:
         registryEntry.contribution.displayName ??
         registryEntry.pluginConfig.displayName ??
-        registryEntry.vectorId,
+        registryEntry.searchProviderKey,
       image: registryEntry.pluginConfig.icon,
       supportsEmbedding: registryEntry.contribution.supportsEmbedding ?? false,
       providerConfigSchema: registryEntry.pluginConfig.contributes?.settings,

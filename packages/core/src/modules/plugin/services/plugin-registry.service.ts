@@ -27,7 +27,7 @@ export interface ClassifierRegistryEntry extends BaseContributionRegistryEntry {
 
 export interface SearchProviderRegistryEntry
   extends BaseContributionRegistryEntry {
-  searchId: string;
+  searchProviderKey: string;
   contribution: SearchContribution<any>;
 }
 
@@ -401,7 +401,7 @@ export class PluginRegistryService implements OnModuleInit {
           packageName,
           packagePath,
           pluginId,
-          searchId,
+          searchProviderKey: searchId,
           fullyQualifiedId,
           contribution,
           pluginConfig: processedPluginConfig,

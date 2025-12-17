@@ -114,7 +114,7 @@ export class SearchProviderService {
       displayName:
         registryEntry.contribution.displayName ??
         registryEntry.pluginConfig.displayName ??
-        registryEntry.searchId,
+        registryEntry.searchProviderKey,
       image: registryEntry.pluginConfig.icon,
       supportsEmbedding: registryEntry.contribution.supportsEmbedding ?? false,
       providerConfigSchema: settingsSchema,
@@ -201,7 +201,7 @@ export class SearchProviderService {
       displayName:
         registryEntry.contribution.displayName ??
         registryEntry.pluginConfig.displayName ??
-        registryEntry.searchId,
+        registryEntry.searchProviderKey,
       image: registryEntry.pluginConfig.icon,
       configSchemaService: this.configSchemaService,
       supportsEmbedding: registryEntry.contribution.supportsEmbedding ?? false,

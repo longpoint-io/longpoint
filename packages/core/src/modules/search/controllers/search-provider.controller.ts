@@ -5,7 +5,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { SearchProviderDto, UpdateSearchProviderConfigDto } from '../dtos';
 import { SearchProviderService } from '../services/search-provider.service';
 
-@Controller('search/search-providers')
+@Controller('search/providers')
 @ApiSdkTag(SdkTag.Search)
 @ApiBearerAuth()
 export class SearchProviderController {
