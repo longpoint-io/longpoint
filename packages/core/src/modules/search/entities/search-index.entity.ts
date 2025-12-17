@@ -4,7 +4,7 @@ import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
 import { SearchIndexDto } from '../dtos';
-import { VectorProviderEntity } from './vector-provider.entity';
+import { SearchProviderEntity } from './search-provider.entity';
 
 export interface SearchIndexEntityArgs {
   id: string;
@@ -14,7 +14,7 @@ export interface SearchIndexEntityArgs {
   mediaIndexed: number;
   configFromDb: ConfigValues;
   lastIndexedAt: Date | null;
-  vectorProvider: VectorProviderEntity;
+  searchProvider: SearchProviderEntity;
   assetService: AssetService;
   prismaService: PrismaService;
   configSchemaService: ConfigSchemaService;
@@ -28,7 +28,7 @@ export class SearchIndexEntity {
   private _mediaIndexed: number;
   private _lastIndexedAt: Date | null;
   private _configFromDb: ConfigValues;
-  private readonly vectorProvider: VectorProviderEntity;
+  private readonly searchProvider: SearchProviderEntity;
   private readonly assetService: AssetService;
   private readonly prismaService: PrismaService;
   private readonly logger = new Logger(SearchIndexEntity.name);
@@ -41,7 +41,7 @@ export class SearchIndexEntity {
     this._mediaIndexed = args.mediaIndexed;
     this._configFromDb = args.configFromDb;
     this._lastIndexedAt = args.lastIndexedAt;
-    this.vectorProvider = args.vectorProvider;
+    this.searchProvider = args.searchProvider;
     this.assetService = args.assetService;
     this.prismaService = args.prismaService;
   }
@@ -65,7 +65,7 @@ export class SearchIndexEntity {
    */
   async query(queryText: string): Promise<AssetSummaryDto[]> {
     const indexConfigValues = await this.getIndexConfigValues();
-    const searchResults = await this.vectorProvider.embedAndSearch(
+    const searchResults = await this.searchProvider.embedAndSearch(
       queryText,
       indexConfigValues
     );
@@ -185,14 +185,14 @@ export class SearchIndexEntity {
   async delete(): Promise<void> {
     try {
       const indexConfigValues = await this.getIndexConfigValues();
-      await this.vectorProvider.dropIndex(indexConfigValues);
+      await this.searchProvider.dropIndex(indexConfigValues);
     } catch (error) {
       this.logger.warn(
-        `Failed to delete index from vector store: ${
+        `Failed to delete index from search provider: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
       );
-      // Continue with database cleanup even if vector provider deletion fails
+      // Continue with database cleanup even if search provider deletion fails
     }
 
     await this.prismaService.searchIndex.delete({
@@ -234,14 +234,14 @@ export class SearchIndexEntity {
       // Delete from vector store first, then from database
       try {
         const indexConfigValues = await this.getIndexConfigValues();
-        await this.vectorProvider.delete(externalIds, indexConfigValues);
+        await this.searchProvider.delete(externalIds, indexConfigValues);
       } catch (error) {
         this.logger.warn(
-          `Failed to delete null items from vector store: ${
+          `Failed to delete null items from search provider: ${
             error instanceof Error ? error.message : 'Unknown error'
           }`
         );
-        // Continue with database cleanup even if vector provider deletion fails
+        // Continue with database cleanup even if search provider deletion fails
       }
 
       await this.prismaService.searchIndexItem.deleteMany({
@@ -331,14 +331,14 @@ export class SearchIndexEntity {
       if (missingItemIds.length > 0) {
         try {
           const indexConfigValues = await this.getIndexConfigValues();
-          await this.vectorProvider.delete(missingItemIds, indexConfigValues);
+          await this.searchProvider.delete(missingItemIds, indexConfigValues);
         } catch (error) {
           this.logger.warn(
-            `Failed to delete missing containers from vector store: ${
+            `Failed to delete missing containers from search provider: ${
               error instanceof Error ? error.message : 'Unknown error'
             }`
           );
-          // Continue with database cleanup even if vector provider deletion fails
+          // Continue with database cleanup even if search provider deletion fails
         }
       }
 
@@ -388,7 +388,7 @@ export class SearchIndexEntity {
 
       // if (!this.embeddingModel) {
       const indexConfigValues = await this.getIndexConfigValues();
-      await this.vectorProvider.embedAndUpsert(documents, indexConfigValues);
+      await this.searchProvider.embedAndUpsert(documents, indexConfigValues);
       // } else {
       // TODO: Handle after embedding model is implemented
       // }
@@ -411,13 +411,13 @@ export class SearchIndexEntity {
       if (externalIdsToDelete.length > 0) {
         try {
           const indexConfigValues = await this.getIndexConfigValues();
-          await this.vectorProvider.delete(
+          await this.searchProvider.delete(
             externalIdsToDelete,
             indexConfigValues
           );
         } catch (deleteError) {
           this.logger.warn(
-            `Failed to delete external IDs from vector store during error cleanup: ${
+            `Failed to delete external IDs from search provider during error cleanup: ${
               deleteError instanceof Error
                 ? deleteError.message
                 : 'Unknown error'
@@ -444,9 +444,9 @@ export class SearchIndexEntity {
       indexing: this._indexing,
       name: this._name,
       config: this._configFromDb
-        ? await this.vectorProvider.processIndexConfigFromDb(this._configFromDb)
+        ? await this.searchProvider.processIndexConfigFromDb(this._configFromDb)
         : null,
-      vectorProvider: this.vectorProvider.toShortDto(),
+      searchProvider: this.searchProvider.toShortDto(),
       assetsIndexed: this._mediaIndexed,
       lastIndexedAt: this._lastIndexedAt,
     });
@@ -473,7 +473,7 @@ export class SearchIndexEntity {
   }
 
   private async getIndexConfigValues(): Promise<ConfigValues> {
-    return await this.vectorProvider.processIndexConfigFromDb(
+    return await this.searchProvider.processIndexConfigFromDb(
       this._configFromDb
     );
   }

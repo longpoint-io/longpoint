@@ -4,19 +4,19 @@ import { EventModule } from '../event';
 import {
   SearchController,
   SearchIndexController,
-  VectorProviderController,
+  SearchProviderController,
 } from './controllers';
 import { SearchListeners } from './search.listeners';
 import { SearchIndexService } from './services/search-index.service';
-import { VectorProviderService } from './services/vector-provider.service';
+import { SearchProviderService } from './services/search-provider.service';
 
 @Module({
   imports: [AssetModule, EventModule],
   controllers: [
     SearchController,
     SearchIndexController,
-    VectorProviderController,
+    SearchProviderController,
   ],
-  providers: [VectorProviderService, SearchIndexService, SearchListeners],
+  providers: [SearchProviderService, SearchIndexService, SearchListeners],
 })
 export class SearchModule {}

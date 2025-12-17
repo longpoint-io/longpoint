@@ -2,7 +2,7 @@ import { ConfigSchemaDefinition } from '@longpoint/config-schema';
 import { ClassifierContribution } from '../classifier/types.js';
 import { StorageContribution } from '../storage/index.js';
 import { TransformerContribution } from '../transformer/types.js';
-import { VectorContribution } from '../vector/types.js';
+import { SearchContribution } from '../vector/types.js';
 
 export interface LongpointPluginConfig<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
@@ -24,8 +24,8 @@ export interface LongpointPluginConfig<
     storage?: {
       [id: string]: StorageContribution<T>;
     };
-    vector?: {
-      [id: string]: VectorContribution<T>;
+    search?: {
+      [id: string]: SearchContribution<T>;
     };
     classifiers?: {
       [id: string]: ClassifierContribution<T>;

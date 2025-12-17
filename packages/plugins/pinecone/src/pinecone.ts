@@ -1,17 +1,17 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import {
   EmbedAndUpsertDocument,
+  SearchProvider,
+  SearchProviderArgs,
   SearchResult,
   VectorDocument,
   VectorMetadata,
-  VectorProvider,
-  VectorProviderArgs,
 } from '@longpoint/devkit';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { PineconePluginSettings } from './settings.js';
 
-export class PineconeVectorProvider extends VectorProvider<PineconePluginSettings> {
-  constructor(args: VectorProviderArgs<PineconePluginSettings>) {
+export class PineconeSearchProvider extends SearchProvider<PineconePluginSettings> {
+  constructor(args: SearchProviderArgs<PineconePluginSettings>) {
     super({
       pluginSettings: args.pluginSettings,
     });

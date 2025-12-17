@@ -1,19 +1,19 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import { VectorProvider, VectorProviderArgs } from './vector-provider.js';
+import { SearchProvider, SearchProviderArgs } from './search-provider.js';
 
-export interface VectorContribution<
+export interface SearchContribution<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
 > {
   /**
-   * Vector provider implementation
+   * Search provider implementation
    */
-  provider: new (args: VectorProviderArgs<T>) => VectorProvider;
+  provider: new (args: SearchProviderArgs<T>) => SearchProvider;
   /**
-   * A display name for the vector provider.
+   * A display name for the search provider.
    */
   displayName?: string;
   /**
-   * A brief description of the vector provider.
+   * A brief description of the search provider.
    */
   description?: string;
   /**

@@ -31,12 +31,12 @@ import { toast } from 'sonner';
 interface CreateSearchIndexDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  providers: components['schemas']['VectorProvider'][];
+  providers: components['schemas']['SearchProvider'][];
 }
 
 interface CreateSearchIndexFormData {
   name: string;
-  vectorProviderId: string;
+  searchProviderId: string;
   active: boolean;
   config: Record<string, any>;
 }
@@ -70,7 +70,7 @@ export function CreateSearchIndexDialog({
   const form = useForm<CreateSearchIndexFormData>({
     defaultValues: {
       name: '',
-      vectorProviderId: '',
+      searchProviderId: '',
       active: false,
       config: {},
     },
@@ -81,7 +81,7 @@ export function CreateSearchIndexDialog({
     if (open) {
       form.reset({
         name: '',
-        vectorProviderId: '',
+        searchProviderId: '',
         active: false,
         config: {},
       });
@@ -102,7 +102,7 @@ export function CreateSearchIndexDialog({
     mutationFn: async (data: CreateSearchIndexFormData) => {
       return client.search.createSearchIndex({
         name: data.name,
-        vectorProviderId: data.vectorProviderId,
+        searchProviderId: data.searchProviderId,
         active: data.active,
         config: hasIndexConfigSchema
           ? (data.config as Record<string, never>)
@@ -125,8 +125,8 @@ export function CreateSearchIndexDialog({
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    if (!data.vectorProviderId) {
-      form.setError('vectorProviderId', {
+    if (!data.searchProviderId) {
+      form.setError('searchProviderId', {
         type: 'required',
         message: 'Provider is required',
       });
@@ -178,11 +178,11 @@ export function CreateSearchIndexDialog({
 
             {/* Provider Select */}
             <div className="space-y-2">
-              <Label htmlFor="vector-provider">
-                Provider <span className="text-destructive">*</span>
+              <Label htmlFor="search-provider">
+                Search Provider <span className="text-destructive">*</span>
               </Label>
               <Controller
-                name="vectorProviderId"
+                name="searchProviderId"
                 control={form.control}
                 rules={{ required: 'Provider is required' }}
                 render={({ field }) => (
@@ -194,10 +194,10 @@ export function CreateSearchIndexDialog({
                     }}
                   >
                     <SelectTrigger
-                      id="vector-provider"
+                      id="search-provider"
                       className="w-full"
                       aria-invalid={
-                        form.formState.errors.vectorProviderId
+                        form.formState.errors.searchProviderId
                           ? 'true'
                           : 'false'
                       }
@@ -223,9 +223,9 @@ export function CreateSearchIndexDialog({
                   </Select>
                 )}
               />
-              {form.formState.errors.vectorProviderId && (
+              {form.formState.errors.searchProviderId && (
                 <p className="text-sm text-destructive">
-                  {form.formState.errors.vectorProviderId.message}
+                  {form.formState.errors.searchProviderId.message}
                 </p>
               )}
             </div>

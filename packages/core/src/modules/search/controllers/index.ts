@@ -1,3 +1,3 @@
 export * from './search-index.controller';
+export * from './search-provider.controller';
 export * from './search.controller';
-export * from './vector-provider.controller';

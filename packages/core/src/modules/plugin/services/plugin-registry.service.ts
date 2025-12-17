@@ -1,9 +1,9 @@
 import {
   ClassifierContribution,
   LongpointPluginConfig,
+  SearchContribution,
   StorageContribution,
   TransformerContribution,
-  VectorContribution,
 } from '@longpoint/devkit';
 import { findNodeModulesPath } from '@longpoint/utils/path';
 import { toBase64DataUri } from '@longpoint/utils/string';
@@ -25,10 +25,10 @@ export interface ClassifierRegistryEntry extends BaseContributionRegistryEntry {
   contribution: ClassifierContribution<any>;
 }
 
-export interface VectorProviderRegistryEntry
+export interface SearchProviderRegistryEntry
   extends BaseContributionRegistryEntry {
-  vectorId: string;
-  contribution: VectorContribution<any>;
+  searchProviderKey: string;
+  contribution: SearchContribution<any>;
 }
 
 export interface StorageProviderRegistryEntry
@@ -57,9 +57,9 @@ export class PluginRegistryService implements OnModuleInit {
     string,
     ClassifierRegistryEntry
   >();
-  private readonly vectorProviderRegistry = new Map<
+  private readonly searchProviderRegistry = new Map<
     string,
-    VectorProviderRegistryEntry
+    SearchProviderRegistryEntry
   >();
   private readonly storageProviderRegistry = new Map<
     string,
@@ -92,20 +92,20 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
-   * Get all vector providers.
-   * @returns Array of vector provider registry entries
+   * Get all search providers.
+   * @returns Array of search provider registry entries
    */
-  listVectorProviders(): VectorProviderRegistryEntry[] {
-    return Array.from(this.vectorProviderRegistry.values());
+  listSearchProviders(): SearchProviderRegistryEntry[] {
+    return Array.from(this.searchProviderRegistry.values());
   }
 
   /**
-   * Get a vector provider by its fully qualified ID (e.g., 'pinecone/pinecone').
-   * @param id - The fully qualified vector provider ID
-   * @returns The vector provider registry entry or null if not found
+   * Get a search provider by its fully qualified ID (e.g., 'pinecone/pinecone').
+   * @param id - The fully qualified search provider ID
+   * @returns The search provider registry entry or null if not found
    */
-  getVectorProviderById(id: string): VectorProviderRegistryEntry | null {
-    return this.vectorProviderRegistry.get(id) || null;
+  getSearchProviderById(id: string): SearchProviderRegistryEntry | null {
+    return this.searchProviderRegistry.get(id) || null;
   }
 
   /**
@@ -161,8 +161,8 @@ export class PluginRegistryService implements OnModuleInit {
       }
     }
 
-    // Check vector providers
-    for (const entry of this.vectorProviderRegistry.values()) {
+    // Check search providers
+    for (const entry of this.searchProviderRegistry.values()) {
       if (entry.pluginId === pluginId) {
         return {
           pluginId: entry.pluginId,
@@ -220,8 +220,8 @@ export class PluginRegistryService implements OnModuleInit {
       }
     }
 
-    // Add vector provider plugins
-    for (const entry of this.vectorProviderRegistry.values()) {
+    // Add search provider plugins
+    for (const entry of this.searchProviderRegistry.values()) {
       if (!pluginMap.has(entry.pluginId)) {
         pluginMap.set(entry.pluginId, {
           pluginId: entry.pluginId,
@@ -303,7 +303,7 @@ export class PluginRegistryService implements OnModuleInit {
 
     this.logger.log('Contributions:');
     this.logger.log(`  ${this.classifierRegistry.size} classifiers`);
-    this.logger.log(`  ${this.vectorProviderRegistry.size} vector providers`);
+    this.logger.log(`  ${this.searchProviderRegistry.size} search providers`);
     this.logger.log(`  ${this.storageProviderRegistry.size} storage providers`);
     this.logger.log(`  ${this.transformerRegistry.size} transformers`);
     this.logger.log('Plugins:');
@@ -348,7 +348,7 @@ export class PluginRegistryService implements OnModuleInit {
   }
 
   /**
-   * Load a LongpointPluginConfig plugin and extract classification providers, vector providers, and storage providers.
+   * Load a LongpointPluginConfig plugin and extract classification providers, search providers, and storage providers.
    */
   private async loadLongpointPlugin(
     packageName: string,
@@ -390,25 +390,25 @@ export class PluginRegistryService implements OnModuleInit {
       }
     }
 
-    // Extract vector providers
-    if (pluginConfig.contributes?.vector) {
-      for (const [vectorId, contribution] of Object.entries(
-        pluginConfig.contributes.vector
+    // Extract search providers
+    if (pluginConfig.contributes?.search) {
+      for (const [searchId, contribution] of Object.entries(
+        pluginConfig.contributes.search
       )) {
-        const fullyQualifiedId = `${pluginId}/${vectorId}`;
+        const fullyQualifiedId = `${pluginId}/${searchId}`;
 
-        this.vectorProviderRegistry.set(fullyQualifiedId, {
+        this.searchProviderRegistry.set(fullyQualifiedId, {
           packageName,
           packagePath,
           pluginId,
-          vectorId,
+          searchProviderKey: searchId,
           fullyQualifiedId,
           contribution,
           pluginConfig: processedPluginConfig,
         });
 
         this.logger.debug(
-          `Loaded vector provider: ${fullyQualifiedId} (${packageName})`
+          `Loaded search provider: ${fullyQualifiedId} (${packageName})`
         );
       }
     }

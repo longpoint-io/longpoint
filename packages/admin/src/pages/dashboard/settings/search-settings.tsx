@@ -31,8 +31,8 @@ export function SearchSettings() {
     isLoading: providersLoading,
     error: providersError,
   } = useQuery({
-    queryKey: ['vector-providers'],
-    queryFn: () => client.search.listVectorProviders(),
+    queryKey: ['search-providers'],
+    queryFn: () => client.search.listSearchProviders(),
   });
 
   const {
@@ -149,10 +149,10 @@ export function SearchSettings() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
-                      Vector Provider
+                      Search Provider
                     </span>
                     <span className="font-medium">
-                      {index.vectorProvider.name}
+                      {index.searchProvider.name}
                     </span>
                   </div>
                   {index.lastIndexedAt && (

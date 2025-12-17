@@ -5,7 +5,7 @@ import {
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 
-export interface VectorProviderParams {
+export interface SearchProviderParams {
   id: string;
   name: string;
   image?: string | null;
@@ -15,22 +15,22 @@ export interface VectorProviderParams {
   indexConfigSchema?: ConfigSchemaDefinition;
 }
 
-@ApiSchema({ name: 'VectorProvider' })
-export class VectorProviderDto {
+@ApiSchema({ name: 'SearchProvider' })
+export class SearchProviderDto {
   @ApiProperty({
-    description: 'The ID of the vector provider',
+    description: 'The ID of the search provider',
     example: 'pinecone',
   })
   id: string;
 
   @ApiProperty({
-    description: 'The name of the vector provider',
+    description: 'The name of the search provider',
     example: 'Pinecone',
   })
   name: string;
 
   @ApiProperty({
-    description: 'An optional icon image of the vector provider',
+    description: 'An optional icon image of the search provider',
     type: 'string',
     example:
       'https://www.gstatic.com/pantheon/images/aiplatform/model_garden/icons/icon-pinecone-v2.png',
@@ -40,14 +40,14 @@ export class VectorProviderDto {
 
   @ApiProperty({
     description:
-      'Whether the vector provider is capable of embedding documents without an external model',
+      'Whether the search provider is capable of embedding documents without an external model',
     type: 'boolean',
     example: true,
   })
   supportsEmbedding: boolean;
 
   @ApiProperty({
-    description: 'The configuration values for the vector provider',
+    description: 'The configuration values for the search provider',
     type: 'object',
     additionalProperties: true,
     example: {
@@ -58,7 +58,7 @@ export class VectorProviderDto {
   config: ConfigValues | null;
 
   @ApiProperty({
-    description: 'The schema for the vector provider config',
+    description: 'The schema for the search provider config',
     type: 'object',
     additionalProperties: {
       $ref: getSchemaPath('ConfigSchemaValue'),
@@ -67,7 +67,7 @@ export class VectorProviderDto {
   configSchema: ConfigSchemaForDto;
 
   @ApiProperty({
-    description: 'The schema for the vector provider index config',
+    description: 'The schema for the search provider index config',
     type: 'object',
     additionalProperties: {
       $ref: getSchemaPath('ConfigSchemaValue'),
@@ -75,7 +75,7 @@ export class VectorProviderDto {
   })
   indexConfigSchema: ConfigSchemaForDto;
 
-  constructor(data: VectorProviderParams) {
+  constructor(data: SearchProviderParams) {
     this.id = data.id;
     this.name = data.name;
     this.image = data.image ?? null;
