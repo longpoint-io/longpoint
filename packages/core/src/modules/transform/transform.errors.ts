@@ -2,19 +2,19 @@ import { apiErrorDoc, ResourceNotFound } from '@/shared/errors';
 import { applyDecorators } from '@nestjs/common';
 import { ApiNotFoundResponse } from '@nestjs/swagger';
 
-export class TransformTemplateNotFound extends ResourceNotFound {
+export class TransformerTemplateNotFound extends ResourceNotFound {
   constructor(id: string) {
-    super('Transform template', id);
+    super('Transformer template', id);
   }
 }
-export const transformTemplateNotFoundDoc = apiErrorDoc(
-  new TransformTemplateNotFound('sajl1kih6emtwozh8y0zenkj')
+export const transformerTemplateNotFoundDoc = apiErrorDoc(
+  new TransformerTemplateNotFound('sajl1kih6emtwozh8y0zenkj')
 );
-export const ApiTransformTemplateNotFoundResponse = () =>
+export const ApiTransformerTemplateNotFoundResponse = () =>
   applyDecorators(
     ApiNotFoundResponse({
-      description: 'The transform template was not found',
-      ...transformTemplateNotFoundDoc,
+      description: 'The transformer template was not found',
+      ...transformerTemplateNotFoundDoc,
     })
   );
 

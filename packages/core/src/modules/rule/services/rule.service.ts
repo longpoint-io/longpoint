@@ -4,7 +4,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AssetService } from '../../asset';
 import { ClassifierTemplateService } from '../../classifier/services/classifier-template.service';
 import { PrismaService } from '../../common/services';
-import { TransformTemplateService } from '../../transform/services/transform-template.service';
+import { TransformerTemplateService } from '../../transform/services/transformer-template.service';
 import { CreateRuleDto } from '../dtos/create-rule.dto';
 import { ListRulesQueryDto } from '../dtos/list-rules-query.dto';
 import { RuleEntity } from '../entities/rule.entity';
@@ -19,7 +19,7 @@ export class RuleService {
     @Inject(forwardRef(() => AssetService))
     private readonly assetService: AssetService,
     private readonly classifierTemplateService: ClassifierTemplateService,
-    private readonly transformTemplateService: TransformTemplateService
+    private readonly transformerTemplateService: TransformerTemplateService
   ) {}
 
   async createRule(data: CreateRuleDto): Promise<RuleEntity> {
@@ -96,7 +96,7 @@ export class RuleService {
       prismaService: this.prismaService,
       assetService: this.assetService,
       classifierTemplateService: this.classifierTemplateService,
-      transformTemplateService: this.transformTemplateService,
+      transformerTemplateService: this.transformerTemplateService,
     });
   }
 }

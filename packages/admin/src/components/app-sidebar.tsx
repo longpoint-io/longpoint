@@ -84,10 +84,10 @@ export function AppSidebar() {
     },
     {
       label: 'Transformers',
-      url: '/transform/templates',
+      url: '/transformer/templates',
       icon: Move3dIcon,
       visible: () => {
-        return hasPermission(Permission.TRANSFORM_TEMPLATES_READ);
+        return hasPermission(Permission.TRANSFORMER_TEMPLATES_READ);
       },
     },
     {

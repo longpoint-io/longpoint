@@ -35,7 +35,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-export function CreateTransformTemplate() {
+export function CreateTransformerTemplate() {
   const client = useClient();
   const navigate = useNavigate();
   const [selectedTransformerId, setSelectedTransformerId] = useState<
@@ -123,12 +123,12 @@ export function CreateTransformTemplate() {
         payload.input = values.input;
       }
 
-      const result = await client.transform.createTransformTemplate(payload);
+      const result = await client.transform.createTransformerTemplate(payload);
 
-      toast.success('Transform template created successfully');
-      navigate(`/transform/templates/${result.id}`);
+      toast.success('Transformer template created successfully');
+      navigate(`/transformer/templates/${result.id}`);
     } catch (error) {
-      toast.error('Failed to create transform template', {
+      toast.error('Failed to create transformer template', {
         description:
           error instanceof Error
             ? error.message
@@ -140,7 +140,7 @@ export function CreateTransformTemplate() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <h2 className="text-3xl font-bold">Create Transform Template</h2>
+        <h2 className="text-3xl font-bold">Create Transformer Template</h2>
       </div>
 
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -149,7 +149,7 @@ export function CreateTransformTemplate() {
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
               <CardDescription>
-                Name and describe your transform template
+                Name and describe your transformer template
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -328,12 +328,12 @@ export function CreateTransformTemplate() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/transform/templates')}
+            onClick={() => navigate('/transformer/templates')}
           >
             Cancel
           </Button>
           <Button type="submit" disabled={!selectedTransformerId}>
-            Create Transform Template
+            Create Transformer Template
           </Button>
         </div>
       </form>

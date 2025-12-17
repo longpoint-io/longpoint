@@ -39,10 +39,10 @@ export class RunTransformerActionDto {
 
   @IsString()
   @ApiProperty({
-    description: 'The ID of the transform template to run',
+    description: 'The ID of the transformer template to run',
     example: 'xyz789',
   })
-  transformTemplateId!: string;
+  transformerTemplateId!: string;
 
   @IsString()
   @ApiProperty({
@@ -54,7 +54,7 @@ export class RunTransformerActionDto {
 
   constructor(data: RunTransformerAction) {
     this.type = RuleActionType.RUN_TRANSFORMER;
-    this.transformTemplateId = data.transformTemplateId;
+    this.transformerTemplateId = data.transformerTemplateId;
     this.sourceVariantId = data.sourceVariantId;
   }
 }

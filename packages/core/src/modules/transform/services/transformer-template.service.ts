@@ -5,18 +5,18 @@ import { TemplateSource } from '@/shared/types/template.types';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/services';
-import { CreateTransformTemplateDto } from '../dtos';
-import { TransformTemplateEntity } from '../entities/transform-template.entity';
+import { CreateTransformerTemplateDto } from '../dtos';
+import { TransformerTemplateEntity } from '../entities/transformer-template.entity';
 import { TransformerEntity } from '../entities/transformer.entity';
-import { TransformTemplateNotFound } from '../transform.errors';
+import { TransformerTemplateNotFound } from '../transform.errors';
 import {
-  SelectedTransformTemplate,
-  selectTransformTemplate,
+  SelectedTransformerTemplate,
+  selectTransformerTemplate,
 } from '../transform.selectors';
 import { TransformerService } from './transformer.service';
 
 @Injectable()
-export class TransformTemplateService {
+export class TransformerTemplateService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly transformerService: TransformerService,
@@ -24,29 +24,28 @@ export class TransformTemplateService {
     private readonly pluginRegistryService: PluginRegistryService
   ) {}
 
-  async createTransformTemplate(data: CreateTransformTemplateDto) {
+  async createTransformerTemplate(data: CreateTransformerTemplateDto) {
     const transformer = await this.transformerService.getTransformerByIdOrThrow(
       data.transformerId
     );
-    const transformTemplate = await this.prismaService.transformTemplate.create(
-      {
+    const transformerTemplate =
+      await this.prismaService.transformerTemplate.create({
         data: {
           name: data.name,
           description: data.description,
           transformerId: data.transformerId,
           input: data.input,
         },
-        select: selectTransformTemplate(),
-      }
-    );
+        select: selectTransformerTemplate(),
+      });
 
-    return await this.getTransformTemplateEntity(
-      transformTemplate,
+    return await this.getTransformerTemplateEntity(
+      transformerTemplate,
       transformer
     );
   }
 
-  async getTransformTemplateById(id: string) {
+  async getTransformerTemplateById(id: string) {
     // Check if it's a plugin template (format: pluginId/templateKey)
     const parts = id.split('/');
     if (parts.length === 2) {
@@ -62,7 +61,7 @@ export class TransformTemplateService {
               await this.transformerService.getTransformerByIdOrThrow(
                 registryEntry.fullyQualifiedId
               );
-            return await this.getTransformTemplateEntity(
+            return await this.getTransformerTemplateEntity(
               {
                 id,
                 name: id,
@@ -82,36 +81,36 @@ export class TransformTemplateService {
     }
 
     // Fall back to DB lookup
-    const transformTemplate =
-      await this.prismaService.transformTemplate.findUnique({
+    const transformerTemplate =
+      await this.prismaService.transformerTemplate.findUnique({
         where: { id },
-        select: selectTransformTemplate(),
+        select: selectTransformerTemplate(),
       });
 
-    if (!transformTemplate) {
+    if (!transformerTemplate) {
       return null;
     }
 
     const transformer = await this.transformerService.getTransformerByIdOrThrow(
-      transformTemplate.transformerId
+      transformerTemplate.transformerId
     );
 
-    return await this.getTransformTemplateEntity(
-      transformTemplate,
+    return await this.getTransformerTemplateEntity(
+      transformerTemplate,
       transformer
     );
   }
 
-  async getTransformTemplateByIdOrThrow(id: string) {
-    const transformTemplate = await this.getTransformTemplateById(id);
-    if (!transformTemplate) {
-      throw new TransformTemplateNotFound(id);
+  async getTransformerTemplateByIdOrThrow(id: string) {
+    const transformerTemplate = await this.getTransformerTemplateById(id);
+    if (!transformerTemplate) {
+      throw new TransformerTemplateNotFound(id);
     }
-    return transformTemplate;
+    return transformerTemplate;
   }
 
-  async listTransformTemplates(query = new PaginationQueryDto()) {
-    const pluginTemplates: TransformTemplateEntity[] = [];
+  async listTransformerTemplates(query = new PaginationQueryDto()) {
+    const pluginTemplates: TransformerTemplateEntity[] = [];
     const registryEntries = this.pluginRegistryService.listTransformers();
 
     for (const registryEntry of registryEntries) {
@@ -127,7 +126,7 @@ export class TransformTemplateService {
 
       for (const [templateKey, template] of Object.entries(templates)) {
         const templateName = `${registryEntry.pluginId}/${templateKey}`;
-        const templateEntity = await this.getTransformTemplateEntity(
+        const templateEntity = await this.getTransformerTemplateEntity(
           {
             id: templateName,
             name: templateName,
@@ -145,13 +144,13 @@ export class TransformTemplateService {
       }
     }
 
-    const dbTemplates = await this.prismaService.transformTemplate.findMany({
-      select: selectTransformTemplate(),
+    const dbTemplates = await this.prismaService.transformerTemplate.findMany({
+      select: selectTransformerTemplate(),
     });
 
     const customTemplates = await Promise.all(
       dbTemplates.map((template) =>
-        this.getTransformTemplateEntity(template, template.transformerId)
+        this.getTransformerTemplateEntity(template, template.transformerId)
       )
     );
 
@@ -174,9 +173,9 @@ export class TransformTemplateService {
     return allTemplates.slice(startIndex, startIndex + pageSize);
   }
 
-  private async getTransformTemplateEntity(
+  private async getTransformerTemplateEntity(
     data: Pick<
-      SelectedTransformTemplate,
+      SelectedTransformerTemplate,
       'id' | 'name' | 'displayName' | 'description' | 'input' | 'transformerId'
     > & {
       createdAt: Date | null;
@@ -184,11 +183,11 @@ export class TransformTemplateService {
     },
     transformer: TransformerEntity | string,
     source?: TemplateSource
-  ): Promise<TransformTemplateEntity> {
+  ): Promise<TransformerTemplateEntity> {
     if (typeof transformer === 'string') {
       const transformerEntity =
         await this.transformerService.getTransformerByIdOrThrow(transformer);
-      return new TransformTemplateEntity({
+      return new TransformerTemplateEntity({
         id: data.id,
         name: data.name,
         displayName: data.displayName,
@@ -204,7 +203,7 @@ export class TransformTemplateService {
       });
     }
 
-    return new TransformTemplateEntity({
+    return new TransformerTemplateEntity({
       id: data.id,
       name: data.name,
       displayName: data.displayName,

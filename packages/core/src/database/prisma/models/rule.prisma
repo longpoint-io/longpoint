@@ -13,7 +13,7 @@ model Rule {
   condition Json?
 
   /// Actions to execute when condition matches (JSON array)
-  /// Example: [{ type: "runClassifier", classifierTemplateId: "..." }, { type: "runTransformer", transformTemplateId: "...", sourceVariantId: "{{variant.id}}" }]
+  /// Example: [{ type: "RUN_CLASSIFIER", classifierTemplateId: "..." }, { type: "RUN_TRANSFORMER", transformerTemplateId: "...", sourceVariantId: "{{variant.id}}" }]
   actions Json[]
 
   createdAt DateTime @default(now())

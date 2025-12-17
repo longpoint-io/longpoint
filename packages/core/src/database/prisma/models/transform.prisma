@@ -1,4 +1,4 @@
-model TransformTemplate {
+model TransformerTemplate {
   id            String   @id @default(cuid(2))
   name          String   @unique
   displayName   String?

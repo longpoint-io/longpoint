@@ -38,10 +38,12 @@ export function RuleActionForm({ control, name }: RuleActionFormProps) {
     }
   );
 
-  const { data: transformTemplates, isLoading: transformsLoading } = useQuery({
-    queryKey: ['transform-templates'],
-    queryFn: () => client.transform.listTransformTemplates(),
-  });
+  const { data: transformerTemplates, isLoading: transformsLoading } = useQuery(
+    {
+      queryKey: ['transformer-templates'],
+      queryFn: () => client.transform.listTransformerTemplates(),
+    }
+  );
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -79,7 +81,7 @@ export function RuleActionForm({ control, name }: RuleActionFormProps) {
               control={control}
               name={`${name}.${index}`}
               classifierTemplates={classifierTemplates?.items || []}
-              transformTemplates={transformTemplates?.items || []}
+              transformerTemplates={transformerTemplates?.items || []}
               classifiersLoading={classifiersLoading}
               transformsLoading={transformsLoading}
             />
@@ -102,7 +104,11 @@ interface SingleActionFormProps {
     name: string;
     displayName?: string;
   }>;
-  transformTemplates: Array<{ id: string; name: string; displayName?: string }>;
+  transformerTemplates: Array<{
+    id: string;
+    name: string;
+    displayName?: string;
+  }>;
   classifiersLoading: boolean;
   transformsLoading: boolean;
 }
@@ -111,7 +117,7 @@ function SingleActionForm({
   control,
   name,
   classifierTemplates,
-  transformTemplates,
+  transformerTemplates,
   classifiersLoading,
   transformsLoading,
 }: SingleActionFormProps) {
@@ -149,7 +155,7 @@ function SingleActionForm({
                       } else {
                         field.onChange({
                           type: 'RUN_TRANSFORMER',
-                          transformTemplateId: '',
+                          transformerTemplateId: '',
                           sourceVariantId: '{{variant.id}}',
                         });
                       }
@@ -187,7 +193,7 @@ function SingleActionForm({
               <RunTransformerActionForm
                 control={control}
                 name={name}
-                transformTemplates={transformTemplates}
+                transformerTemplates={transformerTemplates}
                 isLoading={transformsLoading}
               />
             )}
@@ -251,22 +257,26 @@ function RunClassifierActionForm({
 interface RunTransformerActionFormProps {
   control: Control<any>;
   name: string;
-  transformTemplates: Array<{ id: string; name: string; displayName?: string }>;
+  transformerTemplates: Array<{
+    id: string;
+    name: string;
+    displayName?: string;
+  }>;
   isLoading: boolean;
 }
 
 function RunTransformerActionForm({
   control,
   name,
-  transformTemplates,
+  transformerTemplates,
   isLoading,
 }: RunTransformerActionFormProps) {
   return (
     <>
       <Controller
-        name={`${name}.transformTemplateId`}
+        name={`${name}.transformerTemplateId`}
         control={control}
-        rules={{ required: 'Transform template is required' }}
+        rules={{ required: 'Transformer template is required' }}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid} className="max-w-2xs">
             <FieldLabel required>Template</FieldLabel>
@@ -278,7 +288,7 @@ function RunTransformerActionForm({
                   <SelectValue placeholder="Select a transformer template" />
                 </SelectTrigger>
                 <SelectContent>
-                  {transformTemplates.map((template) => (
+                  {transformerTemplates.map((template) => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.displayName || template.name}
                     </SelectItem>

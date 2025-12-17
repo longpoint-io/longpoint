@@ -12,22 +12,22 @@ import {
 import { Spinner } from '@longpoint/ui/components/spinner';
 import { useEffect, useState } from 'react';
 
-type SelectTransformTemplateProps = {
+type SelectTransformerTemplateProps = {
   client: Longpoint;
   selectedVariantMimeType: string;
   onSelect: (templateId: string) => void;
   onClose: () => void;
 };
 
-export function SelectTransformTemplate({
+export function SelectTransformerTemplate({
   client,
   selectedVariantMimeType,
   onSelect,
   onClose,
-}: SelectTransformTemplateProps) {
+}: SelectTransformerTemplateProps) {
   const [search, setSearch] = useState('');
   const [templates, setTemplates] = useState<
-    components['schemas']['TransformTemplate'][]
+    components['schemas']['TransformerTemplate'][]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,7 +35,7 @@ export function SelectTransformTemplate({
     let cancelled = false;
     setIsLoading(true);
     client.transform
-      .listTransformTemplates({ pageSize: 100 })
+      .listTransformerTemplates({ pageSize: 100 })
       .then((response) => {
         if (!cancelled) {
           setTemplates(response.items || []);
@@ -43,7 +43,7 @@ export function SelectTransformTemplate({
         }
       })
       .catch((error) => {
-        console.error('Error fetching transform templates:', error);
+        console.error('Error fetching transformer templates:', error);
         if (!cancelled) {
           setTemplates([]);
           setIsLoading(false);
@@ -56,7 +56,7 @@ export function SelectTransformTemplate({
   }, [client]);
 
   const filterTemplates = (
-    tmpls: components['schemas']['TransformTemplate'][]
+    tmpls: components['schemas']['TransformerTemplate'][]
   ) => {
     return tmpls.filter((template) => {
       if (!template.supportedMimeTypes.includes(selectedVariantMimeType)) {
@@ -85,7 +85,7 @@ export function SelectTransformTemplate({
     <div className="flex flex-col">
       <Command shouldFilter={false}>
         <CommandInput
-          placeholder="Search transform templates..."
+          placeholder="Search transformer templates..."
           value={search}
           onValueChange={setSearch}
         />
@@ -121,8 +121,8 @@ export function SelectTransformTemplate({
               ) : (
                 <CommandEmpty>
                   {search
-                    ? 'No transform templates found.'
-                    : 'No transform templates available.'}
+                    ? 'No transformer templates found.'
+                    : 'No transformer templates available.'}
                 </CommandEmpty>
               )}
             </>

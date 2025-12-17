@@ -552,47 +552,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/transform-templates": {
+    "/transformer-templates": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List transform templates */
-        get: operations["listTransformTemplates"];
+        /** List transformer templates */
+        get: operations["listTransformerTemplates"];
         put?: never;
         /**
-         * Create a transform template
+         * Create a transformer template
          * @description Define a template for transforming assets.
          */
-        post: operations["createTransformTemplate"];
+        post: operations["createTransformerTemplate"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/transform-templates/{templateId}": {
+    "/transformer-templates/{templateId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get a transform template */
-        get: operations["getTransformTemplate"];
+        /** Get a transformer template */
+        get: operations["getTransformerTemplate"];
         put?: never;
         post?: never;
-        /** Delete a transform template */
-        delete: operations["deleteTransformTemplate"];
+        /** Delete a transformer template */
+        delete: operations["deleteTransformerTemplate"];
         options?: never;
         head?: never;
-        /** Update a transform template */
-        patch: operations["updateTransformTemplate"];
+        /** Update a transformer template */
+        patch: operations["updateTransformerTemplate"];
         trace?: never;
     };
-    "/transform-templates/{templateId}/generate-variant": {
+    "/transformer-templates/{templateId}/generate-variant": {
         parameters: {
             query?: never;
             header?: never;
@@ -602,8 +602,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Generate a variant from a transform template
-         * @description Creates a new derivative variant by applying the transform template to the source variant.
+         * Generate a variant from a transformer template
+         * @description Creates a new derivative variant by applying the transformer template to the source variant.
          */
         post: operations["generateVariantFromTemplate"];
         delete?: never;
@@ -1116,7 +1116,7 @@ export interface components {
              * @description A description of the field
              * @example The name of the user
              */
-            description: Record<string, never> | null;
+            description: string | null;
             /**
              * @description The allowed values for the field, if the field type is a string
              * @example [
@@ -1125,12 +1125,12 @@ export interface components {
              *       "cherry"
              *     ]
              */
-            enum: Record<string, never> | null;
+            enum: string[] | null;
             /**
              * @description Whether the field is immutable
              * @example true
              */
-            immutable: Record<string, never> | null;
+            immutable: boolean | null;
             /** @description The item schema, if the field type is an array */
             items: components["schemas"]["ConfigSchemaItems"] | null;
             /**
@@ -1143,18 +1143,18 @@ export interface components {
              * @default null
              * @example 10
              */
-            maxLength: Record<string, never> | null;
+            maxLength: number | null;
             /**
              * @description The minimum allowable length of the field, if the field type supports length constraints
              * @default null
              * @example 1
              */
-            minLength: Record<string, never> | null;
+            minLength: number | null;
             /**
              * @description A placeholder for the field
              * @example John Doe
              */
-            placeholder: Record<string, never> | null;
+            placeholder: string | null;
             /** @description The properties of the field, if the field type is an object */
             properties: {
                 [key: string]: components["schemas"]["ConfigSchemaValue"];
@@ -1281,7 +1281,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transformer-templates:create" | "transformer-templates:read" | "transformer-templates:update" | "transformer-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         CreateRule: {
             /** @description The actions to execute when condition matches */
@@ -1369,14 +1369,14 @@ export interface components {
              */
             storageConfigId: string;
         };
-        CreateTransformTemplate: {
+        CreateTransformerTemplate: {
             /**
-             * @description A brief description of the transform template
+             * @description A brief description of the transformer template
              * @example Convert videos into a watchable format for 5th generation iPods
              */
             description?: string | null;
             /**
-             * @description The display name of the transform template
+             * @description The display name of the transformer template
              * @example iPod Video
              */
             displayName?: string;
@@ -1393,7 +1393,7 @@ export interface components {
                 [key: string]: unknown;
             };
             /**
-             * @description The name of the transform template
+             * @description The name of the transformer template
              * @example ipod-video
              */
             name: string;
@@ -1519,9 +1519,9 @@ export interface components {
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
-        ListTransformTemplatesResponse: {
-            /** @description The transform templates in the response */
-            items: components["schemas"]["TransformTemplate"][];
+        ListTransformerTemplatesResponse: {
+            /** @description The transformer templates in the response */
+            items: components["schemas"]["TransformerTemplate"][];
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
@@ -1660,7 +1660,7 @@ export interface components {
              *       "classifiers:delete"
              *     ]
              */
-            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transformer-templates:create" | "transformer-templates:read" | "transformer-templates:update" | "transformer-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
             /**
              * Format: date-time
              * @description When the role was last updated
@@ -1767,10 +1767,10 @@ export interface components {
              */
             sourceVariantId: string;
             /**
-             * @description The ID of the transform template to run
+             * @description The ID of the transformer template to run
              * @example xyz789
              */
-            transformTemplateId: string;
+            transformerTemplateId: string;
             /**
              * @description The action type
              * @enum {string}
@@ -2061,7 +2061,7 @@ export interface components {
              * @description A brief description of the transformer
              * @example Convert videos to a variety of formats and qualities
              */
-            description: Record<string, never>;
+            description: string | null;
             /**
              * @description The display name of the transformer
              * @example Transcoder
@@ -2086,7 +2086,7 @@ export interface components {
              * @description A brief description of the transformer
              * @example Convert videos to a variety of formats and qualities
              */
-            description: Record<string, never>;
+            description: string | null;
             /**
              * @description The display name of the transformer
              * @example Transcoder
@@ -2110,24 +2110,24 @@ export interface components {
              */
             supportedMimeTypes: string[];
         };
-        TransformTemplate: {
+        TransformerTemplate: {
             /**
-             * @description The date and time the transform template was created (only for custom templates)
+             * @description The date and time the transformer template was created (only for custom templates)
              * @example 2021-01-01T00:00:00.000Z
              */
             createdAt?: string | null;
             /**
-             * @description A brief description of the transform template
+             * @description A brief description of the transformer template
              * @example Convert videos to a watchable format for 5th generation iPods
              */
             description?: string | null;
             /**
-             * @description The display name of the transform template
+             * @description The display name of the transformer template
              * @example iPod Video
              */
             displayName: string;
             /**
-             * @description The ID of the transform template
+             * @description The ID of the transformer template
              * @example sajl1kih6emtwozh8y0zenkj
              */
             id: string;
@@ -2144,12 +2144,12 @@ export interface components {
                 [key: string]: unknown;
             };
             /**
-             * @description The name of the transform template
+             * @description The name of the transformer template
              * @example ipod-video
              */
             name: string;
             /**
-             * @description The source of the transform template definition
+             * @description The source of the transformer template definition
              * @example plugin
              * @enum {string}
              */
@@ -2168,7 +2168,7 @@ export interface components {
              */
             transformerId: string;
             /**
-             * @description The date and time the transform template was updated (only for custom templates)
+             * @description The date and time the transformer template was updated (only for custom templates)
              * @example 2021-01-01T00:00:00.000Z
              */
             updatedAt?: string | null;
@@ -2255,7 +2255,7 @@ export interface components {
              *       "assets:delete"
              *     ]
              */
-            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transform-templates:create" | "transform-templates:read" | "transform-templates:update" | "transform-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
+            permissions?: ("assets:create" | "assets:read" | "assets:update" | "assets:delete" | "classifiers:create" | "classifiers:read" | "classifiers:update" | "classifiers:delete" | "collections:create" | "collections:read" | "collections:update" | "collections:delete" | "plugins:read" | "plugins:update" | "roles:create" | "roles:read" | "roles:update" | "roles:delete" | "rules:create" | "rules:read" | "rules:update" | "rules:delete" | "search-indexes:create" | "search-indexes:read" | "search-indexes:delete" | "storage-units:create" | "storage-units:read" | "storage-units:update" | "storage-units:delete" | "super" | "system-settings:update" | "transformer-templates:create" | "transformer-templates:read" | "transformer-templates:update" | "transformer-templates:delete" | "users:create" | "users:read" | "users:update" | "users:delete")[];
         };
         UpdateRule: {
             /** @description The actions to execute when condition matches */
@@ -2327,14 +2327,14 @@ export interface components {
              */
             name?: string;
         };
-        UpdateTransformTemplate: {
+        UpdateTransformerTemplate: {
             /**
-             * @description A brief description of the transform template
+             * @description A brief description of the transformer template
              * @example Convert videos into a watchable format for 5th generation iPods
              */
             description?: string | null;
             /**
-             * @description The display name of the transform template
+             * @description The display name of the transformer template
              * @example iPod Video
              */
             displayName?: string;
@@ -2351,7 +2351,7 @@ export interface components {
                 [key: string]: unknown;
             };
             /**
-             * @description The name of the transform template
+             * @description The name of the transformer template
              * @example ipod-video
              */
             name?: string;
@@ -2621,12 +2621,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Asset with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -2688,12 +2690,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Asset with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -2706,12 +2710,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_ALREADY_EXISTS",
                      *       "messages": [
                      *         "Asset with name \"My Asset\" already exists"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -2747,12 +2753,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Asset with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -2834,12 +2842,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "ClassifierTemplate with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -2872,12 +2882,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "ClassifierTemplate with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -2915,12 +2927,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "ClassifierTemplate with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3004,12 +3018,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3067,12 +3083,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3109,12 +3127,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3151,12 +3171,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Collection with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3209,12 +3231,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Plugin with id example-plugin-id not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3252,12 +3276,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Plugin with id example-plugin-id not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3312,12 +3338,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_ALREADY_EXISTS",
                      *       "messages": [
                      *         "Role with name 'My Role' already exists"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3351,12 +3379,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Role with id r2qwyd76nvd98cu6ewg8ync2 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3388,12 +3418,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Role with id r2qwyd76nvd98cu6ewg8ync2 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3431,12 +3463,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Role with id r2qwyd76nvd98cu6ewg8ync2 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3449,12 +3483,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_ALREADY_EXISTS",
                      *       "messages": [
                      *         "Role with name 'My Role' already exists"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3535,12 +3571,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Rule with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3573,12 +3611,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Rule with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3616,12 +3656,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Rule with id ukt4084q1kaqmsq74f2fxg43 not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3827,12 +3869,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Storage provider config with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3865,12 +3909,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Storage provider config with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3883,12 +3929,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "INVALID_INPUT",
                      *       "messages": [
                      *         "Storage provider config mbjq36xe6397dsi6x9nq4ghc cannot be deleted because it is used by 2 storage unit(s)"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -3926,12 +3974,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Storage provider config with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4033,12 +4083,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Storage unit with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4071,12 +4123,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Storage unit with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4089,12 +4143,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "INVALID_INPUT",
                      *       "messages": [
                      *         "Storage unit mbjq36xe6397dsi6x9nq4ghc cannot be deleted because it has media containers"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4132,12 +4188,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Storage unit with id mbjq36xe6397dsi6x9nq4ghc not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4207,7 +4265,7 @@ export interface operations {
             };
         };
     };
-    listTransformTemplates: {
+    listTransformerTemplates: {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -4226,12 +4284,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListTransformTemplatesResponse"];
+                    "application/json": components["schemas"]["ListTransformerTemplatesResponse"];
                 };
             };
         };
     };
-    createTransformTemplate: {
+    createTransformerTemplate: {
         parameters: {
             query?: never;
             header?: never;
@@ -4240,7 +4298,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateTransformTemplate"];
+                "application/json": components["schemas"]["CreateTransformerTemplate"];
             };
         };
         responses: {
@@ -4249,12 +4307,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TransformTemplate"];
+                    "application/json": components["schemas"]["TransformerTemplate"];
                 };
             };
         };
     };
-    getTransformTemplate: {
+    getTransformerTemplate: {
         parameters: {
             query?: never;
             header?: never;
@@ -4270,21 +4328,23 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TransformTemplate"];
+                    "application/json": components["schemas"]["TransformerTemplate"];
                 };
             };
-            /** @description The transform template was not found */
+            /** @description The transformer template was not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *         "Transformer template with id sajl1kih6emtwozh8y0zenkj not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4293,7 +4353,7 @@ export interface operations {
             };
         };
     };
-    deleteTransformTemplate: {
+    deleteTransformerTemplate: {
         parameters: {
             query?: never;
             header?: never;
@@ -4304,25 +4364,27 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The transform template was deleted */
+            /** @description The transformer template was deleted */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description The transform template was not found */
+            /** @description The transformer template was not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *         "Transformer template with id sajl1kih6emtwozh8y0zenkj not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4331,7 +4393,7 @@ export interface operations {
             };
         };
     };
-    updateTransformTemplate: {
+    updateTransformerTemplate: {
         parameters: {
             query?: never;
             header?: never;
@@ -4342,7 +4404,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateTransformTemplate"];
+                "application/json": components["schemas"]["UpdateTransformerTemplate"];
             };
         };
         responses: {
@@ -4351,21 +4413,23 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TransformTemplate"];
+                    "application/json": components["schemas"]["TransformerTemplate"];
                 };
             };
-            /** @description The transform template was not found */
+            /** @description The transformer template was not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *         "Transformer template with id sajl1kih6emtwozh8y0zenkj not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4396,18 +4460,20 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description The transform template was not found */
+            /** @description The transformer template was not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
-                     *         "Transform template with id sajl1kih6emtwozh8y0zenkj not found"
+                     *         "Transformer template with id sajl1kih6emtwozh8y0zenkj not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4465,12 +4531,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "Transformer with id something/transformer not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4546,12 +4614,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "User registration with id fjsbfjksbfmsajl1kih6emtwozh not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4584,12 +4654,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "User registration with id fjsbfjksbfmsajl1kih6emtwozh not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4647,12 +4719,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "User with id fjsbfjksbfmsajl1kih6emtwozh not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4685,12 +4759,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "User with id fjsbfjksbfmsajl1kih6emtwozh not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];
@@ -4728,12 +4804,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example {
+                    /**
+                     * @example {
                      *       "errorCode": "RESOURCE_NOT_FOUND",
                      *       "messages": [
                      *         "User with id fjsbfjksbfmsajl1kih6emtwozh not found"
                      *       ]
-                     *     } */
+                     *     }
+                     */
                     "application/json": {
                         errorCode?: string;
                         messages?: string[];

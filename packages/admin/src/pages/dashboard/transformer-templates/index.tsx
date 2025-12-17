@@ -1,5 +1,5 @@
 import { useAuth } from '@/auth';
-import { TransformTemplateCard } from '@/components/transform-template-card';
+import { TransformerTemplateCard } from '@/components/transformer-template-card';
 import { useClient } from '@/hooks/common/use-client';
 import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
@@ -15,15 +15,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Move3dIcon, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export function TransformTemplates() {
+export function TransformerTemplates() {
   const client = useClient();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
-  const canCreate = hasPermission(Permission.TRANSFORM_TEMPLATES_CREATE);
+  const canCreate = hasPermission(Permission.TRANSFORMER_TEMPLATES_CREATE);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['transform-templates'],
-    queryFn: () => client.transform.listTransformTemplates(),
+    queryKey: ['transformer-templates'],
+    queryFn: () => client.transform.listTransformerTemplates(),
   });
 
   if (isLoading) {
@@ -31,7 +31,7 @@ export function TransformTemplates() {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold">Transform Templates</h2>
+            <h2 className="text-3xl font-bold">Transformer Templates</h2>
             <p className="text-muted-foreground mt-2">
               Define templates for transforming assets
             </p>
@@ -57,14 +57,16 @@ export function TransformTemplates() {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold">Transform Templates</h2>
+            <h2 className="text-3xl font-bold">Transformer Templates</h2>
             <p className="text-muted-foreground mt-2">
               Define templates for transforming assets
             </p>
           </div>
         </div>
         <div className="text-center py-12">
-          <p className="text-destructive">Failed to load transform templates</p>
+          <p className="text-destructive">
+            Failed to load transformer templates
+          </p>
         </div>
       </div>
     );
@@ -79,15 +81,15 @@ export function TransformTemplates() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold">Transform Templates</h2>
+          <h2 className="text-3xl font-bold">Transformer Templates</h2>
           <p className="text-muted-foreground mt-2">
             Define templates for transforming assets
           </p>
         </div>
         {canCreate && (
-          <Button onClick={() => navigate('/transform/templates/create')}>
+          <Button onClick={() => navigate('/transformer/templates/create')}>
             <Plus className="h-4 w-4" />
-            Create Transform Template
+            Create Transformer Template
           </Button>
         )}
       </div>
@@ -100,13 +102,13 @@ export function TransformTemplates() {
                 <Move3dIcon className="h-12 w-12" />
               </EmptyMedia>
               <EmptyTitle className="text-2xl">
-                No transform templates created yet
+                No transformer templates created yet
               </EmptyTitle>
             </EmptyHeader>
             {canCreate && (
               <EmptyContent>
                 <Button
-                  onClick={() => navigate('/transform/templates/create')}
+                  onClick={() => navigate('/transformer/templates/create')}
                   size="lg"
                 >
                   <Plus className="h-5 w-5" />
@@ -128,7 +130,7 @@ export function TransformTemplates() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {pluginTemplates.map((template) => (
-                  <TransformTemplateCard
+                  <TransformerTemplateCard
                     key={template.id}
                     template={template}
                   />
@@ -147,7 +149,7 @@ export function TransformTemplates() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {customTemplates.map((template) => (
-                  <TransformTemplateCard
+                  <TransformerTemplateCard
                     key={template.id}
                     template={template}
                   />

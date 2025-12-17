@@ -3,7 +3,7 @@ import { AssetService } from '../../asset';
 import type { AssetVariantReadyEventPayload } from '../../asset/asset.events';
 import { ClassifierTemplateService } from '../../classifier/services/classifier-template.service';
 import { PrismaService } from '../../common/services';
-import { TransformTemplateService } from '../../transform/services/transform-template.service';
+import { TransformerTemplateService } from '../../transform/services/transformer-template.service';
 import {
   RuleDetailsDto,
   RuleDto,
@@ -28,7 +28,7 @@ export interface RuleEntityArgs {
   prismaService: PrismaService;
   assetService: AssetService;
   classifierTemplateService: ClassifierTemplateService;
-  transformTemplateService: TransformTemplateService;
+  transformerTemplateService: TransformerTemplateService;
 }
 
 export class RuleEntity {
@@ -59,7 +59,7 @@ export class RuleEntity {
     this.evaluatorService = new RuleEvaluatorService(args.assetService);
     this.executorService = new RuleExecutorService(
       args.classifierTemplateService,
-      args.transformTemplateService
+      args.transformerTemplateService
     );
   }
 

@@ -26,6 +26,7 @@ export class ConfigSchemaValueDto {
       'The allowed values for the field, if the field type is a string',
     example: ['apple', 'banana', 'cherry'],
     nullable: true,
+    type: [String],
   })
   enum: string[] | null;
 
@@ -39,6 +40,7 @@ export class ConfigSchemaValueDto {
     description: 'A description of the field',
     example: 'The name of the user',
     nullable: true,
+    type: 'string',
   })
   description: string | null;
 
@@ -46,6 +48,7 @@ export class ConfigSchemaValueDto {
     description: 'A placeholder for the field',
     example: 'John Doe',
     nullable: true,
+    type: 'string',
   })
   placeholder: string | null;
 
@@ -55,6 +58,7 @@ export class ConfigSchemaValueDto {
     example: 1,
     default: null,
     nullable: true,
+    type: 'number',
   })
   minLength: number | null;
 
@@ -64,6 +68,7 @@ export class ConfigSchemaValueDto {
     example: 10,
     default: null,
     nullable: true,
+    type: 'number',
   })
   maxLength: number | null;
 
@@ -71,6 +76,7 @@ export class ConfigSchemaValueDto {
     description: 'Whether the field is immutable',
     example: true,
     nullable: true,
+    type: 'boolean',
   })
   immutable: boolean | null;
 
