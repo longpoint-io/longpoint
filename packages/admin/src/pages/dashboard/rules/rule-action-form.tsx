@@ -1,4 +1,5 @@
 import { useClient } from '@/hooks/common/use-client';
+import { components } from '@longpoint/sdk';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Field,
@@ -20,18 +21,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Move3dIcon, PlusIcon, ScanSearchIcon, XIcon } from 'lucide-react';
 import { Control, Controller, useFieldArray } from 'react-hook-form';
 
-type RunClassifierAction = {
-  type: 'runClassifier';
-  classifierTemplateId: string;
-};
-
-type RunTransformerAction = {
-  type: 'runTransformer';
-  transformTemplateId: string;
-  sourceVariantId: string;
-};
-
-type RuleAction = RunClassifierAction | RunTransformerAction;
+type RuleAction = components['schemas']['RuleDetails']['actions'][number];
 
 interface RuleActionFormProps {
   control: Control<any>;
@@ -61,9 +51,9 @@ export function RuleActionForm({ control, name }: RuleActionFormProps) {
 
   const addAction = () => {
     append({
-      type: 'runClassifier',
+      type: 'RUN_CLASSIFIER',
       classifierTemplateId: '',
-    } as RuleAction);
+    });
   };
 
   return (
@@ -132,7 +122,7 @@ function SingleActionForm({
       rules={{ required: 'Action is required' }}
       render={({ field, fieldState }) => {
         const value = field.value as RuleAction | undefined;
-        const actionType = value?.type || 'runClassifier';
+        const actionType = value?.type || 'RUN_CLASSIFIER';
 
         return (
           <FieldGroup>
@@ -147,18 +137,18 @@ function SingleActionForm({
                 >
                   <FieldLabel required>Action</FieldLabel>
                   <Select
-                    value={typeField.value || 'runClassifier'}
+                    value={typeField.value || 'RUN_CLASSIFIER'}
                     onValueChange={(val) => {
                       typeField.onChange(val);
                       // Reset action based on type
-                      if (val === 'runClassifier') {
+                      if (val === 'RUN_CLASSIFIER') {
                         field.onChange({
-                          type: 'runClassifier',
+                          type: 'RUN_CLASSIFIER',
                           classifierTemplateId: '',
                         });
                       } else {
                         field.onChange({
-                          type: 'runTransformer',
+                          type: 'RUN_TRANSFORMER',
                           transformTemplateId: '',
                           sourceVariantId: '{{variant.id}}',
                         });
@@ -169,11 +159,11 @@ function SingleActionForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="runClassifier">
+                      <SelectItem value="RUN_CLASSIFIER">
                         <ScanSearchIcon />
                         Run Classifier
                       </SelectItem>
-                      <SelectItem value="runTransformer">
+                      <SelectItem value="RUN_TRANSFORMER">
                         <Move3dIcon />
                         Run Transformer
                       </SelectItem>
@@ -186,7 +176,7 @@ function SingleActionForm({
               )}
             />
 
-            {actionType === 'runClassifier' ? (
+            {actionType === 'RUN_CLASSIFIER' ? (
               <RunClassifierActionForm
                 control={control}
                 name={name}

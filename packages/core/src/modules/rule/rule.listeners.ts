@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { AssetVariantReadyEventPayload } from '../asset/asset.events';
+import {
+  AssetEventKey,
+  type AssetVariantReadyEventPayload,
+} from '../asset/asset.events';
 import { HandleEvent } from '../event';
 import { RuleService } from './services/rule.service';
 
@@ -9,7 +12,7 @@ export class RuleListeners {
 
   constructor(private readonly ruleService: RuleService) {}
 
-  @HandleEvent('asset.variant.ready')
+  @HandleEvent(AssetEventKey.ASSET_VARIANT_READY)
   async handleAssetVariantReady(payload: AssetVariantReadyEventPayload) {
     const rules = await this.ruleService.listRulesForEvent(
       'asset.variant.ready'
@@ -19,7 +22,7 @@ export class RuleListeners {
       return;
     }
 
-    Promise.all(
+    await Promise.allSettled(
       rules.map(async (rule) => {
         try {
           const shouldExecute = await rule.evaluate(payload);
@@ -34,11 +37,6 @@ export class RuleListeners {
           );
         }
       })
-    ).catch((error) => {
-      this.logger.error(
-        `Error processing rules for variant ${payload.id}:`,
-        error
-      );
-    });
+    );
   }
 }

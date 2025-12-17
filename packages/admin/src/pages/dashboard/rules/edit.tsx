@@ -44,7 +44,7 @@ export function EditRule() {
       condition: undefined,
       actions: [
         {
-          type: 'runClassifier',
+          type: 'RUN_CLASSIFIER',
           classifierTemplateId: '',
         },
       ],
@@ -58,7 +58,7 @@ export function EditRule() {
         enabled: rule.enabled,
         triggerEvent: rule.triggerEvent as 'asset.variant.ready',
         condition: rule.condition || undefined,
-        actions: rule.actions as any,
+        actions: rule.actions,
       });
     }
   }, [rule, form]);

@@ -1,4 +1,5 @@
 import { components } from '@longpoint/sdk';
+import { ComparisonOperator, LogicalOperator } from '@longpoint/types';
 import * as z from 'zod';
 
 type RuleCondition = NonNullable<
@@ -10,30 +11,35 @@ const conditionSchema: z.ZodType<RuleCondition> = z.lazy(() =>
     z.object({
       field: z.string().min(1, 'Field is required'),
       operator: z.enum([
-        'equals',
-        'notEquals',
-        'contains',
-        'in',
-        'notIn',
-        'greaterThan',
-        'lessThan',
+        ComparisonOperator.EQUALS,
+        ComparisonOperator.NOT_EQUALS,
+        ComparisonOperator.IN,
+        ComparisonOperator.NOT_IN,
+        ComparisonOperator.GREATER_THAN,
+        ComparisonOperator.LESS_THAN,
+        ComparisonOperator.GREATER_THAN_OR_EQUAL_TO,
+        ComparisonOperator.LESS_THAN_OR_EQUAL_TO,
+        ComparisonOperator.STARTS_WITH,
+        ComparisonOperator.ENDS_WITH,
       ]),
       value: z.any(),
     }),
     z.object({
-      operator: z.enum(['and', 'or']),
+      operator: z.enum([LogicalOperator.AND, LogicalOperator.OR]),
       conditions: z.array(conditionSchema as z.ZodType<RuleCondition>),
     }),
   ])
 );
 
-const actionSchema = z.discriminatedUnion('type', [
+type RuleAction = components['schemas']['RuleDetails']['actions'][number];
+
+const actionSchema: z.ZodType<RuleAction> = z.discriminatedUnion('type', [
   z.object({
-    type: z.literal('runClassifier'),
+    type: z.literal('RUN_CLASSIFIER'),
     classifierTemplateId: z.string().min(1, 'Classifier template is required'),
   }),
   z.object({
-    type: z.literal('runTransformer'),
+    type: z.literal('RUN_TRANSFORMER'),
     transformTemplateId: z.string().min(1, 'Transform template is required'),
     sourceVariantId: z.string().min(1, 'Source variant ID is required'),
   }),

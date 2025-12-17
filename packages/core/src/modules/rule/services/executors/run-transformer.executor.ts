@@ -21,26 +21,10 @@ export class RunTransformerExecutor implements RuleActionExecutor {
       sourceVariantId = this.interpolateTemplate(sourceVariantId, eventPayload);
     }
 
-    let template;
-    if (action.transformTemplateId) {
-      template =
-        await this.transformTemplateService.getTransformTemplateByIdOrThrow(
-          action.transformTemplateId
-        );
-    } else if (action.transformTemplateName) {
-      const templates =
-        await this.transformTemplateService.listTransformTemplates();
-      template = templates.find((t) => t.name === action.transformTemplateName);
-      if (!template) {
-        throw new Error(
-          `Transform template not found: ${action.transformTemplateName}`
-        );
-      }
-    } else {
-      throw new Error(
-        'Either transformTemplateId or transformTemplateName must be provided'
+    const template =
+      await this.transformTemplateService.getTransformTemplateByIdOrThrow(
+        action.transformTemplateId
       );
-    }
 
     await template.transformAssetVariant(sourceVariantId);
   }

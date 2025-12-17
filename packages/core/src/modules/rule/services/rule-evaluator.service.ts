@@ -124,6 +124,10 @@ export class RuleEvaluatorService {
         return this.compareNumeric(fieldValue, conditionValue, '>');
       case ComparisonOperator.LESS_THAN:
         return this.compareNumeric(fieldValue, conditionValue, '<');
+      case ComparisonOperator.GREATER_THAN_OR_EQUAL_TO:
+        return this.compareNumeric(fieldValue, conditionValue, '>=');
+      case ComparisonOperator.LESS_THAN_OR_EQUAL_TO:
+        return this.compareNumeric(fieldValue, conditionValue, '<=');
       default:
         return false;
     }
@@ -200,7 +204,7 @@ export class RuleEvaluatorService {
   private compareNumeric(
     left: unknown,
     right: unknown,
-    operator: '>' | '<'
+    operator: '>' | '<' | '>=' | '<='
   ): boolean {
     const leftNum = this.toNumber(left);
     const rightNum = this.toNumber(right);
@@ -211,8 +215,12 @@ export class RuleEvaluatorService {
 
     if (operator === '>') {
       return leftNum > rightNum;
-    } else {
+    } else if (operator === '<') {
       return leftNum < rightNum;
+    } else if (operator === '>=') {
+      return leftNum >= rightNum;
+    } else {
+      return leftNum <= rightNum;
     }
   }
 

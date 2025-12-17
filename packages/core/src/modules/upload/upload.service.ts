@@ -10,6 +10,7 @@ import { getAssetVariantPath } from '@/shared/utils/asset.utils';
 import { Injectable } from '@nestjs/common';
 import { isAfter } from 'date-fns';
 import { Request } from 'express';
+import { AssetEventKey } from '../asset';
 import { EventPublisher } from '../event';
 import { StorageProviderEntity } from '../storage/entities';
 import { UploadAssetQueryDto } from './dtos/upload-asset.dto';
@@ -103,7 +104,7 @@ export class UploadService {
           delete: true,
         },
       });
-      await this.eventPublisher.publish('asset.variant.ready', {
+      await this.eventPublisher.publish(AssetEventKey.ASSET_VARIANT_READY, {
         id: variant.id,
         assetId: variant.assetId,
       });
@@ -111,7 +112,7 @@ export class UploadService {
       await this.updateVariant(variant.id, {
         status: 'FAILED',
       });
-      await this.eventPublisher.publish('asset.variant.failed', {
+      await this.eventPublisher.publish(AssetEventKey.ASSET_VARIANT_FAILED, {
         id: variant.id,
         assetId: variant.assetId,
       });

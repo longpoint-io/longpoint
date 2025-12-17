@@ -24,7 +24,7 @@ export function CreateRule() {
       condition: undefined,
       actions: [
         {
-          type: 'runClassifier',
+          type: 'RUN_CLASSIFIER',
           classifierTemplateId: '',
         },
       ],
