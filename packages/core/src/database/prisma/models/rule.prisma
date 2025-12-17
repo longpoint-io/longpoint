@@ -1,0 +1,24 @@
+model Rule {
+  id          String  @id @default(cuid(2))
+  displayName String  @unique
+  enabled     Boolean @default(true)
+
+  /// The event that triggers this rule (e.g., "asset.variant.ready")
+  triggerEvent String
+
+  /// Optional condition to evaluate against event payload (JSON)
+  /// Can be a single condition or compound condition with AND/OR logic
+  /// Example (single): { field: "variant.type", operator: "equals", value: "ORIGINAL" }
+  /// Example (compound): { operator: "and", conditions: [{ field: "variant.type", operator: "equals", value: "ORIGINAL" }, { field: "variant.metadata.category", operator: "equals", value: "podcast" }] }
+  condition Json?
+
+  /// Actions to execute when condition matches (JSON array)
+  /// Example: [{ type: "runClassifier", classifierTemplateId: "..." }, { type: "runTransformer", transformTemplateId: "...", sourceVariantId: "{{variant.id}}" }]
+  actions Json[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([triggerEvent, enabled])
+  @@index([enabled])
+}

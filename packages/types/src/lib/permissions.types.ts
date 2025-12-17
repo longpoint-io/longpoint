@@ -17,6 +17,10 @@ export const Permission = {
   ROLES_READ: 'roles:read',
   ROLES_UPDATE: 'roles:update',
   ROLES_DELETE: 'roles:delete',
+  RULES_CREATE: 'rules:create',
+  RULES_READ: 'rules:read',
+  RULES_UPDATE: 'rules:update',
+  RULES_DELETE: 'rules:delete',
   SEARCH_INDEXES_CREATE: 'search-indexes:create',
   SEARCH_INDEXES_READ: 'search-indexes:read',
   SEARCH_INDEXES_DELETE: 'search-indexes:delete',
@@ -78,6 +82,10 @@ const ADMIN = {
   [Permission.TRANSFORM_TEMPLATES_READ]: true,
   [Permission.TRANSFORM_TEMPLATES_UPDATE]: true,
   [Permission.TRANSFORM_TEMPLATES_DELETE]: true,
+  [Permission.RULES_CREATE]: true,
+  [Permission.RULES_READ]: true,
+  [Permission.RULES_UPDATE]: true,
+  [Permission.RULES_DELETE]: true,
 } as const;
 
 const SUPER_ADMIN = {

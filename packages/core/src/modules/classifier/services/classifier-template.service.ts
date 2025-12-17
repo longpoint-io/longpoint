@@ -51,6 +51,15 @@ export class ClassifierTemplateService {
   }
 
   async getClassifierTemplateById(id: string) {
+    // Check if this is a plugin-defined template (format: pluginId/templateKey)
+    if (id.includes('/')) {
+      const pluginTemplate = await this.getPluginTemplateById(id);
+      if (pluginTemplate) {
+        return pluginTemplate;
+      }
+    }
+
+    // Fall back to database lookup for custom templates
     const classifierTemplate =
       await this.prismaService.classifierTemplate.findUnique({
         where: {
@@ -80,6 +89,38 @@ export class ClassifierTemplateService {
   async listClassifierTemplates(
     query = new ListClassifierTemplatesQueryDto()
   ): Promise<ClassifierTemplateEntity[]> {
+    const pluginTemplates = await this.getAllPluginTemplates();
+
+    const dbTemplates = await this.prismaService.classifierTemplate.findMany({
+      select: selectClassifierTemplate(),
+    });
+
+    const customTemplates = await Promise.all(
+      dbTemplates.map((template) =>
+        this.getClassifierTemplateEntity(template, template.classifierId)
+      )
+    );
+
+    const allTemplates = [...pluginTemplates, ...customTemplates].sort((a, b) =>
+      a.id.localeCompare(b.id)
+    );
+
+    const pageSize = query.pageSize ?? 1000;
+    let startIndex = 0;
+
+    if (query.cursor) {
+      const cursorIndex = allTemplates.findIndex(
+        (template) => template.id === query.cursor
+      );
+      if (cursorIndex !== -1) {
+        startIndex = cursorIndex + 1;
+      }
+    }
+
+    return allTemplates.slice(startIndex, startIndex + pageSize);
+  }
+
+  private async getAllPluginTemplates(): Promise<ClassifierTemplateEntity[]> {
     const pluginTemplates: ClassifierTemplateEntity[] = [];
     const registryEntries = this.pluginRegistryService.listClassifiers();
 
@@ -111,33 +152,45 @@ export class ClassifierTemplateService {
       }
     }
 
-    const dbTemplates = await this.prismaService.classifierTemplate.findMany({
-      select: selectClassifierTemplate(),
-    });
+    return pluginTemplates;
+  }
 
-    const customTemplates = await Promise.all(
-      dbTemplates.map((template) =>
-        this.getClassifierTemplateEntity(template, template.classifierId)
-      )
-    );
+  private async getPluginTemplateById(
+    id: string
+  ): Promise<ClassifierTemplateEntity | null> {
+    const registryEntries = this.pluginRegistryService.listClassifiers();
 
-    const allTemplates = [...pluginTemplates, ...customTemplates].sort((a, b) =>
-      a.id.localeCompare(b.id)
-    );
+    for (const registryEntry of registryEntries) {
+      const templates = registryEntry.contribution.templates;
+      if (!templates) {
+        continue;
+      }
 
-    const pageSize = query.pageSize ?? 1000;
-    let startIndex = 0;
+      for (const [templateKey, template] of Object.entries(templates)) {
+        const templateName = `${registryEntry.pluginId}/${templateKey}`;
+        if (templateName === id) {
+          const classifier =
+            await this.classifierService.getClassifierByIdOrThrow(
+              registryEntry.fullyQualifiedId
+            );
 
-    if (query.cursor) {
-      const cursorIndex = allTemplates.findIndex(
-        (template) => template.id === query.cursor
-      );
-      if (cursorIndex !== -1) {
-        startIndex = cursorIndex + 1;
+          return this.getClassifierTemplateEntity(
+            {
+              id: templateName,
+              name: templateName,
+              source: TemplateSource.PLUGIN,
+              description: template.description ?? null,
+              createdAt: null,
+              updatedAt: null,
+              input: template.input as ConfigValues | null,
+            },
+            classifier
+          );
+        }
       }
     }
 
-    return allTemplates.slice(startIndex, startIndex + pageSize);
+    return null;
   }
 
   private async getClassifierTemplateEntity(

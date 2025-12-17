@@ -10,6 +10,7 @@ import { JsonObject, SupportedMimeType } from '@longpoint/types';
 import { forwardSlashJoin } from '@longpoint/utils/path';
 import { Readable } from 'stream';
 import { AssetVariantNotFound } from '../asset.errors';
+import { AssetEventKey } from '../asset.events';
 import { SelectedAssetVariant } from '../asset.selectors';
 import { AssetVariantDto } from '../dtos/containers/asset-variant.dto';
 
@@ -96,13 +97,13 @@ export class AssetVariantEntity implements Serializable {
       this._metadata = updated.metadata as JsonObject | null;
 
       if (data.status === 'READY') {
-        this.eventPublisher.publish('asset.variant.ready', {
+        this.eventPublisher.publish(AssetEventKey.ASSET_VARIANT_READY, {
           id: this.id,
           assetId: this.assetId,
         });
       }
       if (data.status === 'FAILED') {
-        this.eventPublisher.publish('asset.variant.failed', {
+        this.eventPublisher.publish(AssetEventKey.ASSET_VARIANT_FAILED, {
           id: this.id,
           assetId: this.assetId,
         });

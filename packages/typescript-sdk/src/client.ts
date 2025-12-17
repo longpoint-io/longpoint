@@ -16,9 +16,10 @@ export class Longpoint {
   storage: StorageClient;
   collections: CollectionsClient;
   users: UsersClient;
+  rules: RulesClient;
+  transform: TransformClient;
   search: SearchClient;
   system: SystemClient;
-  transform: TransformClient;
 
   constructor(config: ClientConfig = {}) {
     this.httpClient = axios.create({
@@ -47,9 +48,10 @@ export class Longpoint {
     this.storage = new StorageClient(this.httpClient);
     this.collections = new CollectionsClient(this.httpClient);
     this.users = new UsersClient(this.httpClient);
+    this.rules = new RulesClient(this.httpClient);
+    this.transform = new TransformClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
-    this.transform = new TransformClient(this.httpClient);
   }
 }
 
@@ -593,91 +595,61 @@ class UsersClient {
   }
 }
 
-class SearchClient {
+class RulesClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * Search media containers
+   * Create a rule
    */
-    async searchMedia(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
-        const url = `search`;
+    async createRule(data: components['schemas']['CreateRule']): Promise<components['schemas']['Rule']> {
+        const url = `rules`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
 
     /**
-   * Create a search index
+   * List rules
    */
-    async createSearchIndex(data: components['schemas']['CreateSearchIndex']): Promise<components['schemas']['SearchIndex']> {
-        const url = `search/indexes`;
-        const response = await this.httpClient.post(url, data);
-        return response.data;
-  }
-
-    /**
-   * List search indexes
-   */
-    async listSearchIndexes(): Promise<components['schemas']['SearchIndex'][]> {
-        const url = `search/indexes`;
+    async listRules(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListRulesResponse']> {
+        const params = new URLSearchParams();
+        if (options) {
+          if (options.cursor !== undefined) {
+            params.append('cursor', String(options.cursor));
+          }
+          if (options.pageSize !== undefined) {
+            params.append('pageSize', String(options.pageSize));
+          }
+        }
+        const queryString = params.toString();
+        const url = `rules${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Delete a search index
+   * Get a rule
    */
-    async deleteSearchIndex(id: string): Promise<void> {
-        const url = `search/indexes/${encodeURIComponent(String(id))}`;
+    async getRule(ruleId: string): Promise<components['schemas']['RuleDetails']> {
+        const url = `rules/${encodeURIComponent(String(ruleId))}`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update a rule
+   */
+    async updateRule(ruleId: string, data: components['schemas']['UpdateRule']): Promise<components['schemas']['Rule']> {
+        const url = `rules/${encodeURIComponent(String(ruleId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete a rule
+   */
+    async deleteRule(ruleId: string): Promise<void> {
+        const url = `rules/${encodeURIComponent(String(ruleId))}`;
         const response = await this.httpClient.delete(url);
-        return response.data;
-  }
-
-    /**
-   * List installed vector providers
-   */
-    async listVectorProviders(): Promise<components['schemas']['VectorProvider'][]> {
-        const url = `search/vector-providers`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * Update the config for a vector provider
-   */
-    async updateVectorProviderConfig(providerId: string, data: components['schemas']['UpdateVectorProviderConfig']): Promise<components['schemas']['VectorProvider']> {
-        const url = `search/vector-providers/${encodeURIComponent(String(providerId))}`;
-        const response = await this.httpClient.patch(url, data);
-        return response.data;
-  }
-}
-
-class SystemClient {
-  constructor(private httpClient: AxiosInstance) {}
-
-    /**
-   * Get system setup status
-   */
-    async getSetupStatus(): Promise<components['schemas']['SetupStatus']> {
-        const url = `system/setup/status`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * Get system status
-   */
-    async getSystemStatus(): Promise<components['schemas']['SystemStatus']> {
-        const url = `system/status`;
-        const response = await this.httpClient.get(url);
-        return response.data;
-  }
-
-    /**
-   * Update system settings
-   */
-    async updateSystemSettings(data: components['schemas']['UpdateSystemSettings']): Promise<components['schemas']['SystemStatus']> {
-        const url = `system/settings`;
-        const response = await this.httpClient.patch(url, data);
         return response.data;
   }
 }
@@ -778,6 +750,95 @@ class TransformClient {
     async getTransformer(transformerId: string): Promise<components['schemas']['TransformerDetails']> {
         const url = `transformers/${encodeURIComponent(String(transformerId))}`;
         const response = await this.httpClient.get(url);
+        return response.data;
+  }
+}
+
+class SearchClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Search media containers
+   */
+    async searchMedia(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
+        const url = `search`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * Create a search index
+   */
+    async createSearchIndex(data: components['schemas']['CreateSearchIndex']): Promise<components['schemas']['SearchIndex']> {
+        const url = `search/indexes`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
+   * List search indexes
+   */
+    async listSearchIndexes(): Promise<components['schemas']['SearchIndex'][]> {
+        const url = `search/indexes`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Delete a search index
+   */
+    async deleteSearchIndex(id: string): Promise<void> {
+        const url = `search/indexes/${encodeURIComponent(String(id))}`;
+        const response = await this.httpClient.delete(url);
+        return response.data;
+  }
+
+    /**
+   * List installed vector providers
+   */
+    async listVectorProviders(): Promise<components['schemas']['VectorProvider'][]> {
+        const url = `search/vector-providers`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update the config for a vector provider
+   */
+    async updateVectorProviderConfig(providerId: string, data: components['schemas']['UpdateVectorProviderConfig']): Promise<components['schemas']['VectorProvider']> {
+        const url = `search/vector-providers/${encodeURIComponent(String(providerId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+}
+
+class SystemClient {
+  constructor(private httpClient: AxiosInstance) {}
+
+    /**
+   * Get system setup status
+   */
+    async getSetupStatus(): Promise<components['schemas']['SetupStatus']> {
+        const url = `system/setup/status`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Get system status
+   */
+    async getSystemStatus(): Promise<components['schemas']['SystemStatus']> {
+        const url = `system/status`;
+        const response = await this.httpClient.get(url);
+        return response.data;
+  }
+
+    /**
+   * Update system settings
+   */
+    async updateSystemSettings(data: components['schemas']['UpdateSystemSettings']): Promise<components['schemas']['SystemStatus']> {
+        const url = `system/settings`;
+        const response = await this.httpClient.patch(url, data);
         return response.data;
   }
 }

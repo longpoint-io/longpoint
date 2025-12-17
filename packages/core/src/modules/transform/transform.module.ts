@@ -9,5 +9,6 @@ import { TransformerService } from './services/transformer.service';
   imports: [AssetModule],
   controllers: [TransformTemplateController, TransformerController],
   providers: [TransformTemplateService, TransformerService],
+  exports: [TransformTemplateService],
 })
 export class TransformModule {}

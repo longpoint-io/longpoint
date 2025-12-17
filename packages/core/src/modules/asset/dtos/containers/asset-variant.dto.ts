@@ -1,4 +1,4 @@
-import { AssetVariantStatus } from '@/database';
+import { AssetVariantStatus, AssetVariantType } from '@/database';
 import { type SelectedAssetVariant } from '@/modules/asset/asset.selectors';
 import { JsonObject } from '@/shared/types/object.types';
 import { SupportedMimeType } from '@longpoint/types';
@@ -16,6 +16,13 @@ export class AssetVariantDto {
     example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
+
+  @ApiProperty({
+    description: 'The asset variant type',
+    example: AssetVariantType.ORIGINAL,
+    enum: AssetVariantType,
+  })
+  type: AssetVariantType;
 
   @ApiProperty({
     description: 'The display name of the asset variant',
@@ -104,6 +111,7 @@ export class AssetVariantDto {
 
   constructor(data: AssetVariantParams) {
     this.id = data.id;
+    this.type = data.type;
     this.displayName = data.displayName;
     this.status = data.status;
     this.mimeType = data.mimeType as SupportedMimeType;

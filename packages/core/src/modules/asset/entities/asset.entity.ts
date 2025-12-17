@@ -14,6 +14,7 @@ import {
   AssetAlreadyExists,
   AssetNotFound,
 } from '../asset.errors';
+import { AssetEventKey } from '../asset.events';
 import { SelectedAsset, selectAsset } from '../asset.selectors';
 import { AssetSummaryDto, UpdateAssetDto } from '../dtos';
 import { AssetDto } from '../dtos/containers/asset.dto';
@@ -175,7 +176,7 @@ export class AssetEntity {
             prefix: this.pathPrefix,
           })
         );
-        await this.eventPublisher.publish('asset.deleted', {
+        await this.eventPublisher.publish(AssetEventKey.ASSET_DELETED, {
           assetIds: [this.id],
         });
         return;
@@ -195,7 +196,7 @@ export class AssetEntity {
       });
 
       this._status = updated.status;
-      await this.eventPublisher.publish('asset.deleted', {
+      await this.eventPublisher.publish(AssetEventKey.ASSET_DELETED, {
         assetIds: [this.id],
       });
     } catch (e) {

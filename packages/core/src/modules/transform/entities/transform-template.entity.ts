@@ -58,6 +58,15 @@ export class TransformTemplateEntity {
     );
     const dto = sourceVariant.toDto();
 
+    if (
+      !this._transformer.supportedMimeTypes.includes(sourceVariant.mimeType)
+    ) {
+      this.logger.warn(
+        `Transformer "${this._transformer.id}" does not support mime type: ${sourceVariant.mimeType} - skipping`
+      );
+      return;
+    }
+
     this.logger.log(
       `Transforming asset variant '${sourceVariantId}' with template '${this.name}'`
     );

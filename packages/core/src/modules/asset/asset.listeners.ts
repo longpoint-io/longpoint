@@ -2,7 +2,7 @@ import { JsonObject } from '@/shared/types/object.types';
 import { ClassifyResult, KeyAssetMetadataField } from '@longpoint/devkit';
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  ClassifierEvents,
+  ClassifierEventKey,
   type ClassifierRunCompleteEventPayload,
 } from '../classifier';
 import { PrismaService } from '../common/services';
@@ -14,7 +14,7 @@ export class MediaMetadataListeners {
 
   constructor(private readonly prismaService: PrismaService) {}
 
-  @HandleEvent(ClassifierEvents.CLASSIFIER_RUN_COMPLETE)
+  @HandleEvent(ClassifierEventKey.CLASSIFIER_RUN_COMPLETE)
   async handleClassifierRunComplete(
     payload: ClassifierRunCompleteEventPayload
   ) {

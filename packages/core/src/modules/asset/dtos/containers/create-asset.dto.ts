@@ -38,17 +38,6 @@ export class CreateAssetDto extends PartialType(
   @IsString({ each: true })
   @IsOptional()
   @ApiPropertyOptional({
-    description:
-      'Names of classifiers to run on the uploaded variant after processing',
-    example: ['general-tagging'],
-    type: [String],
-  })
-  classifiersOnUpload?: string[];
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  @ApiPropertyOptional({
     description: 'IDs of collections the asset is a member of.',
     example: ['mbjq36xe6397dsi6x9nq4ghc'],
     type: [String],

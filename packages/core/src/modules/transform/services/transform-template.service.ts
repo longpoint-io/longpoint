@@ -110,7 +110,7 @@ export class TransformTemplateService {
     return transformTemplate;
   }
 
-  async listTransformTemplates(query: PaginationQueryDto) {
+  async listTransformTemplates(query = new PaginationQueryDto()) {
     const pluginTemplates: TransformTemplateEntity[] = [];
     const registryEntries = this.pluginRegistryService.listTransformers();
 

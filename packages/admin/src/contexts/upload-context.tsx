@@ -17,16 +17,8 @@ interface UploadContextType {
   files: UploadFile[];
   openDialog: (files?: File[]) => void;
   closeDialog: () => void;
-  addFiles: (
-    files: File[],
-    classifiers?: string[],
-    storageUnitId?: string
-  ) => void;
-  uploadFiles: (
-    files: File[],
-    classifiers?: string[],
-    storageUnitId?: string
-  ) => Promise<void>;
+  addFiles: (files: File[], storageUnitId?: string) => void;
+  uploadFiles: (files: File[], storageUnitId?: string) => Promise<void>;
   cancelUpload: (fileId: string) => void;
   reset: () => void;
   isUploading: boolean;
@@ -61,11 +53,7 @@ export function UploadProvider({ children }: UploadProviderProps) {
   }, [uploadHook]);
 
   const uploadFiles = useCallback(
-    async (
-      files: File[],
-      classifiers: string[] = [],
-      storageUnitId?: string
-    ): Promise<void> => {
+    async (files: File[], storageUnitId?: string): Promise<void> => {
       try {
         const supportedFiles = files.filter((file) => {
           const mimeType = file.type as SupportedMimeType;
@@ -93,7 +81,6 @@ export function UploadProvider({ children }: UploadProviderProps) {
             const asset = await client.assets.createAsset({
               mimeType: file.type as SupportedMimeType,
               name: file.name,
-              classifiersOnUpload: classifiers,
               storageUnitId,
             });
 
@@ -117,14 +104,10 @@ export function UploadProvider({ children }: UploadProviderProps) {
   );
 
   const addFiles = useCallback(
-    async (
-      files: File[],
-      classifiers: string[] = [],
-      storageUnitId?: string
-    ) => {
+    async (files: File[], storageUnitId?: string) => {
       setPendingFiles((prev) => [...prev, ...files]);
       try {
-        await uploadFiles(files, classifiers, storageUnitId);
+        await uploadFiles(files, storageUnitId);
       } catch (error) {
         console.error('Auto-upload failed:', error);
       }

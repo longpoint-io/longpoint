@@ -10,7 +10,7 @@ import { ConfigValues } from '@longpoint/config-schema';
 import { toBase64DataUri } from '@longpoint/utils/string';
 import { Logger } from '@nestjs/common';
 import { ClassifierTemplateNotFound } from '../classifier.errors';
-import { ClassifierEvents } from '../classifier.events';
+import { ClassifierEventKey } from '../classifier.events';
 import { ClassifierTemplateDto, UpdateClassifierTemplateDto } from '../dtos';
 import { ClassifierService } from '../services/classifier.service';
 import { ClassifierEntity } from './classifier.entity';
@@ -129,7 +129,7 @@ export class ClassifierTemplateEntity {
         },
       });
       await this.eventPublisher.publish(
-        ClassifierEvents.CLASSIFIER_RUN_COMPLETE,
+        ClassifierEventKey.CLASSIFIER_RUN_COMPLETE,
         {
           assetId: assetId,
           assetVariantId,
@@ -242,7 +242,14 @@ export class ClassifierTemplateEntity {
 
     const url = new URL(variant.url);
 
-    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+    const oneHundredMegabytes = 1024 * 1024 * 100; // uhhh I just don't want to build too big of a base64 string
+    const maxBinarySize = Math.floor(oneHundredMegabytes / 1.34); // Account for base64 expansion
+
+    if (
+      variant.size &&
+      variant.size < maxBinarySize &&
+      (url.hostname === 'localhost' || url.hostname === '127.0.0.1')
+    ) {
       const imageData = await fetch(url.href);
       const imageBuffer = await imageData.arrayBuffer();
       const base64 = Buffer.from(imageBuffer).toString('base64');

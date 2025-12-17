@@ -20,6 +20,9 @@ import { TransformTemplates } from '../pages/dashboard/transform-templates';
 import { CreateTransformTemplate } from '../pages/dashboard/transform-templates/create';
 import { TransformTemplateDetail } from '../pages/dashboard/transform-templates/detail';
 import { EditTransformTemplate } from '../pages/dashboard/transform-templates/edit';
+import { Rules } from '../pages/dashboard/rules';
+import { CreateRule } from '../pages/dashboard/rules/create';
+import { EditRule } from '../pages/dashboard/rules/edit';
 import { UsersAndRoles } from '../pages/dashboard/users/users-and-roles';
 import { NotFound } from '../pages/not-found';
 import { FirstAdminSetup } from '../pages/setup/first-admin';
@@ -296,6 +299,48 @@ export function AppRoutes() {
               >
                 <DashboardLayout>
                   <EditTransformTemplate />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/rules"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.RULES_READ}>
+                <DashboardLayout>
+                  <Rules />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/rules/create"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.RULES_CREATE}>
+                <DashboardLayout>
+                  <CreateRule />
+                </DashboardLayout>
+              </PermissionGuard>
+            </AuthGuard>
+          </SetupGuard>
+        }
+      />
+      <Route
+        path="/rules/:ruleId/edit"
+        element={
+          <SetupGuard>
+            <AuthGuard>
+              <PermissionGuard permission={Permission.RULES_UPDATE}>
+                <DashboardLayout>
+                  <EditRule />
                 </DashboardLayout>
               </PermissionGuard>
             </AuthGuard>
