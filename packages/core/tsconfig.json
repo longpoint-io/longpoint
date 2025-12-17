@@ -4,21 +4,6 @@
   "include": [],
   "references": [
     {
-      "path": "../devkit"
-    },
-    {
-      "path": "../validations"
-    },
-    {
-      "path": "../config-schema"
-    },
-    {
-      "path": "../utils"
-    },
-    {
-      "path": "../types"
-    },
-    {
       "path": "./tsconfig.app.json"
     },
     {

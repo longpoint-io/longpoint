@@ -10,24 +10,6 @@
   },
   "references": [
     {
-      "path": "../config-schema"
-    },
-    {
-      "path": "../utils"
-    },
-    {
-      "path": "../ui"
-    },
-    {
-      "path": "../types"
-    },
-    {
-      "path": "../typescript-sdk"
-    },
-    {
-      "path": "../react"
-    },
-    {
       "path": "./tsconfig.app.json"
     },
     {
