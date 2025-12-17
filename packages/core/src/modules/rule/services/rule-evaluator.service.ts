@@ -1,9 +1,8 @@
+import { ComparisonOperator, LogicalOperator } from '@longpoint/types';
 import { AssetService } from '../../asset';
 import type { AssetVariantReadyEventPayload } from '../../asset/asset.events';
 import {
-  ComparisonOperator,
   CompoundCondition,
-  LogicalOperator,
   RuleCondition,
   SingleCondition,
 } from '../rule.types';
@@ -113,12 +112,14 @@ export class RuleEvaluatorService {
         return this.compareValues(fieldValue, conditionValue, '===');
       case ComparisonOperator.NOT_EQUALS:
         return this.compareValues(fieldValue, conditionValue, '!==');
-      case ComparisonOperator.CONTAINS:
-        return this.containsValue(fieldValue, conditionValue);
       case ComparisonOperator.IN:
-        return this.isInValue(fieldValue, conditionValue);
+        return this.inValue(fieldValue, conditionValue, 'IN');
       case ComparisonOperator.NOT_IN:
-        return !this.isInValue(fieldValue, conditionValue);
+        return this.inValue(fieldValue, conditionValue, 'NOT_IN');
+      case ComparisonOperator.STARTS_WITH:
+        return this.startsWithValue(fieldValue, conditionValue);
+      case ComparisonOperator.ENDS_WITH:
+        return this.endsWithValue(fieldValue, conditionValue);
       case ComparisonOperator.GREATER_THAN:
         return this.compareNumeric(fieldValue, conditionValue, '>');
       case ComparisonOperator.LESS_THAN:
@@ -161,19 +162,37 @@ export class RuleEvaluatorService {
     }
   }
 
-  private containsValue(fieldValue: unknown, conditionValue: unknown): boolean {
+  private inValue(
+    fieldValue: unknown,
+    conditionValue: unknown,
+    operator: 'IN' | 'NOT_IN'
+  ): boolean {
     if (typeof fieldValue === 'string' && typeof conditionValue === 'string') {
-      return fieldValue.includes(conditionValue);
+      return operator === 'IN'
+        ? fieldValue.includes(conditionValue)
+        : !fieldValue.includes(conditionValue);
     }
     if (Array.isArray(fieldValue)) {
-      return fieldValue.includes(conditionValue);
+      return operator === 'IN'
+        ? fieldValue.includes(conditionValue)
+        : !fieldValue.includes(conditionValue);
     }
     return false;
   }
 
-  private isInValue(fieldValue: unknown, conditionValue: unknown): boolean {
-    if (Array.isArray(conditionValue)) {
-      return conditionValue.includes(fieldValue);
+  private startsWithValue(
+    fieldValue: unknown,
+    conditionValue: unknown
+  ): boolean {
+    if (typeof fieldValue === 'string' && typeof conditionValue === 'string') {
+      return fieldValue.startsWith(conditionValue);
+    }
+    return false;
+  }
+
+  private endsWithValue(fieldValue: unknown, conditionValue: unknown): boolean {
+    if (typeof fieldValue === 'string' && typeof conditionValue === 'string') {
+      return fieldValue.endsWith(conditionValue);
     }
     return false;
   }

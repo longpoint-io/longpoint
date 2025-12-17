@@ -1,11 +1,10 @@
-export type ComparisonOperator =
-  | 'equals'
-  | 'notEquals'
-  | 'contains'
-  | 'in'
-  | 'notIn'
-  | 'greaterThan'
-  | 'lessThan';
+import { components } from '@longpoint/sdk';
+import {
+  ComparisonOperator,
+  NumericOperators,
+  StringOperators,
+  SupportedMimeType,
+} from '@longpoint/types';
 
 export type FieldType = 'enum' | 'number' | 'string' | 'metadata';
 
@@ -13,7 +12,7 @@ export interface FieldDefinition {
   path: string;
   label: string;
   type: FieldType;
-  enumValues?: string[];
+  enumValues?: string[] | Array<{ label?: string; value: string }>;
   operators: ComparisonOperator[];
   description?: string;
 }
@@ -30,131 +29,53 @@ export interface TriggerEventSchema {
 
 const ASSET_VARIANT_READY_SCHEMA: TriggerEventSchema = {
   rootObjects: {
-    variant: {
-      fields: [
-        {
-          path: 'variant.type',
-          label: 'Type',
-          type: 'enum',
-          enumValues: ['ORIGINAL', 'THUMBNAIL', 'DERIVATIVE'],
-          operators: ['equals', 'notEquals', 'contains'],
-          description: 'The type of the variant',
-        },
-        // {
-        //   path: 'variant.status',
-        //   label: 'Status',
-        //   type: 'enum',
-        //   enumValues: ['WAITING_FOR_UPLOAD', 'PROCESSING', 'READY', 'FAILED'],
-        //   operators: ['equals', 'notEquals', 'contains'],
-        //   description: 'The status of the variant',
-        // },
-        {
-          path: 'variant.mimeType',
-          label: 'MIME Type',
-          type: 'enum',
-          enumValues: [
-            'image/jpg',
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'video/mp4',
-            'video/webm',
-            'video/quicktime',
-          ],
-          operators: ['equals', 'notEquals', 'contains'],
-          description: 'The MIME type of the variant',
-        },
-        // {
-        //   path: 'variant.width',
-        //   label: 'Width',
-        //   type: 'number',
-        //   operators: [
-        //     'equals',
-        //     'notEquals',
-        //     'greaterThan',
-        //     'lessThan',
-        //     'in',
-        //     'notIn',
-        //   ],
-        //   description: 'The width of the variant in pixels',
-        // },
-        // {
-        //   path: 'variant.height',
-        //   label: 'Height',
-        //   type: 'number',
-        //   operators: [
-        //     'equals',
-        //     'notEquals',
-        //     'greaterThan',
-        //     'lessThan',
-        //     'in',
-        //     'notIn',
-        //   ],
-        //   description: 'The height of the variant in pixels',
-        // },
-        {
-          path: 'variant.size',
-          label: 'Size',
-          type: 'number',
-          operators: [
-            'equals',
-            'notEquals',
-            'greaterThan',
-            'lessThan',
-            'in',
-            'notIn',
-          ],
-          description: 'The size of the variant in bytes',
-        },
-        // {
-        //   path: 'variant.duration',
-        //   label: 'Duration',
-        //   type: 'number',
-        //   operators: [
-        //     'equals',
-        //     'notEquals',
-        //     'greaterThan',
-        //     'lessThan',
-        //     'in',
-        //     'notIn',
-        //   ],
-        //   description: 'The duration of the variant in seconds',
-        // },
-        {
-          path: 'variant.metadata',
-          label: 'Metadata',
-          type: 'metadata',
-          operators: [
-            'equals',
-            'notEquals',
-            'contains',
-            'in',
-            'notIn',
-            'greaterThan',
-            'lessThan',
-          ],
-          description:
-            'Freeform metadata field. Use dot notation for nested paths (e.g., "category", "my-classifier.tags")',
-        },
-      ],
-    },
     asset: {
       fields: [
         {
           path: 'asset.id',
           label: 'ID',
           type: 'string',
-          operators: [
-            'equals',
-            'notEquals',
-            'contains',
-            'in',
-            'notIn',
-            'greaterThan',
-            'lessThan',
-          ],
-          description: 'The ID of the asset',
+          operators: StringOperators,
+        },
+      ],
+    },
+    variant: {
+      fields: [
+        {
+          path: 'variant.type',
+          label: 'Type',
+          type: 'enum',
+          enumValues: [
+            { label: 'Original', value: 'ORIGINAL' },
+            { label: 'Thumbnail', value: 'THUMBNAIL' },
+            { label: 'Derivative', value: 'DERIVATIVE' },
+          ] satisfies Array<{
+            label: string;
+            value: components['schemas']['AssetVariant']['type'];
+          }>,
+          operators: StringOperators,
+        },
+        {
+          path: 'variant.mimeType',
+          label: 'MIME Type',
+          type: 'enum',
+          enumValues: Object.values(SupportedMimeType),
+          operators: StringOperators,
+        },
+        {
+          path: 'variant.size',
+          label: 'Size',
+          type: 'number',
+          operators: NumericOperators,
+          description: 'The size of the variant in bytes',
+        },
+        {
+          path: 'variant.metadata',
+          label: 'Metadata',
+          type: 'metadata',
+          operators: Object.values(ComparisonOperator),
+          description:
+            'Freeform metadata field. Use dot notation for nested paths (e.g., "category", "my-classifier.tags")',
         },
       ],
     },

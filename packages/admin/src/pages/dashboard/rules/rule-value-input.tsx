@@ -1,7 +1,4 @@
-import {
-  getFieldDefinition,
-  type ComparisonOperator,
-} from '@/pages/dashboard/rules/rule-field-schema';
+import { ComparisonOperator } from '@longpoint/types';
 import {
   Field,
   FieldDescription,
@@ -16,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@longpoint/ui/components/select';
-import { enumToTitleCase } from '@longpoint/utils/string';
 import { Control, Controller } from 'react-hook-form';
+import { getFieldDefinition } from './rule-field-schema';
 
 interface ValueInputProps {
   control: Control<any>;
@@ -39,7 +36,9 @@ export function ValueInput({
   onChange,
 }: ValueInputProps) {
   const fieldDef = getFieldDefinition(triggerEvent, fieldPath);
-  const needsArrayValue = operator === 'in' || operator === 'notIn';
+  const needsArrayValue =
+    operator === ComparisonOperator.IN ||
+    operator === ComparisonOperator.NOT_IN;
 
   if (!fieldDef) {
     // Fallback to text input if field definition not found (backward compatibility)
@@ -99,7 +98,7 @@ export function ValueInput({
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel required>Value</FieldLabel>
             <Input
-              placeholder="Enter values separated by commas"
+              placeholder="a, b, c"
               value={Array.isArray(field.value) ? field.value.join(', ') : ''}
               onChange={(e) => {
                 const values = e.target.value
@@ -111,8 +110,8 @@ export function ValueInput({
               }}
             />
             <FieldDescription>
-              Enter multiple values separated by commas (e.g., "ORIGINAL,
-              DERIVATIVE")
+              {fieldDef.description ||
+                'Enter multiple values separated by commas'}
             </FieldDescription>
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
@@ -123,6 +122,10 @@ export function ValueInput({
 
   // Enum field with single value operators
   if (fieldDef.type === 'enum' && !needsArrayValue) {
+    const needsTextInput =
+      operator === ComparisonOperator.STARTS_WITH ||
+      operator === ComparisonOperator.ENDS_WITH;
+
     return (
       <Controller
         name={name}
@@ -131,24 +134,48 @@ export function ValueInput({
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel required>Value</FieldLabel>
-            <Select
-              value={String(field.value || '')}
-              onValueChange={(val) => {
-                field.onChange(val);
-                if (onChange) onChange(val);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select value" />
-              </SelectTrigger>
-              <SelectContent>
-                {fieldDef.enumValues?.map((enumValue) => (
-                  <SelectItem key={enumValue} value={enumValue}>
-                    {enumToTitleCase(enumValue)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {needsTextInput ? (
+              <Input
+                {...field}
+                placeholder="Enter value"
+                value={field.value ?? ''}
+                onChange={(e) => {
+                  field.onChange(e.target.value);
+                  if (onChange) onChange(e.target.value);
+                }}
+              />
+            ) : (
+              <Select
+                value={String(field.value || '')}
+                onValueChange={(val) => {
+                  field.onChange(val);
+                  if (onChange) onChange(val);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select value" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fieldDef.enumValues?.map((enumValue) => {
+                    if (typeof enumValue === 'string') {
+                      return (
+                        <SelectItem key={enumValue} value={enumValue}>
+                          {enumValue}
+                        </SelectItem>
+                      );
+                    }
+                    return (
+                      <SelectItem key={enumValue.value} value={enumValue.value}>
+                        {enumValue.label || enumValue.value}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            )}
+            {fieldDef.description && (
+              <FieldDescription>{fieldDef.description}</FieldDescription>
+            )}
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -205,6 +232,9 @@ export function ValueInput({
                 }}
               />
             )}
+            {fieldDef.description && (
+              <FieldDescription>{fieldDef.description}</FieldDescription>
+            )}
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -236,7 +266,8 @@ export function ValueInput({
                 }}
               />
               <FieldDescription>
-                Enter multiple values separated by commas
+                {fieldDef.description ||
+                  'Enter multiple values separated by commas'}
               </FieldDescription>
             </div>
           ) : (
@@ -249,6 +280,9 @@ export function ValueInput({
                 if (onChange) onChange(e.target.value);
               }}
             />
+          )}
+          {!needsArrayValue && fieldDef.description && (
+            <FieldDescription>{fieldDef.description}</FieldDescription>
           )}
           {fieldState.error && <FieldError errors={[fieldState.error]} />}
         </Field>

@@ -917,6 +917,12 @@ export interface components {
              */
             status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED";
             /**
+             * @description The asset variant type
+             * @example ORIGINAL
+             * @enum {string}
+             */
+            type: "ORIGINAL" | "THUMBNAIL" | "DERIVATIVE";
+            /**
              * @description The URL of the asset variant
              * @example https://longpoint.example.com/v/r2qwyd76nvd98cu6ewg8ync2/original.jpg
              */
@@ -1077,10 +1083,10 @@ export interface components {
             conditions: (components["schemas"]["SingleCondition"] | components["schemas"]["CompoundCondition"])[];
             /**
              * @description The logical operator to combine conditions
-             * @example and
+             * @example AND
              * @enum {string}
              */
-            operator: "and" | "or";
+            operator: "AND" | "OR";
         };
         ConfigSchemaItems: {
             /**
@@ -1750,10 +1756,9 @@ export interface components {
             classifierTemplateId: string;
             /**
              * @description The type of action
-             * @example runClassifier
              * @enum {string}
              */
-            type: "runClassifier" | "runTransformer";
+            type: "RUN_CLASSIFIER";
         };
         RunTransformerAction: {
             /**
@@ -1767,11 +1772,10 @@ export interface components {
              */
             transformTemplateId: string;
             /**
-             * @description The type of action
-             * @example runTransformer
+             * @description The action type
              * @enum {string}
              */
-            type: "runClassifier" | "runTransformer";
+            type: "RUN_TRANSFORMER";
         };
         SearchIndex: {
             /**
@@ -1850,12 +1854,12 @@ export interface components {
             field: string;
             /**
              * @description The comparison operator
-             * @example equals
+             * @example EQUALS
              * @enum {string}
              */
-            operator: "equals" | "notEquals" | "contains" | "in" | "notIn" | "greaterThan" | "lessThan";
+            operator: "EQUALS" | "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "IN" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO" | "NOT_EQUALS" | "NOT_IN" | "STARTS_WITH" | "ENDS_WITH";
             /**
-             * @description The value to compare against
+             * @description The value to compare against (can be string, number, boolean, etc.)
              * @example ORIGINAL
              */
             value: Record<string, never>;

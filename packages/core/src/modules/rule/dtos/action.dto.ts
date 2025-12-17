@@ -1,21 +1,19 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
-import type { RunClassifierAction, RunTransformerAction } from '../rule.types';
-
-export enum RuleActionType {
-  RUN_CLASSIFIER = 'runClassifier',
-  RUN_TRANSFORMER = 'runTransformer',
-}
+import {
+  RuleActionType,
+  type RunClassifierAction,
+  type RunTransformerAction,
+} from '../rule.types';
 
 @ApiSchema({ name: 'RunClassifierAction' })
 export class RunClassifierActionDto {
-  @IsEnum(RuleActionType)
+  @IsEnum([RuleActionType.RUN_CLASSIFIER])
   @ApiProperty({
     description: 'The type of action',
-    enum: RuleActionType,
-    example: RuleActionType.RUN_CLASSIFIER,
+    enum: [RuleActionType.RUN_CLASSIFIER],
   })
-  type!: RuleActionType.RUN_CLASSIFIER;
+  type = RuleActionType.RUN_CLASSIFIER;
 
   @IsString()
   @ApiProperty({
@@ -32,13 +30,12 @@ export class RunClassifierActionDto {
 
 @ApiSchema({ name: 'RunTransformerAction' })
 export class RunTransformerActionDto {
-  @IsEnum(RuleActionType)
+  @IsEnum([RuleActionType.RUN_TRANSFORMER])
   @ApiProperty({
-    description: 'The type of action',
-    enum: RuleActionType,
-    example: RuleActionType.RUN_TRANSFORMER,
+    description: 'The action type',
+    enum: [RuleActionType.RUN_TRANSFORMER],
   })
-  type!: RuleActionType.RUN_TRANSFORMER;
+  type = RuleActionType.RUN_TRANSFORMER;
 
   @IsString()
   @ApiProperty({

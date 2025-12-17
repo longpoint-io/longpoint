@@ -1,7 +1,4 @@
-import {
-  getFieldDefinition,
-  type ComparisonOperator,
-} from '@/pages/dashboard/rules/rule-field-schema';
+import { ComparisonOperator } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import { Card, CardContent, CardHeader } from '@longpoint/ui/components/card';
 import {
@@ -20,6 +17,7 @@ import {
 import { PlusIcon, X } from 'lucide-react';
 import { Control, Controller } from 'react-hook-form';
 import { FieldPathSelector } from './rule-field-path-selector';
+import { getFieldDefinition } from './rule-field-schema';
 import { RuleFormData } from './rule-schema';
 import { ValueInput } from './rule-value-input';
 
@@ -49,13 +47,16 @@ const LOGICAL_OPERATORS: { value: LogicalOperator; label: string }[] = [
 ];
 
 const OPERATOR_LABELS: Record<ComparisonOperator, string> = {
-  equals: '=',
-  notEquals: '≠',
-  contains: 'Contains',
-  in: 'In',
-  notIn: 'Not In',
-  greaterThan: '>',
-  lessThan: '<',
+  EQUALS: '=',
+  NOT_EQUALS: '≠',
+  IN: 'In',
+  NOT_IN: 'Not In',
+  GREATER_THAN: '>',
+  LESS_THAN: '<',
+  GREATER_THAN_OR_EQUAL_TO: '≥',
+  LESS_THAN_OR_EQUAL_TO: '≤',
+  STARTS_WITH: 'Starts With',
+  ENDS_WITH: 'Ends With',
 };
 
 function SingleConditionRow({
@@ -75,19 +76,12 @@ function SingleConditionRow({
   canRemove: boolean;
   onRemove: () => void;
 }) {
-  const operator = value?.operator || 'equals';
+  const operator = value?.operator || ComparisonOperator.EQUALS;
   const fieldPath = value?.field || '';
 
   const fieldDef = getFieldDefinition(triggerEvent, fieldPath);
-  const availableOperators = fieldDef?.operators || [
-    'equals',
-    'notEquals',
-    'contains',
-    'in',
-    'notIn',
-    'greaterThan',
-    'lessThan',
-  ];
+  const availableOperators =
+    fieldDef?.operators || Object.values(ComparisonOperator);
 
   return (
     <FieldGroup className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_2fr] gap-4 not-first:border-t not-first:pt-4">
@@ -102,7 +96,7 @@ function SingleConditionRow({
             const newOperators = newFieldDef?.operators || availableOperators;
             const newOperator = newOperators.includes(operator)
               ? operator
-              : newOperators[0] || 'equals';
+              : newOperators[0] || ComparisonOperator.EQUALS;
 
             onChange({
               ...value,
@@ -127,7 +121,8 @@ function SingleConditionRow({
                   field.onChange(val);
                   const newOperator = val as ComparisonOperator;
                   const needsArrayValue =
-                    newOperator === 'in' || newOperator === 'notIn';
+                    newOperator === ComparisonOperator.IN ||
+                    newOperator === ComparisonOperator.NOT_IN;
                   onChange({
                     field: value?.field || '',
                     operator: newOperator,
@@ -164,7 +159,7 @@ function SingleConditionRow({
               onChange={(newValue) => {
                 onChange({
                   field: value?.field || '',
-                  operator: value?.operator || 'equals',
+                  operator: value?.operator || ComparisonOperator.EQUALS,
                   value: newValue,
                 });
               }}
@@ -234,9 +229,9 @@ export function RuleConditionBuilder({
           const newCondition: SingleCondition = {
             id: `condition-${Date.now()}-${Math.random()
               .toString(36)
-              .substr(2, 9)}`,
+              .slice(2, 9)}`,
             field: '',
-            operator: 'equals',
+            operator: ComparisonOperator.EQUALS,
             value: '',
           };
 
@@ -282,7 +277,7 @@ export function RuleConditionBuilder({
             newValue.id ||
             `condition-${Date.now()}-${index}-${Math.random()
               .toString(36)
-              .substr(2, 9)}`;
+              .slice(2, 9)}`;
           updatedConditions[index] = {
             ...newValue,
             id: conditionId,

@@ -1,3 +1,4 @@
+import { ComparisonOperator, LogicalOperator } from '@longpoint/types';
 import {
   ApiExtraModels,
   ApiProperty,
@@ -12,7 +13,6 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { ComparisonOperator, LogicalOperator } from '../rule.types';
 
 @ApiSchema({ name: 'SingleCondition' })
 export class SingleConditionDto {

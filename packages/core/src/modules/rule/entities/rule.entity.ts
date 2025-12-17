@@ -12,7 +12,7 @@ import {
   UpdateRuleDto,
 } from '../dtos';
 import { RuleNotFound } from '../rule.errors';
-import { RuleAction, RuleCondition } from '../rule.types';
+import { RuleAction, RuleActionType, RuleCondition } from '../rule.types';
 import { RuleEvaluatorService } from '../services/rule-evaluator.service';
 import { RuleExecutorService } from '../services/rule-executor.service';
 
@@ -126,7 +126,7 @@ export class RuleEntity {
 
   toDetailsDto(): RuleDetailsDto {
     const actions = this.actions.map((action) =>
-      action.type === 'runClassifier'
+      action.type === RuleActionType.RUN_CLASSIFIER
         ? new RunClassifierActionDto(action)
         : new RunTransformerActionDto(action)
     );

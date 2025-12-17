@@ -1,27 +1,9 @@
+import type { ComparisonOperator, LogicalOperator } from '@longpoint/types';
 import { AssetEventKey } from '../asset';
 
 // ------------------------------------------------------------
 // Conditions
 // ------------------------------------------------------------
-
-export const ComparisonOperator = {
-  EQUALS: 'equals',
-  NOT_EQUALS: 'notEquals',
-  CONTAINS: 'contains',
-  IN: 'in',
-  NOT_IN: 'notIn',
-  GREATER_THAN: 'greaterThan',
-  LESS_THAN: 'lessThan',
-} as const;
-export type ComparisonOperator =
-  (typeof ComparisonOperator)[keyof typeof ComparisonOperator];
-
-export const LogicalOperator = {
-  AND: 'and',
-  OR: 'or',
-} as const;
-export type LogicalOperator =
-  (typeof LogicalOperator)[keyof typeof LogicalOperator];
 
 export interface SingleCondition {
   field: string;
@@ -41,8 +23,8 @@ export type RuleCondition = SingleCondition | CompoundCondition;
 // ------------------------------------------------------------
 
 export const RuleActionType = {
-  RUN_CLASSIFIER: 'runClassifier',
-  RUN_TRANSFORMER: 'runTransformer',
+  RUN_CLASSIFIER: 'RUN_CLASSIFIER',
+  RUN_TRANSFORMER: 'RUN_TRANSFORMER',
 } as const;
 export type RuleActionType =
   (typeof RuleActionType)[keyof typeof RuleActionType];
