@@ -9,12 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@longpoint/ui/components/dialog';
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from '@longpoint/ui/components/field';
+import { Field, FieldGroup, FieldLabel } from '@longpoint/ui/components/field';
 import { Progress } from '@longpoint/ui/components/progress';
 import {
   Select,
@@ -35,7 +30,6 @@ import {
   XIcon,
 } from 'lucide-react';
 import React, { useCallback, useRef, useState } from 'react';
-import { ClassifierCombobox } from './classifier-combobox';
 
 export function UploadDialog() {
   const {
@@ -52,7 +46,6 @@ export function UploadDialog() {
   const client = useClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedClassifiers, setSelectedClassifiers] = useState<string[]>([]);
   const [selectedStorageUnitId, setSelectedStorageUnitId] = useState<
     string | undefined
   >(undefined);
@@ -82,20 +75,20 @@ export function UploadDialog() {
 
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         const newFiles = Array.from(e.dataTransfer.files);
-        addFiles(newFiles, selectedClassifiers, selectedStorageUnitId);
+        addFiles(newFiles, selectedStorageUnitId);
       }
     },
-    [addFiles, selectedClassifiers, selectedStorageUnitId]
+    [addFiles, selectedStorageUnitId]
   );
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
         const newFiles = Array.from(e.target.files);
-        addFiles(newFiles, selectedClassifiers, selectedStorageUnitId);
+        addFiles(newFiles, selectedStorageUnitId);
       }
     },
-    [addFiles, selectedClassifiers, selectedStorageUnitId]
+    [addFiles, selectedStorageUnitId]
   );
 
   const handleClose = useCallback(() => {
@@ -191,7 +184,7 @@ export function UploadDialog() {
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="storage-unit-select">
-                Storage Unit (Optional)
+                Storage Unit
               </FieldLabel>
               <Select
                 value={selectedStorageUnitId || defaultStorageUnit?.id || ''}
@@ -211,15 +204,7 @@ export function UploadDialog() {
                   ))}
                 </SelectContent>
               </Select>
-              <FieldDescription>
-                Select a storage unit for these uploads. If not specified, the
-                default storage unit will be used.
-              </FieldDescription>
             </Field>
-            <ClassifierCombobox
-              value={selectedClassifiers}
-              onChange={setSelectedClassifiers}
-            />
           </FieldGroup>
 
           {/* Actions */}

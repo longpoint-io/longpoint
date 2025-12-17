@@ -1,4 +1,5 @@
 import { Prisma } from '@/database';
+import { EventKey } from '@/modules/event';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AssetService } from '../../asset';
 import { ClassifierTemplateService } from '../../classifier/services/classifier-template.service';
@@ -62,26 +63,15 @@ export class RuleService {
   async listRules(
     query: ListRulesQueryDto = new ListRulesQueryDto()
   ): Promise<RuleEntity[]> {
-    const where: Prisma.RuleWhereInput = {};
-
-    if (query.triggerEvent) {
-      where.triggerEvent = query.triggerEvent;
-    }
-
-    if (query.enabled !== undefined) {
-      where.enabled = query.enabled;
-    }
-
     const rules = await this.prismaService.rule.findMany({
-      where,
+      ...query.toPrisma(),
       select: selectRule(),
-      orderBy: { createdAt: 'desc' },
     });
 
     return rules.map((rule) => this.getRuleEntity(rule));
   }
 
-  async listRulesForEvent(triggerEvent: string): Promise<RuleEntity[]> {
+  async listRulesForEvent(triggerEvent: EventKey): Promise<RuleEntity[]> {
     const rules = await this.prismaService.rule.findMany({
       where: {
         triggerEvent,

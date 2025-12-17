@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { AssetVariantReadyEventPayload } from '../asset';
+import { AssetEventKey, type AssetVariantReadyEventPayload } from '../asset';
 import { PrismaService } from '../common/services';
 import { HandleEvent } from '../event';
 import { ClassifierTemplateService } from './services/classifier-template.service';
@@ -13,7 +13,7 @@ export class ClassifierListeners {
     private readonly prismaService: PrismaService
   ) {}
 
-  @HandleEvent('asset.variant.ready')
+  @HandleEvent(AssetEventKey.ASSET_VARIANT_READY)
   async handleAssetVariantReady(payload: AssetVariantReadyEventPayload) {
     const variant = await this.prismaService.assetVariant.findUnique({
       where: { id: payload.id },
