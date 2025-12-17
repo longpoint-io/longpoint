@@ -1,4 +1,4 @@
-import { TransformTemplateService } from '../../../transform/services/transform-template.service';
+import { TransformerTemplateService } from '../../../transform/services/transformer-template.service';
 import { RunTransformerAction } from '../../rule.types';
 import {
   RuleActionExecutor,
@@ -7,7 +7,7 @@ import {
 
 export class RunTransformerExecutor implements RuleActionExecutor {
   constructor(
-    private readonly transformTemplateService: TransformTemplateService
+    private readonly transformerTemplateService: TransformerTemplateService
   ) {}
 
   async execute(
@@ -22,8 +22,8 @@ export class RunTransformerExecutor implements RuleActionExecutor {
     }
 
     const template =
-      await this.transformTemplateService.getTransformTemplateByIdOrThrow(
-        action.transformTemplateId
+      await this.transformerTemplateService.getTransformerTemplateByIdOrThrow(
+        action.transformerTemplateId
       );
 
     await template.transformAssetVariant(sourceVariantId);

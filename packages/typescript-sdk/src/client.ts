@@ -658,20 +658,20 @@ class TransformClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * Create a transform template
+   * Create a transformer template
    *
    * Define a template for transforming assets.
    */
-    async createTransformTemplate(data: components['schemas']['CreateTransformTemplate']): Promise<components['schemas']['TransformTemplate']> {
-        const url = `transform-templates`;
+    async createTransformerTemplate(data: components['schemas']['CreateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
+        const url = `transformer-templates`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
 
     /**
-   * List transform templates
+   * List transformer templates
    */
-    async listTransformTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformTemplatesResponse']> {
+    async listTransformerTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformerTemplatesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -682,45 +682,45 @@ class TransformClient {
           }
         }
         const queryString = params.toString();
-        const url = `transform-templates${queryString ? `?${queryString}` : ''}`;
+        const url = `transformer-templates${queryString ? `?${queryString}` : ''}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Get a transform template
+   * Get a transformer template
    */
-    async getTransformTemplate(templateId: string): Promise<components['schemas']['TransformTemplate']> {
-        const url = `transform-templates/${encodeURIComponent(String(templateId))}`;
+    async getTransformerTemplate(templateId: string): Promise<components['schemas']['TransformerTemplate']> {
+        const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
 
     /**
-   * Update a transform template
+   * Update a transformer template
    */
-    async updateTransformTemplate(templateId: string, data: components['schemas']['UpdateTransformTemplate']): Promise<components['schemas']['TransformTemplate']> {
-        const url = `transform-templates/${encodeURIComponent(String(templateId))}`;
+    async updateTransformerTemplate(templateId: string, data: components['schemas']['UpdateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
+        const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
 
     /**
-   * Delete a transform template
+   * Delete a transformer template
    */
-    async deleteTransformTemplate(templateId: string): Promise<void> {
-        const url = `transform-templates/${encodeURIComponent(String(templateId))}`;
+    async deleteTransformerTemplate(templateId: string): Promise<void> {
+        const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
   }
 
     /**
-   * Generate a variant from a transform template
+   * Generate a variant from a transformer template
    *
-   * Creates a new derivative variant by applying the transform template to the source variant.
+   * Creates a new derivative variant by applying the transformer template to the source variant.
    */
     async generateVariantFromTemplate(templateId: string, data: components['schemas']['GenerateVariant']): Promise<void> {
-        const url = `transform-templates/${encodeURIComponent(String(templateId))}/generate-variant`;
+        const url = `transformer-templates/${encodeURIComponent(String(templateId))}/generate-variant`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }

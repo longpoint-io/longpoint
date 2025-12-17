@@ -5,16 +5,16 @@ import { TemplateSource } from '@/shared/types/template.types';
 import { ConfigValues } from '@longpoint/config-schema';
 import { formatDuration } from '@longpoint/utils/format';
 import { Logger } from '@nestjs/common';
-import { TransformTemplateDto, UpdateTransformTemplateDto } from '../dtos';
-import { TransformTemplateNotFound } from '../transform.errors';
+import { TransformerTemplateDto, UpdateTransformerTemplateDto } from '../dtos';
+import { TransformerTemplateNotFound } from '../transform.errors';
 import {
-  SelectedTransformTemplate,
-  selectTransformTemplate,
+  SelectedTransformerTemplate,
+  selectTransformerTemplate,
 } from '../transform.selectors';
 import { TransformerEntity } from './transformer.entity';
 
-export interface TransformTemplateEntityArgs
-  extends Omit<SelectedTransformTemplate, 'createdAt' | 'updatedAt'> {
+export interface TransformerTemplateEntityArgs
+  extends Omit<SelectedTransformerTemplate, 'createdAt' | 'updatedAt'> {
   transformer: TransformerEntity;
   prismaService: PrismaService;
   assetService: AssetService;
@@ -23,7 +23,7 @@ export interface TransformTemplateEntityArgs
   updatedAt: Date | null;
 }
 
-export class TransformTemplateEntity {
+export class TransformerTemplateEntity {
   readonly id: string;
   readonly source: TemplateSource;
   private _name: string;
@@ -36,9 +36,9 @@ export class TransformTemplateEntity {
 
   private readonly prismaService: PrismaService;
   private readonly assetService: AssetService;
-  private readonly logger = new Logger(TransformTemplateEntity.name);
+  private readonly logger = new Logger(TransformerTemplateEntity.name);
 
-  constructor(args: TransformTemplateEntityArgs) {
+  constructor(args: TransformerTemplateEntityArgs) {
     this.id = args.id;
     this.source = args.source ?? TemplateSource.CUSTOM;
     this._name = args.name;
@@ -85,9 +85,9 @@ export class TransformTemplateEntity {
     for (const variant of handshakeResult.variants) {
       if (!validVariants.has(variant.type)) {
         this.logger.warn(
-          `Transform template returned an invalid variant type: ${variant.type} - skipping`,
+          `Transformer template returned an invalid variant type: ${variant.type} - skipping`,
           {
-            transformTemplate: this.name,
+            transformerTemplate: this.name,
             transformer: this._transformer.id,
           }
         );
@@ -130,7 +130,7 @@ export class TransformTemplateEntity {
         if (variant.error) {
           await variantEntity.update({ status: 'FAILED' });
           this.logger.warn(
-            `Transform template "${this.name}" failed to process variant "${variant.id}": ${variant.error}`
+            `Transformer template "${this.name}" failed to process variant "${variant.id}": ${variant.error}`
           );
           continue;
         }
@@ -147,7 +147,7 @@ export class TransformTemplateEntity {
       const errorMessage = e instanceof Error ? e.message : 'Unknown error';
       const stackTrace = e instanceof Error ? e.stack : undefined;
       this.logger.error(
-        `Transform template "${this.name}" failed: ${errorMessage}`,
+        `Transformer template "${this.name}" failed: ${errorMessage}`,
         stackTrace
       );
       for (const variant of variantMap.values()) {
@@ -156,13 +156,13 @@ export class TransformTemplateEntity {
     }
   }
 
-  async update(data: UpdateTransformTemplateDto) {
+  async update(data: UpdateTransformerTemplateDto) {
     if (this.source === TemplateSource.PLUGIN) {
       throw new CannotModifyPluginTemplate();
     }
 
-    const updatedTransformTemplate =
-      await this.prismaService.transformTemplate.update({
+    const updatedTransformerTemplate =
+      await this.prismaService.transformerTemplate.update({
         where: {
           id: this.id,
         },
@@ -173,14 +173,14 @@ export class TransformTemplateEntity {
             ? await this._transformer.processInput(data.input)
             : undefined,
         },
-        select: selectTransformTemplate(),
+        select: selectTransformerTemplate(),
       });
 
-    this._name = updatedTransformTemplate.name;
-    this._description = updatedTransformTemplate.description;
-    this._inputFromDb = updatedTransformTemplate.input as ConfigValues;
-    this._updatedAt = updatedTransformTemplate.updatedAt;
-    this._createdAt = updatedTransformTemplate.createdAt;
+    this._name = updatedTransformerTemplate.name;
+    this._description = updatedTransformerTemplate.description;
+    this._inputFromDb = updatedTransformerTemplate.input as ConfigValues;
+    this._updatedAt = updatedTransformerTemplate.updatedAt;
+    this._createdAt = updatedTransformerTemplate.createdAt;
   }
 
   async delete() {
@@ -189,21 +189,21 @@ export class TransformTemplateEntity {
     }
 
     try {
-      await this.prismaService.transformTemplate.delete({
+      await this.prismaService.transformerTemplate.delete({
         where: {
           id: this.id,
         },
       });
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
-        throw new TransformTemplateNotFound(this.id);
+        throw new TransformerTemplateNotFound(this.id);
       }
       throw e;
     }
   }
 
-  async toDto(): Promise<TransformTemplateDto> {
-    return new TransformTemplateDto({
+  async toDto(): Promise<TransformerTemplateDto> {
+    return new TransformerTemplateDto({
       id: this.id,
       name: this.name,
       displayName: this.displayName,

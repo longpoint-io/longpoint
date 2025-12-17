@@ -1,10 +1,10 @@
 import { TemplateSource } from '@/shared/types/template.types';
 import { type ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
-import { SelectedTransformTemplate } from '../../transform.selectors';
+import { SelectedTransformerTemplate } from '../../transform.selectors';
 
-export type TransformTemplateParams = Omit<
-  SelectedTransformTemplate,
+export type TransformerTemplateParams = Omit<
+  SelectedTransformerTemplate,
   'displayName' | 'createdAt' | 'updatedAt'
 > & {
   displayName: string;
@@ -14,28 +14,28 @@ export type TransformTemplateParams = Omit<
   updatedAt: Date | null;
 };
 
-@ApiSchema({ name: 'TransformTemplate' })
-export class TransformTemplateDto {
+@ApiSchema({ name: 'TransformerTemplate' })
+export class TransformerTemplateDto {
   @ApiProperty({
-    description: 'The ID of the transform template',
+    description: 'The ID of the transformer template',
     example: 'sajl1kih6emtwozh8y0zenkj',
   })
   id: string;
 
   @ApiProperty({
-    description: 'The name of the transform template',
+    description: 'The name of the transformer template',
     example: 'ipod-video',
   })
   name: string;
 
   @ApiProperty({
-    description: 'The display name of the transform template',
+    description: 'The display name of the transformer template',
     example: 'iPod Video',
   })
   displayName: string;
 
   @ApiPropertyOptional({
-    description: 'A brief description of the transform template',
+    description: 'A brief description of the transformer template',
     example: 'Convert videos to a watchable format for 5th generation iPods',
     nullable: true,
     type: 'string',
@@ -56,7 +56,7 @@ export class TransformTemplateDto {
   supportedMimeTypes: string[];
 
   @ApiProperty({
-    description: 'The source of the transform template definition',
+    description: 'The source of the transformer template definition',
     enum: TemplateSource,
     example: TemplateSource.PLUGIN,
   })
@@ -64,7 +64,7 @@ export class TransformTemplateDto {
 
   @ApiPropertyOptional({
     description:
-      'The date and time the transform template was created (only for custom templates)',
+      'The date and time the transformer template was created (only for custom templates)',
     example: '2021-01-01T00:00:00.000Z',
     nullable: true,
     type: 'string',
@@ -73,7 +73,7 @@ export class TransformTemplateDto {
 
   @ApiPropertyOptional({
     description:
-      'The date and time the transform template was updated (only for custom templates)',
+      'The date and time the transformer template was updated (only for custom templates)',
     example: '2021-01-01T00:00:00.000Z',
     nullable: true,
     type: 'string',
@@ -93,7 +93,7 @@ export class TransformTemplateDto {
   })
   input: ConfigValues;
 
-  constructor(params: TransformTemplateParams) {
+  constructor(params: TransformerTemplateParams) {
     this.id = params.id;
     this.name = params.name;
     this.displayName = params.displayName;

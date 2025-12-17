@@ -30,6 +30,8 @@ export class TransformerDto {
   @ApiProperty({
     description: 'A brief description of the transformer',
     example: 'Convert videos to a variety of formats and qualities',
+    type: 'string',
+    nullable: true,
   })
   description: string | null;
 

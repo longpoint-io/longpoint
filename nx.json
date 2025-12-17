@@ -137,7 +137,8 @@
     }
   },
   "tui": {
-    "autoExit": true
+    "autoExit": true,
+    "enabled": false
   },
   "release": {
     "projects": [

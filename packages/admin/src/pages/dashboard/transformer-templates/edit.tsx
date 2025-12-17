@@ -35,7 +35,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-export function EditTransformTemplate() {
+export function EditTransformerTemplate() {
   const { templateId } = useParams<{ templateId: string }>();
   const client = useClient();
   const navigate = useNavigate();
@@ -44,8 +44,8 @@ export function EditTransformTemplate() {
   >(null);
 
   const { data: template, isLoading: templateLoading } = useQuery({
-    queryKey: ['transform-template', templateId],
-    queryFn: () => client.transform.getTransformTemplate(templateId!),
+    queryKey: ['transformer-template', templateId],
+    queryFn: () => client.transform.getTransformerTemplate(templateId!),
     enabled: !!templateId,
   });
 
@@ -147,12 +147,12 @@ export function EditTransformTemplate() {
         payload.input = values.input;
       }
 
-      await client.transform.updateTransformTemplate(templateId, payload);
+      await client.transform.updateTransformerTemplate(templateId, payload);
 
-      toast.success('Transform template updated successfully');
-      navigate(`/transform/templates/${templateId}`);
+      toast.success('Transformer template updated successfully');
+      navigate(`/transformer/templates/${templateId}`);
     } catch (error) {
-      toast.error('Failed to update transform template', {
+      toast.error('Failed to update transformer template', {
         description:
           error instanceof Error
             ? error.message
@@ -186,12 +186,12 @@ export function EditTransformTemplate() {
       <div className="space-y-8">
         <Button
           variant="ghost"
-          onClick={() => navigate('/transform/templates')}
+          onClick={() => navigate('/transformer/templates')}
         >
-          Back to Transform Templates
+          Back to Transformer Templates
         </Button>
         <div className="text-center py-12">
-          <p className="text-destructive">Transform template not found</p>
+          <p className="text-destructive">Transformer template not found</p>
         </div>
       </div>
     );
@@ -200,7 +200,7 @@ export function EditTransformTemplate() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <h2 className="text-3xl font-bold">Edit Transform Template</h2>
+        <h2 className="text-3xl font-bold">Edit Transformer Template</h2>
       </div>
 
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -209,7 +209,7 @@ export function EditTransformTemplate() {
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
               <CardDescription>
-                Name and describe your transform template
+                Name and describe your transformer template
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -390,11 +390,11 @@ export function EditTransformTemplate() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate(`/transform/templates/${templateId}`)}
+            onClick={() => navigate(`/transformer/templates/${templateId}`)}
           >
             Cancel
           </Button>
-          <Button type="submit">Update Transform Template</Button>
+          <Button type="submit">Update Transformer Template</Button>
         </div>
       </form>
     </div>

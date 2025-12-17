@@ -36,7 +36,7 @@ export interface RunClassifierAction {
 
 export interface RunTransformerAction {
   type: typeof RuleActionType.RUN_TRANSFORMER;
-  transformTemplateId: string;
+  transformerTemplateId: string;
   sourceVariantId: string;
 }
 

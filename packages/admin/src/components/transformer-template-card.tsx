@@ -10,15 +10,15 @@ import {
 import { Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type TransformTemplate = components['schemas']['TransformTemplate'];
+type TransformerTemplate = components['schemas']['TransformerTemplate'];
 
-interface TransformTemplateCardProps {
-  template: TransformTemplate;
+interface TransformerTemplateCardProps {
+  template: TransformerTemplate;
 }
 
-export function TransformTemplateCard({
+export function TransformerTemplateCard({
   template,
-}: TransformTemplateCardProps) {
+}: TransformerTemplateCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -27,7 +27,7 @@ export function TransformTemplateCard({
         <CardTitle className="text-lg">{template.displayName}</CardTitle>
       </CardHeader>
       <CardContent
-        onClick={() => navigate(`/transform/templates/${template.id}`)}
+        onClick={() => navigate(`/transformer/templates/${template.id}`)}
         className="space-y-3"
       >
         {template.description && (
@@ -52,7 +52,7 @@ export function TransformTemplateCard({
           className="w-full"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/transform/templates/${template.id}`);
+            navigate(`/transformer/templates/${template.id}`);
           }}
         >
           View Details

@@ -21,7 +21,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { AddToCollectionCombobox } from './add-to-collection-combobox';
-import { SelectTransformTemplate } from './select-transform-template';
+import { SelectTransformerTemplate } from './select-transformer-template';
 
 type AssetDetailsHeaderProps = {
   asset: components['schemas']['Asset'];
@@ -147,7 +147,7 @@ export function AssetDetailsHeader({
               <TooltipContent>Generate Variant</TooltipContent>
             </Tooltip>
             <PopoverContent className="w-[300px] p-0" align="end">
-              <SelectTransformTemplate
+              <SelectTransformerTemplate
                 client={client}
                 selectedVariantMimeType={selectedVariant?.mimeType ?? ''}
                 onSelect={(templateId) => {

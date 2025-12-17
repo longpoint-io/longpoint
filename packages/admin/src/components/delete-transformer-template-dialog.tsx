@@ -13,34 +13,34 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-interface DeleteTransformTemplateDialogProps {
+interface DeleteTransformerTemplateDialogProps {
   templateId: string;
   templateName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteTransformTemplateDialog({
+export function DeleteTransformerTemplateDialog({
   templateId,
   templateName,
   open,
   onOpenChange,
-}: DeleteTransformTemplateDialogProps) {
+}: DeleteTransformerTemplateDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const client = useClient();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.transform.deleteTransformTemplate(templateId),
+    mutationFn: () => client.transform.deleteTransformerTemplate(templateId),
     onSuccess: () => {
-      toast.success('Transform template deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['transform-templates'] });
+      toast.success('Transformer template deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['transformer-templates'] });
       onOpenChange(false);
-      navigate('/transform/templates');
+      navigate('/transformer/templates');
     },
     onError: (error) => {
-      toast.error('Failed to delete transform template', {
+      toast.error('Failed to delete transformer template', {
         description:
           error instanceof Error
             ? error.message
@@ -59,9 +59,9 @@ export function DeleteTransformTemplateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Transform Template</DialogTitle>
+          <DialogTitle>Delete Transformer Template</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the transform template{' '}
+            Are you sure you want to delete the transformer template{' '}
             <span className="font-semibold">{templateName}</span>? This action
             cannot be undone.
           </DialogDescription>

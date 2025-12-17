@@ -40,7 +40,9 @@ const actionSchema: z.ZodType<RuleAction> = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('RUN_TRANSFORMER'),
-    transformTemplateId: z.string().min(1, 'Transform template is required'),
+    transformerTemplateId: z
+      .string()
+      .min(1, 'Transformer template is required'),
     sourceVariantId: z.string().min(1, 'Source variant ID is required'),
   }),
 ]);

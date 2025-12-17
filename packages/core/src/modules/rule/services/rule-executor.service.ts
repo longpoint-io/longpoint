@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { AssetVariantReadyEventPayload } from '../../asset/asset.events';
 import { ClassifierTemplateService } from '../../classifier/services/classifier-template.service';
-import { TransformTemplateService } from '../../transform/services/transform-template.service';
+import { TransformerTemplateService } from '../../transform/services/transformer-template.service';
 import { RuleAction, RuleActionType } from '../rule.types';
 import { RunClassifierExecutor } from './executors/run-classifier.executor';
 import { RunTransformerExecutor } from './executors/run-transformer.executor';
@@ -19,7 +19,7 @@ export class RuleExecutorService {
 
   constructor(
     private readonly classifierTemplateService: ClassifierTemplateService,
-    private readonly transformTemplateService: TransformTemplateService
+    private readonly transformerTemplateService: TransformerTemplateService
   ) {}
 
   async execute(
@@ -57,7 +57,7 @@ export class RuleExecutorService {
       case RuleActionType.RUN_CLASSIFIER:
         return new RunClassifierExecutor(this.classifierTemplateService);
       case RuleActionType.RUN_TRANSFORMER:
-        return new RunTransformerExecutor(this.transformTemplateService);
+        return new RunTransformerExecutor(this.transformerTemplateService);
       default:
         throw new Error(`Unsupported action type: ${actionType}`);
     }

@@ -1,5 +1,5 @@
 import { useAuth } from '@/auth';
-import { DeleteTransformTemplateDialog } from '@/components/delete-transform-template-dialog';
+import { DeleteTransformerTemplateDialog } from '@/components/delete-transformer-template-dialog';
 import { useClient } from '@/hooks/common/use-client';
 import { Permission } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
@@ -17,13 +17,13 @@ import { ArrowLeft, Calendar, Edit, Move3dIcon, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export function TransformTemplateDetail() {
+export function TransformerTemplateDetail() {
   const { templateId } = useParams<{ templateId: string }>();
   const client = useClient();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
-  const canDelete = hasPermission(Permission.TRANSFORM_TEMPLATES_DELETE);
-  const canUpdate = hasPermission(Permission.TRANSFORM_TEMPLATES_UPDATE);
+  const canDelete = hasPermission(Permission.TRANSFORMER_TEMPLATES_DELETE);
+  const canUpdate = hasPermission(Permission.TRANSFORMER_TEMPLATES_UPDATE);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
@@ -31,8 +31,8 @@ export function TransformTemplateDetail() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['transform-template', templateId],
-    queryFn: () => client.transform.getTransformTemplate(templateId!),
+    queryKey: ['transformer-template', templateId],
+    queryFn: () => client.transform.getTransformerTemplate(templateId!),
     enabled: !!templateId,
   });
 
@@ -65,14 +65,14 @@ export function TransformTemplateDetail() {
       <div className="space-y-8">
         <Button
           variant="ghost"
-          onClick={() => navigate('/transform/templates')}
+          onClick={() => navigate('/transformer/templates')}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Transform Templates
+          Back to Transformer Templates
         </Button>
         <div className="text-center py-12">
           <p className="text-destructive">
-            Failed to load transform template or template not found
+            Failed to load transformer template or template not found
           </p>
         </div>
       </div>
@@ -98,7 +98,7 @@ export function TransformTemplateDetail() {
             <Button
               variant="outline"
               onClick={() =>
-                navigate(`/transform/templates/${template.id}/edit`)
+                navigate(`/transformer/templates/${template.id}/edit`)
               }
             >
               <Edit className="h-4 w-4 mr-2" />
@@ -122,7 +122,7 @@ export function TransformTemplateDetail() {
           <CardHeader>
             <CardTitle>Template Information</CardTitle>
             <CardDescription>
-              Basic details about the transform template
+              Basic details about the transformer template
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -205,7 +205,7 @@ export function TransformTemplateDetail() {
         </Card>
       )}
 
-      <DeleteTransformTemplateDialog
+      <DeleteTransformerTemplateDialog
         templateId={template.id}
         templateName={template.displayName}
         open={showDeleteDialog}
