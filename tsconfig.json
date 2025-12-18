@@ -61,7 +61,7 @@
       "path": "./packages/plugins/pinecone"
     },
     {
-      "path": "./packages/plugins/video"
+      "path": "./packages/plugins/core"
     }
   ]
 }

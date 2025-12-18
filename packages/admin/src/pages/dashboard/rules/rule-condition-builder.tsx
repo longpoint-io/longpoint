@@ -1,4 +1,4 @@
-import { ComparisonOperator } from '@longpoint/types';
+import { ComparisonOperator, LogicalOperator } from '@longpoint/types';
 import { Button } from '@longpoint/ui/components/button';
 import { Card, CardContent, CardHeader } from '@longpoint/ui/components/card';
 import {
@@ -15,13 +15,11 @@ import {
   SelectValue,
 } from '@longpoint/ui/components/select';
 import { PlusIcon, X } from 'lucide-react';
-import { Control, Controller } from 'react-hook-form';
+import { Control, Controller, useFormState } from 'react-hook-form';
 import { FieldPathSelector } from './rule-field-path-selector';
 import { getFieldDefinition } from './rule-field-schema';
 import { RuleFormData } from './rule-schema';
 import { ValueInput } from './rule-value-input';
-
-type LogicalOperator = 'and' | 'or';
 
 type SingleCondition = {
   id?: string;
@@ -42,8 +40,8 @@ interface RuleConditionBuilderProps {
 }
 
 const LOGICAL_OPERATORS: { value: LogicalOperator; label: string }[] = [
-  { value: 'and', label: 'And' },
-  { value: 'or', label: 'Or' },
+  { value: LogicalOperator.AND, label: 'And' },
+  { value: LogicalOperator.OR, label: 'Or' },
 ];
 
 const OPERATOR_LABELS: Record<ComparisonOperator, string> = {
@@ -76,12 +74,31 @@ function SingleConditionRow({
   canRemove: boolean;
   onRemove: () => void;
 }) {
+  const { errors } = useFormState({ control });
   const operator = value?.operator || ComparisonOperator.EQUALS;
   const fieldPath = value?.field || '';
 
   const fieldDef = getFieldDefinition(triggerEvent, fieldPath);
   const availableOperators =
     fieldDef?.operators || Object.values(ComparisonOperator);
+
+  // Get condition-level errors (errors on the condition object itself)
+  // Traverse the nested error path (e.g., "condition.conditions.0")
+  const getNestedError = (errorObj: any, path: string): any => {
+    if (!errorObj || !path) return undefined;
+    const parts = path.split('.');
+    let current: any = errorObj;
+    for (const part of parts) {
+      if (current && typeof current === 'object' && part in current) {
+        current = current[part];
+      } else {
+        return undefined;
+      }
+    }
+    return current;
+  };
+
+  const conditionError = getNestedError(errors, name);
 
   return (
     <FieldGroup className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_2fr] gap-4 not-first:border-t not-first:pt-4">
@@ -178,6 +195,20 @@ function SingleConditionRow({
           )}
         </div>
       </Field>
+      {conditionError && (
+        <div className="col-span-full">
+          <FieldError
+            errors={[
+              {
+                message:
+                  typeof conditionError === 'object' && conditionError?.message
+                    ? String(conditionError.message)
+                    : 'Invalid condition',
+              },
+            ]}
+          />
+        </div>
+      )}
     </FieldGroup>
   );
 }
@@ -194,7 +225,9 @@ export function RuleConditionBuilder({
       render={({ field, fieldState }) => {
         const value = field.value as CompoundCondition | undefined | null;
         const isCompound = value && 'conditions' in value;
-        const logicalOperator = isCompound ? value.operator : 'and';
+        const logicalOperator = isCompound
+          ? value.operator
+          : LogicalOperator.AND;
         const currentConditions = isCompound ? value.conditions : [];
 
         // Ensure all conditions have IDs for stable keys
