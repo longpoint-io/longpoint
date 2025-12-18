@@ -6,7 +6,7 @@ import {
   TransformArgs,
   TransformResult,
 } from '@longpoint/devkit';
-import { FFmpegCommand } from '../lib/ffmpeg.js';
+import { FFmpegCommand } from '../../lib/ffmpeg.js';
 import { AnimatedPreviewInput } from './input.js';
 
 export default class AnimatedPreview extends AssetTransformer {
@@ -92,7 +92,7 @@ export default class AnimatedPreview extends AssetTransformer {
       .arg('-f', 'gif')
       .arg('pipe:1');
 
-    await ffmpeg.execute(async (stdout) => {
+    await ffmpeg.execute(async (stdout: any) => {
       await fileOperations.write(outputPath, stdout);
     });
   }

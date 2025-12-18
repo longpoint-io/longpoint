@@ -6,7 +6,7 @@ import {
   TransformArgs,
   TransformResult,
 } from '@longpoint/devkit';
-import { FFmpegCommand, FFprobeCommand } from '../lib/ffmpeg.js';
+import { FFmpegCommand, FFprobeCommand } from '../../lib/ffmpeg.js';
 import { ThumbnailGeneratorInput } from './input.js';
 
 export default class ThumbnailGenerator extends AssetTransformer {
@@ -95,7 +95,7 @@ export default class ThumbnailGenerator extends AssetTransformer {
       .arg('-i', url);
 
     try {
-      await ffprobe.execute(async (stdout) => {
+      await ffprobe.execute(async (stdout: any) => {
         for await (const chunk of stdout) {
           outputData += chunk.toString();
         }
@@ -166,7 +166,7 @@ export default class ThumbnailGenerator extends AssetTransformer {
     // Output to stdout
     ffmpeg.arg('pipe:1');
 
-    await ffmpeg.execute(async (stdout) => {
+    await ffmpeg.execute(async (stdout: any) => {
       await fileOperations.write(outputPath, stdout);
     });
   }

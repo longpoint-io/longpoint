@@ -40,9 +40,6 @@
       "path": "./packages/devkit"
     },
     {
-      "path": "./packages/plugins/storage-local"
-    },
-    {
       "path": "./packages/config-schema"
     },
     {

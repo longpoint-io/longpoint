@@ -5,7 +5,7 @@ import {
   LongpointPluginError,
 } from '@longpoint/devkit';
 import sharp from 'sharp';
-import { FFprobeCommand } from '../lib/ffmpeg.js';
+import { FFprobeCommand } from '../../lib/ffmpeg.js';
 
 export default class MetadataExtractor extends Classifier {
   async classify(args: ClassifyArgs): Promise<ClassifyResult> {
