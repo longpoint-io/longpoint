@@ -22,7 +22,7 @@ import {
   ApiAssetNotFoundResponse,
 } from '../asset.errors';
 import {
-  AssetDto,
+  AssetDetailsDto,
   CreateAssetDto,
   CreateAssetResponseDto,
   DeleteAssetDto,
@@ -48,7 +48,7 @@ export class AssetController {
   async listAssets(@Query() query: ListAssetsQueryDto) {
     const assets = await this.assetService.listAssets(query);
     return new ListAssetsResponseDto({
-      items: await Promise.all(assets.map((a) => a.toSummaryDto())),
+      items: assets.map((a) => a.toDto()),
       path: '/assets',
       query,
     });
@@ -84,11 +84,11 @@ export class AssetController {
     summary: 'Get an asset',
     operationId: 'getAsset',
   })
-  @ApiOkResponse({ type: AssetDto })
+  @ApiOkResponse({ type: AssetDetailsDto })
   @ApiAssetNotFoundResponse()
   async getAsset(@Param('assetId') assetId: string) {
     const asset = await this.assetService.getAssetByIdOrThrow(assetId);
-    return asset.toDto();
+    return asset.toDetailsDto();
   }
 
   @Patch(':assetId')
@@ -97,7 +97,7 @@ export class AssetController {
     summary: 'Update an asset',
     operationId: 'updateAsset',
   })
-  @ApiOkResponse({ type: AssetDto })
+  @ApiOkResponse({ type: AssetDetailsDto })
   @ApiAssetNotFoundResponse()
   @ApiAssetAlreadyExistsResponse()
   async updateAsset(
@@ -106,7 +106,7 @@ export class AssetController {
   ) {
     const asset = await this.assetService.getAssetByIdOrThrow(assetId);
     await asset.update(body);
-    return asset.toDto();
+    return asset.toDetailsDto();
   }
 
   @Delete(':assetId')
@@ -123,6 +123,5 @@ export class AssetController {
   ) {
     const asset = await this.assetService.getAssetByIdOrThrow(assetId);
     await asset.delete(body.permanently);
-    return asset.toDto();
   }
 }

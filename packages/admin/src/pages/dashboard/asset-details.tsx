@@ -132,7 +132,7 @@ export function AssetDetails() {
       if (!sourceVariantId) {
         throw new Error('Selected variant not found');
       }
-      return client.transformers.generateVariantFromTemplate(templateId, {
+      return client.transformers.transformAssetVariant(templateId, {
         sourceVariantId,
       });
     },

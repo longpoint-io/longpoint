@@ -40,7 +40,7 @@ export class RoleController {
   @ApiRoleAlreadyExistsResponse()
   async createRole(@Body() body: CreateRoleDto) {
     const role = await this.roleService.createRole(body);
-    return role.toDto('details');
+    return role.toDetailsDto();
   }
 
   @Get()
@@ -65,7 +65,7 @@ export class RoleController {
   @ApiRoleNotFoundResponse()
   async getRole(@Param('id') id: string) {
     const role = await this.roleService.getRoleByIdOrThrow(id);
-    return role.toDto('details');
+    return role.toDetailsDto();
   }
 
   @Patch(':id')
@@ -80,7 +80,7 @@ export class RoleController {
   async updateRole(@Param('id') id: string, @Body() body: UpdateRoleDto) {
     const role = await this.roleService.getRoleByIdOrThrow(id);
     await role.update(body);
-    return role.toDto('details');
+    return role.toDetailsDto();
   }
 
   @Delete(':id')

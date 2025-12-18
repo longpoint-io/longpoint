@@ -5,7 +5,7 @@ import { AssetTableRow } from './asset-table-row';
 import { BaseDataTable } from './data-table/base-data-table';
 
 export interface AssetTableProps {
-  items: components['schemas']['AssetSummary'][];
+  items: components['schemas']['Asset'][];
   isLoading?: boolean;
   links: Record<string, string>;
   multiSelect?: boolean;
@@ -39,7 +39,7 @@ export function AssetTable({
     { header: 'Created' },
   ];
 
-  const renderRow = (item: components['schemas']['AssetSummary']) => {
+  const renderRow = (item: components['schemas']['Asset']) => {
     return (
       <AssetTableRow
         item={item}

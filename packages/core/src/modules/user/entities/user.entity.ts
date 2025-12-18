@@ -133,7 +133,7 @@ export class UserEntity implements Serializable {
       name: this._name,
       email: this._email,
       createdAt: this.createdAt,
-      roles: this._roles.map((role) => role.toDto('reference')),
+      roles: this._roles.map((role) => role.toReferenceDto()),
     });
   }
 

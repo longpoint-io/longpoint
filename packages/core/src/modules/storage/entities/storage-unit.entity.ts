@@ -3,8 +3,9 @@ import { join } from 'path';
 import { selectStorageUnit } from '../../../shared/selectors/storage-unit.selectors';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import {
+  StorageUnitDetailsDto,
   StorageUnitDto,
-  StorageUnitSummaryDto,
+  StorageUnitReferenceDto,
   UpdateStorageUnitDto,
 } from '../dtos';
 import { StorageProviderService } from '../services/storage-provider.service';
@@ -195,26 +196,33 @@ export class StorageUnitEntity {
     return this.provider;
   }
 
+  toReferenceDto(): StorageUnitReferenceDto {
+    return new StorageUnitReferenceDto({
+      id: this.id,
+      name: this._name,
+    });
+  }
+
   async toDto(): Promise<StorageUnitDto> {
     const provider = await this.getProvider();
     return new StorageUnitDto({
       id: this.id,
       name: this._name,
-      provider: provider.toShortDto(),
+      provider: provider.toReferenceDto(),
       isDefault: this._isDefault,
-      config: await provider.processConfigFromDb(this.configFromDb ?? {}),
       createdAt: this.createdAt,
       updatedAt: this._updatedAt,
     });
   }
 
-  async toSummaryDto(): Promise<StorageUnitSummaryDto> {
+  async toDetailsDto(): Promise<StorageUnitDetailsDto> {
     const provider = await this.getProvider();
-    return new StorageUnitSummaryDto({
+    return new StorageUnitDetailsDto({
       id: this.id,
       name: this._name,
-      provider: provider.toShortDto(),
+      provider: provider.toReferenceDto(),
       isDefault: this._isDefault,
+      config: await provider.processConfigFromDb(this.configFromDb ?? {}),
       createdAt: this.createdAt,
       updatedAt: this._updatedAt,
     });

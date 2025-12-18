@@ -3,21 +3,18 @@ import {
   PaginationResponseDto,
 } from '@/shared/dtos';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import {
-  StorageUnitSummaryDto,
-  StorageUnitSummaryParams,
-} from './storage-unit-summary.dto';
+import { StorageUnitDto } from './storage-unit.dto';
 
 @ApiSchema({ name: 'ListStorageUnitsResponse' })
-export class ListStorageUnitsResponseDto extends PaginationResponseDto<StorageUnitSummaryDto> {
+export class ListStorageUnitsResponseDto extends PaginationResponseDto<StorageUnitDto> {
   @ApiProperty({
     description: 'The storage units in the response',
-    type: [StorageUnitSummaryDto],
+    type: [StorageUnitDto],
   })
-  override items: StorageUnitSummaryDto[];
+  override items: StorageUnitDto[];
 
-  constructor(args: PaginationResponseArgs<StorageUnitSummaryParams>) {
+  constructor(args: PaginationResponseArgs<StorageUnitDto>) {
     super(args);
-    this.items = args.items.map((item) => new StorageUnitSummaryDto(item));
+    this.items = args.items;
   }
 }

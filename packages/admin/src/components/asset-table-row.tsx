@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { AssetType } from './asset-type';
 
 interface AssetTableRowProps {
-  item: components['schemas']['AssetSummary'];
+  item: components['schemas']['Asset'];
   thumbnailLink?: string;
   selected?: boolean;
   onSelectChange?: (selected: boolean) => void;
@@ -48,7 +48,7 @@ export function AssetTableRow({
       )}
       <TableCell>
         <div className="flex items-center gap-3">
-          <div className="size-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded overflow-hidden shrink-0">
+          <div className="size-10 bg-linear-to-br from-gray-50 to-gray-100 rounded overflow-hidden shrink-0">
             {thumbnailLink ? (
               <img
                 src={thumbnailLink}

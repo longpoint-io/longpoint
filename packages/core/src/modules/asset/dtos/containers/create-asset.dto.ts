@@ -1,22 +1,24 @@
 import { SupportedMimeType } from '@longpoint/types';
-import {
-  ApiProperty,
-  ApiPropertyOptional,
-  ApiSchema,
-  PartialType,
-  PickType,
-} from '@nestjs/swagger';
+import { IsValidAssetName } from '@longpoint/validations';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
-import { AssetDto } from './asset.dto';
 
-export type CreateAssetParam = Pick<AssetDto, 'name'> & {
+export type CreateAssetParam = {
+  name: string;
   mimeType: SupportedMimeType;
+  storageUnitId?: string;
+  collectionIds?: string[];
 };
 
 @ApiSchema({ name: 'CreateAsset' })
-export class CreateAssetDto extends PartialType(
-  PickType(AssetDto, ['name'] as const)
-) {
+export class CreateAssetDto {
+  @IsValidAssetName()
+  @ApiProperty({
+    description: 'A descriptive name for the underlying asset',
+    example: 'Blissful Fields',
+  })
+  name!: string;
+
   @IsEnum(SupportedMimeType)
   @ApiProperty({
     description: 'The MIME type of the primary variant',

@@ -43,6 +43,6 @@ export class TransformerController {
     const transformer = await this.transformerService.getTransformerByIdOrThrow(
       transformerId
     );
-    return transformer.toDto('details');
+    return transformer.toDetailsDto();
   }
 }

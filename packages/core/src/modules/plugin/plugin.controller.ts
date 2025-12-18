@@ -3,7 +3,7 @@ import { SdkTag } from '@/shared/types/swagger.types';
 import { Permission } from '@longpoint/types';
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { PluginDto, PluginSummaryDto, UpdatePluginSettingsDto } from './dtos';
+import { PluginDetailsDto, PluginDto, UpdatePluginSettingsDto } from './dtos';
 import { ApiPluginNotFoundResponse } from './plugin.errors';
 import { PluginService } from './services';
 
@@ -19,10 +19,10 @@ export class PluginController {
     summary: 'List all installed plugins',
     operationId: 'listPlugins',
   })
-  @ApiOkResponse({ type: [PluginSummaryDto] })
+  @ApiOkResponse({ type: [PluginDto] })
   async listPlugins() {
     const plugins = await this.pluginService.listPlugins();
-    return plugins.map((plugin) => plugin.toSummaryDto());
+    return plugins.map((plugin) => plugin.toDto());
   }
 
   @Get(':pluginId')
@@ -31,11 +31,11 @@ export class PluginController {
     summary: 'Get a plugin by ID',
     operationId: 'getPlugin',
   })
-  @ApiOkResponse({ type: PluginDto })
+  @ApiOkResponse({ type: PluginDetailsDto })
   @ApiPluginNotFoundResponse()
   async getPlugin(@Param('pluginId') pluginId: string) {
     const plugin = await this.pluginService.getPluginByIdOrThrow(pluginId);
-    return plugin.toDto();
+    return plugin.toDetailsDto();
   }
 
   @Patch(':pluginId/settings')
@@ -44,7 +44,7 @@ export class PluginController {
     summary: 'Update plugin settings',
     operationId: 'updatePluginSettings',
   })
-  @ApiOkResponse({ type: PluginDto })
+  @ApiOkResponse({ type: PluginDetailsDto })
   @ApiPluginNotFoundResponse()
   async updatePluginSettings(
     @Param('pluginId') pluginId: string,
@@ -52,6 +52,6 @@ export class PluginController {
   ) {
     const plugin = await this.pluginService.getPluginByIdOrThrow(pluginId);
     await plugin.updateSettings(body.config);
-    return plugin.toDto();
+    return plugin.toDetailsDto();
   }
 }

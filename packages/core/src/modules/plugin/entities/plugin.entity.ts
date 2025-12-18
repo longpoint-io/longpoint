@@ -2,7 +2,7 @@ import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { PluginRegistryEntry } from '@/modules/plugin/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
-import { PluginDto, PluginSummaryDto } from '../dtos';
+import { PluginDetailsDto, PluginDto, PluginReferenceDto } from '../dtos';
 
 export interface PluginEntityArgs {
   registryEntry: PluginRegistryEntry;
@@ -110,8 +110,25 @@ export class PluginEntity {
     }
   }
 
+  toReferenceDto(): PluginReferenceDto {
+    return new PluginReferenceDto({
+      id: this.id,
+      displayName: this.displayName,
+    });
+  }
+
   toDto(): PluginDto {
     return new PluginDto({
+      id: this.id,
+      displayName: this.displayName,
+      description: this.description,
+      icon: this.icon,
+      hasSettings: this.hasSettings,
+    });
+  }
+
+  toDetailsDto(): PluginDetailsDto {
+    return new PluginDetailsDto({
       id: this.id,
       displayName: this.displayName,
       description: this.description,
@@ -120,16 +137,6 @@ export class PluginEntity {
       packageName: this.packageName,
       settingsSchema: this.settingsSchema,
       settingsValues: this._settingsValues,
-    });
-  }
-
-  toSummaryDto(): PluginSummaryDto {
-    return new PluginSummaryDto({
-      id: this.id,
-      displayName: this.displayName,
-      description: this.description,
-      icon: this.icon,
-      hasSettings: this.hasSettings,
     });
   }
 }

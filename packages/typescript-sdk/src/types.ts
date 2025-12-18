@@ -592,7 +592,7 @@ export interface paths {
         patch: operations["updateTransformerTemplate"];
         trace?: never;
     };
-    "/transformer-templates/{templateId}/generate-variant": {
+    "/transformer-templates/{templateId}/run": {
         parameters: {
             query?: never;
             header?: never;
@@ -602,10 +602,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Generate a variant from a transformer template
-         * @description Creates a new derivative variant by applying the transformer template to the source variant.
+         * Generate a new asset variant with a transformer
+         * @description Creates a new derivative variant by applying the transformer template to a source variant.
          */
-        post: operations["generateVariantFromTemplate"];
+        post: operations["transformAssetVariant"];
         delete?: never;
         options?: never;
         head?: never;
@@ -754,6 +754,44 @@ export interface components {
             assetIds: string[];
         };
         Asset: {
+            /**
+             * Format: date-time
+             * @description When the asset was created
+             * @example 2025-12-05T17:29:36.504Z
+             */
+            createdAt: string;
+            /**
+             * @description The ID of the asset
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
+            /**
+             * @description A descriptive name for the underlying asset
+             * @example Blissful Fields
+             */
+            name: string;
+            /**
+             * @description The status of the asset
+             * @example WAITING_FOR_UPLOAD
+             * @enum {string}
+             */
+            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
+            /** @description Thumbnails for the asset */
+            thumbnails: components["schemas"]["AssetVariant"][];
+            /**
+             * @description The primary asset type.
+             * @example IMAGE
+             * @enum {string}
+             */
+            type: "IMAGE" | "VIDEO";
+            /**
+             * Format: date-time
+             * @description When the asset was last updated
+             * @example 2025-11-28T06:05:39.257Z
+             */
+            updatedAt: string;
+        };
+        AssetDetails: {
             /** @description Collections this asset belongs to */
             collections: components["schemas"]["CollectionReference"][];
             /**
@@ -807,44 +845,6 @@ export interface components {
              * @example 5
              */
             totalVariants: number;
-            /**
-             * @description The primary asset type.
-             * @example IMAGE
-             * @enum {string}
-             */
-            type: "IMAGE" | "VIDEO";
-            /**
-             * Format: date-time
-             * @description When the asset was last updated
-             * @example 2025-11-28T06:05:39.257Z
-             */
-            updatedAt: string;
-        };
-        AssetSummary: {
-            /**
-             * Format: date-time
-             * @description When the asset was created
-             * @example 2025-12-05T17:29:36.504Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the asset
-             * @example r2qwyd76nvd98cu6ewg8ync2
-             */
-            id: string;
-            /**
-             * @description A descriptive name for the underlying asset
-             * @example Blissful Fields
-             */
-            name: string;
-            /**
-             * @description The status of the asset
-             * @example WAITING_FOR_UPLOAD
-             * @enum {string}
-             */
-            status: "WAITING_FOR_UPLOAD" | "PROCESSING" | "READY" | "FAILED" | "PARTIALLY_FAILED" | "DELETED";
-            /** @description Thumbnails for the asset */
-            thumbnails: components["schemas"]["AssetVariant"][];
             /**
              * @description The primary asset type.
              * @example IMAGE
@@ -1188,7 +1188,7 @@ export interface components {
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields
              */
-            name?: string;
+            name: string;
             /**
              * @description The ID of the storage unit to use. If not provided, the default storage unit will be used.
              * @example mbjq36xe6397dsi6x9nq4ghc
@@ -1485,7 +1485,7 @@ export interface components {
         };
         ListAssetsResponse: {
             /** @description The assets in the response */
-            items: components["schemas"]["AssetSummary"][];
+            items: components["schemas"]["Asset"][];
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
@@ -1509,7 +1509,7 @@ export interface components {
         };
         ListStorageUnitsResponse: {
             /** @description The storage units in the response */
-            items: components["schemas"]["StorageUnitSummary"][];
+            items: components["schemas"]["StorageUnit"][];
             /** @description The metadata for pagination */
             metadata: components["schemas"]["PaginationMetadata"];
         };
@@ -1568,21 +1568,8 @@ export interface components {
              * @example openai
              */
             id: string;
-            /**
-             * @description The package name of the plugin
-             * @example longpoint-plugin-openai
-             */
-            packageName: string;
-            /** @description The schema for plugin settings */
-            settingsSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            } | null;
-            /** @description The current settings values for the plugin */
-            settingsValues: {
-                [key: string]: unknown;
-            } | null;
         };
-        PluginSummary: {
+        PluginDetails: {
             /** @description A brief description of the plugin */
             description: string | null;
             /**
@@ -1602,6 +1589,19 @@ export interface components {
              * @example openai
              */
             id: string;
+            /**
+             * @description The package name of the plugin
+             * @example longpoint-plugin-openai
+             */
+            packageName: string;
+            /** @description The schema for plugin settings */
+            settingsSchema: {
+                [key: string]: components["schemas"]["ConfigSchemaValue"];
+            } | null;
+            /** @description The current settings values for the plugin */
+            settingsValues: {
+                [key: string]: unknown;
+            } | null;
         };
         RemoveAssetsFromCollection: {
             /**
@@ -1821,7 +1821,7 @@ export interface components {
              *       "image": null
              *     }
              */
-            searchProvider: components["schemas"]["SearchProviderShort"];
+            searchProvider: components["schemas"]["SearchProviderReference"];
         };
         SearchProvider: {
             /**
@@ -1862,7 +1862,7 @@ export interface components {
              */
             supportsEmbedding: boolean;
         };
-        SearchProviderShort: {
+        SearchProviderReference: {
             /**
              * @description The ID of the search provider
              * @example pinecone
@@ -1888,7 +1888,7 @@ export interface components {
         };
         SearchResults: {
             /** @description The search results */
-            results: components["schemas"]["AssetSummary"][];
+            results: components["schemas"]["Asset"][];
             /**
              * @description Total number of results
              * @example 5
@@ -1922,6 +1922,25 @@ export interface components {
         };
         StorageConfig: {
             /**
+             * @description The ID of the storage config
+             * @example mbjq36xe6397dsi6x9nq4ghc
+             */
+            id: string;
+            /**
+             * @description The name of the storage config
+             * @example App UGC
+             */
+            name: string;
+            /** @description The storage provider the config is for */
+            provider: components["schemas"]["StorageProvider"];
+            /**
+             * @description Number of storage units using this config
+             * @example 3
+             */
+            storageUnitCount: number;
+        };
+        StorageConfigDetails: {
+            /**
              * @description Configuration for the provider
              * @example {}
              */
@@ -1943,7 +1962,7 @@ export interface components {
              */
             name: string;
             /** @description The storage provider the config is for */
-            provider: components["schemas"]["StorageProviderSummary"];
+            provider: components["schemas"]["StorageProvider"];
             /**
              * @description Number of storage units using this config
              * @example 3
@@ -1956,40 +1975,8 @@ export interface components {
              */
             updatedAt: string;
         };
-        StorageConfigSummary: {
-            /**
-             * @description The ID of the storage config
-             * @example mbjq36xe6397dsi6x9nq4ghc
-             */
-            id: string;
-            /**
-             * @description The name of the storage config
-             * @example App UGC
-             */
-            name: string;
-            /** @description The storage provider the config is for */
-            provider: components["schemas"]["StorageProviderSummary"];
-            /**
-             * @description Number of storage units using this config
-             * @example 3
-             */
-            storageUnitCount: number;
-        };
         StorageProvider: {
             /**
-             * @description The schema for the storage provider config
-             * @example {
-             *       "folderName": {
-             *         "label": "Folder Name",
-             *         "type": "string",
-             *         "required": true
-             *       }
-             *     }
-             */
-            configSchema: {
-                [key: string]: components["schemas"]["ConfigSchemaValue"];
-            };
-            /**
              * @description The ID of the storage provider
              * @example local
              */
@@ -2002,26 +1989,12 @@ export interface components {
              */
             name: string;
         };
-        StorageProviderShort: {
+        StorageProviderReference: {
             /**
              * @description The ID of the storage provider
              * @example local
              */
             id: string;
-            /**
-             * @description The display name of the storage provider
-             * @example Local
-             */
-            name: string;
-        };
-        StorageProviderSummary: {
-            /**
-             * @description The ID of the storage provider
-             * @example local
-             */
-            id: string;
-            /** @description An icon image of the storage provider */
-            image: string | null;
             /**
              * @description The display name of the storage provider
              * @example Local
@@ -2030,11 +2003,6 @@ export interface components {
         };
         StorageUnit: {
             /**
-             * @description Provider-specific configuration (decrypted)
-             * @example {}
-             */
-            config: Record<string, never> | null;
-            /**
              * Format: date-time
              * @description When the storage unit was created
              * @example 2025-01-01T00:00:00.000Z
@@ -2056,38 +2024,7 @@ export interface components {
              */
             name: string;
             /** @description The storage provider */
-            provider: components["schemas"]["StorageProviderShort"];
-            /**
-             * Format: date-time
-             * @description When the storage unit was last updated
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            updatedAt: string;
-        };
-        StorageUnitSummary: {
-            /**
-             * Format: date-time
-             * @description When the storage unit was created
-             * @example 2025-01-01T00:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * @description The ID of the storage unit
-             * @example mbjq36xe6397dsi6x9nq4ghc
-             */
-            id: string;
-            /**
-             * @description Whether this is the default storage unit
-             * @example true
-             */
-            isDefault: boolean;
-            /**
-             * @description The name of the storage unit
-             * @example Local Default
-             */
-            name: string;
-            /** @description The storage provider */
-            provider: components["schemas"]["StorageProviderShort"];
+            provider: components["schemas"]["StorageProviderReference"];
             /**
              * Format: date-time
              * @description When the storage unit was last updated
@@ -2593,7 +2530,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Asset"];
+                    "application/json": components["schemas"]["AssetDetails"];
                 };
             };
             /** @description Asset not found */
@@ -2662,7 +2599,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Asset"];
+                    "application/json": components["schemas"]["AssetDetails"];
                 };
             };
             /** @description Asset not found */
@@ -3201,7 +3138,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PluginSummary"][];
+                    "application/json": components["schemas"]["Plugin"][];
                 };
             };
         };
@@ -3222,7 +3159,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Plugin"];
+                    "application/json": components["schemas"]["PluginDetails"];
                 };
             };
             /** @description Plugin not found */
@@ -3267,7 +3204,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Plugin"];
+                    "application/json": components["schemas"]["PluginDetails"];
                 };
             };
             /** @description Plugin not found */
@@ -3816,7 +3753,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageConfigSummary"][];
+                    "application/json": components["schemas"]["StorageConfig"][];
                 };
             };
         };
@@ -3839,7 +3776,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageConfig"];
+                    "application/json": components["schemas"]["StorageConfigDetails"];
                 };
             };
         };
@@ -3860,7 +3797,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageConfig"];
+                    "application/json": components["schemas"]["StorageConfigDetails"];
                 };
             };
             /** @description Storage provider config not found */
@@ -3965,7 +3902,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageConfig"];
+                    "application/json": components["schemas"]["StorageConfigDetails"];
                 };
             };
             /** @description Storage provider config not found */
@@ -4438,7 +4375,7 @@ export interface operations {
             };
         };
     };
-    generateVariantFromTemplate: {
+    transformAssetVariant: {
         parameters: {
             query?: never;
             header?: never;

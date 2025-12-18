@@ -1,9 +1,6 @@
 import { PrismaService } from '@/modules/common/services';
 import { BaseError } from '@/shared/errors';
-import {
-  Serializable,
-  SerializableVersion,
-} from '@/shared/types/swagger.types';
+import { Serializable } from '@/shared/types/swagger.types';
 import { ErrorCode, Permission } from '@longpoint/types';
 import { HttpStatus } from '@nestjs/common';
 import { RoleDetailsDto, RoleDto, RoleReferenceDto } from '../dtos';
@@ -159,29 +156,30 @@ export class RoleEntity implements Serializable {
     });
   }
 
-  toDto(version?: SerializableVersion) {
-    switch (version) {
-      case 'reference':
-        return new RoleReferenceDto({
-          id: this.id,
-          name: this.name,
-        });
-      case 'details':
-        return new RoleDetailsDto({
-          id: this.id,
-          name: this.name,
-          description: this.description,
-          createdAt: this.createdAt,
-          updatedAt: this.updatedAt,
-          permissions: this.permissions,
-        });
-      default:
-        return new RoleDto({
-          id: this.id,
-          name: this.name,
-          description: this.description,
-        });
-    }
+  toReferenceDto() {
+    return new RoleReferenceDto({
+      id: this.id,
+      name: this.name,
+    });
+  }
+
+  toDto() {
+    return new RoleDto({
+      id: this.id,
+      name: this.name,
+      description: this.description,
+    });
+  }
+
+  toDetailsDto() {
+    return new RoleDetailsDto({
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      permissions: this.permissions,
+    });
   }
 
   get name(): string {

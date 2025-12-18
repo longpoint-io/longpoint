@@ -1,54 +1,52 @@
 import { SelectedStorageUnit } from '@/shared/selectors/storage-unit.selectors';
 import { ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
-import { StorageProviderShortDto } from '../provider';
+import { StorageProviderReferenceDto } from '../provider';
 
-export interface StorageUnitParams
-  extends Pick<
-    SelectedStorageUnit,
-    'id' | 'name' | 'isDefault' | 'createdAt' | 'updatedAt'
-  > {
-  config: ConfigValues | null;
-  provider: StorageProviderShortDto;
+export interface StorageUnitReferenceParams {
+  id: string;
+  name: string;
 }
 
-@ApiSchema({ name: 'StorageUnit' })
-export class StorageUnitDto {
+@ApiSchema({ name: 'StorageUnitReference' })
+export class StorageUnitReferenceDto {
   @ApiProperty({
     description: 'The ID of the storage unit',
     example: 'mbjq36xe6397dsi6x9nq4ghc',
   })
   id: string;
 
-  @IsString()
   @ApiProperty({
     description: 'The name of the storage unit',
     example: 'Local Default',
   })
   name: string;
 
+  constructor(data: StorageUnitReferenceParams) {
+    this.id = data.id;
+    this.name = data.name;
+  }
+}
+
+export interface StorageUnitParams
+  extends StorageUnitReferenceParams,
+    Pick<SelectedStorageUnit, 'isDefault' | 'createdAt' | 'updatedAt'> {
+  provider: StorageProviderReferenceDto;
+}
+
+@ApiSchema({ name: 'StorageUnit' })
+export class StorageUnitDto extends StorageUnitReferenceDto {
   @ApiProperty({
     description: 'The storage provider',
-    type: StorageProviderShortDto,
+    type: StorageProviderReferenceDto,
   })
-  provider: StorageProviderShortDto;
+  provider: StorageProviderReferenceDto;
 
-  @IsBoolean()
   @ApiProperty({
     description: 'Whether this is the default storage unit',
     example: true,
   })
   isDefault: boolean;
-
-  @IsObject()
-  @IsOptional()
-  @ApiProperty({
-    description: 'Provider-specific configuration (decrypted)',
-    nullable: true,
-    example: {},
-  })
-  config: ConfigValues | null;
 
   @ApiProperty({
     description: 'When the storage unit was created',
@@ -63,12 +61,29 @@ export class StorageUnitDto {
   updatedAt: Date;
 
   constructor(data: StorageUnitParams) {
-    this.id = data.id;
-    this.name = data.name;
+    super(data);
     this.provider = data.provider;
     this.isDefault = data.isDefault;
-    this.config = data.config;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
+  }
+}
+
+export interface StorageUnitDetailsParams extends StorageUnitParams {
+  config: ConfigValues | null;
+}
+
+@ApiSchema({ name: 'StorageUnitDetails' })
+export class StorageUnitDetailsDto extends StorageUnitDto {
+  @ApiProperty({
+    description: 'Provider-specific configuration (decrypted)',
+    nullable: true,
+    example: {},
+  })
+  config: ConfigValues | null;
+
+  constructor(data: StorageUnitDetailsParams) {
+    super(data);
+    this.config = data.config;
   }
 }

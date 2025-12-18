@@ -2,9 +2,9 @@ import { ConfigSchemaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { StoragePluginManifest } from '@longpoint/devkit';
 import {
+  StorageProviderDetailsDto,
   StorageProviderDto,
-  StorageProviderShortDto,
-  StorageProviderSummaryDto,
+  StorageProviderReferenceDto,
 } from '../dtos';
 
 export interface BaseStorageProviderEntityArgs
@@ -46,27 +46,27 @@ export class BaseStorageProviderEntity {
       .processOutboundValues(configValues);
   }
 
+  toReferenceDto() {
+    return new StorageProviderReferenceDto({
+      id: this.id,
+      name: this.displayName,
+    });
+  }
+
   toDto() {
     return new StorageProviderDto({
       id: this.id,
       name: this.displayName,
       image: this.image,
-      configSchema: this.configSchema,
     });
   }
 
-  toSummaryDto() {
-    return new StorageProviderSummaryDto({
+  toDetailsDto() {
+    return new StorageProviderDetailsDto({
       id: this.id,
       name: this.displayName,
       image: this.image,
-    });
-  }
-
-  toShortDto() {
-    return new StorageProviderShortDto({
-      id: this.id,
-      name: this.displayName,
+      configSchema: this.configSchema,
     });
   }
 }

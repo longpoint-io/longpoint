@@ -1,4 +1,3 @@
-export * from './asset-summary.dto';
 export * from './asset-variant.dto';
 export * from './asset.dto';
 export * from './create-asset-response.dto';

@@ -1,8 +1,9 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
 import {
+  StorageConfigDetailsDto,
   StorageConfigDto,
-  StorageConfigSummaryDto,
+  StorageConfigReferenceDto,
   UpdateStorageConfigDto,
 } from '../dtos';
 import { StorageProviderConfigService } from '../services/storage-provider-config.service';
@@ -143,27 +144,34 @@ export class StorageProviderConfigEntity {
     return await this.provider.processConfigFromDb(this.configFromDb ?? {});
   }
 
+  toReferenceDto(): StorageConfigReferenceDto {
+    return new StorageConfigReferenceDto({
+      id: this.id,
+      name: this._name,
+    });
+  }
+
   async toDto(): Promise<StorageConfigDto> {
-    const config = await this.getConfig();
     const storageUnitCount = await this.getUsageCount();
     return new StorageConfigDto({
       id: this.id,
       name: this._name,
-      provider: this.provider.toSummaryDto(),
-      config,
+      provider: this.provider.toDto(),
       storageUnitCount,
-      createdAt: this.createdAt,
-      updatedAt: this._updatedAt,
     });
   }
 
-  async toSummaryDto(): Promise<StorageConfigSummaryDto> {
+  async toDetailsDto(): Promise<StorageConfigDetailsDto> {
+    const config = await this.getConfig();
     const storageUnitCount = await this.getUsageCount();
-    return new StorageConfigSummaryDto({
+    return new StorageConfigDetailsDto({
       id: this.id,
       name: this._name,
-      provider: this.provider.toSummaryDto(),
+      provider: this.provider.toDto(),
       storageUnitCount,
+      config,
+      createdAt: this.createdAt,
+      updatedAt: this._updatedAt,
     });
   }
 

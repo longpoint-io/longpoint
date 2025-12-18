@@ -19,8 +19,8 @@ import {
 } from '@nestjs/swagger';
 import {
   CreateStorageConfigDto,
+  StorageConfigDetailsDto,
   StorageConfigDto,
-  StorageConfigSummaryDto,
   UpdateStorageConfigDto,
 } from '../dtos';
 import { StorageProviderConfigService } from '../services/storage-provider-config.service';
@@ -43,10 +43,10 @@ export class StorageConfigController {
     summary: 'Create a storage provider config',
     operationId: 'createStorageConfig',
   })
-  @ApiCreatedResponse({ type: StorageConfigDto })
+  @ApiCreatedResponse({ type: StorageConfigDetailsDto })
   async createStorageConfig(@Body() body: CreateStorageConfigDto) {
     const config = await this.storageProviderConfigService.createConfig(body);
-    return config.toDto();
+    return config.toDetailsDto();
   }
 
   @Get()
@@ -55,12 +55,12 @@ export class StorageConfigController {
     summary: 'List storage configs',
     operationId: 'listStorageConfigs',
   })
-  @ApiOkResponse({ type: [StorageConfigSummaryDto] })
+  @ApiOkResponse({ type: [StorageConfigDto] })
   async listStorageConfigs(@Query('providerId') providerId?: string) {
     const configs = await this.storageProviderConfigService.listConfigs(
       providerId
     );
-    return Promise.all(configs.map((config) => config.toSummaryDto()));
+    return Promise.all(configs.map((config) => config.toDto()));
   }
 
   @Get(':id')
@@ -69,13 +69,13 @@ export class StorageConfigController {
     summary: 'Get a storage config',
     operationId: 'getStorageConfig',
   })
-  @ApiOkResponse({ type: StorageConfigDto })
+  @ApiOkResponse({ type: StorageConfigDetailsDto })
   @ApiStorageProviderConfigNotFoundResponse()
   async getStorageConfig(@Param('id') id: string) {
     const config = await this.storageProviderConfigService.getConfigByIdOrThrow(
       id
     );
-    return config.toDto();
+    return config.toDetailsDto();
   }
 
   @Patch(':id')
@@ -84,7 +84,7 @@ export class StorageConfigController {
     summary: 'Update a storage config',
     operationId: 'updateStorageConfig',
   })
-  @ApiOkResponse({ type: StorageConfigDto })
+  @ApiOkResponse({ type: StorageConfigDetailsDto })
   @ApiStorageProviderConfigNotFoundResponse()
   async updateStorageConfig(
     @Param('id') id: string,
@@ -94,7 +94,7 @@ export class StorageConfigController {
       id,
       body
     );
-    return config.toDto();
+    return config.toDetailsDto();
   }
 
   @Delete(':id')
