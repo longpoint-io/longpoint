@@ -1,6 +1,11 @@
 import { ConfigSchemaDefinition } from '@longpoint/config-schema';
-import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
-import { ConfigSchemaItemsDto } from './config-schema-item.dto';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiSchema,
+  getSchemaPath,
+} from '@nestjs/swagger';
+import { ConfigSchemaItemsDto } from './config-schema-items.dto';
 import { type ConfigSchemaForDto } from './config-schema.types';
 import { toConfigSchemaForDto } from './config-schema.utils';
 
@@ -21,14 +26,14 @@ export class ConfigSchemaValueDto {
   })
   type: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The allowed values for the field, if the field type is a string',
     example: ['apple', 'banana', 'cherry'],
     nullable: true,
     type: [String],
   })
-  enum: string[] | null;
+  enum?: string[] | null;
 
   @ApiProperty({
     description: 'Whether the field is required',
@@ -52,7 +57,7 @@ export class ConfigSchemaValueDto {
   })
   placeholder: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The minimum allowable length of the field, if the field type supports length constraints',
     example: 1,
@@ -60,9 +65,9 @@ export class ConfigSchemaValueDto {
     nullable: true,
     type: 'number',
   })
-  minLength: number | null;
+  minLength?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The maximum allowable length of the field, if the field type supports length constraints',
     example: 10,
@@ -70,45 +75,53 @@ export class ConfigSchemaValueDto {
     nullable: true,
     type: 'number',
   })
-  maxLength: number | null;
+  maxLength?: number | null;
 
   @ApiProperty({
     description: 'Whether the field is immutable',
     example: true,
-    nullable: true,
     type: 'boolean',
   })
-  immutable: boolean | null;
+  immutable: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The item schema, if the field type is an array',
     type: () => ConfigSchemaItemsDto,
-    nullable: true,
   })
-  items: ConfigSchemaItemsDto | null;
+  items?: ConfigSchemaItemsDto;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The properties of the field, if the field type is an object',
     type: 'object',
     additionalProperties: {
       $ref: getSchemaPath('ConfigSchemaValue'),
     },
   })
-  properties: ConfigSchemaForDto;
+  properties?: ConfigSchemaForDto;
 
   constructor(data: ConfigSchemaValueParams) {
     this.label = data.label;
     this.type = data.type;
-    this.enum = data.enum ?? null;
+    this.enum = data.type === 'string' ? data.enum ?? null : undefined;
     this.required = data.required ?? false;
     this.description = data.description ?? null;
     this.placeholder = data.placeholder ?? null;
-    this.minLength = data.minLength ?? null;
-    this.maxLength = data.maxLength ?? null;
-    this.items = data.items ? new ConfigSchemaItemsDto(data.items) : null;
+    this.minLength = this.getLengthValue(data, data.minLength);
+    this.maxLength = this.getLengthValue(data, data.maxLength);
+    this.items = data.items ? new ConfigSchemaItemsDto(data.items) : undefined;
     this.properties = data.properties
       ? toConfigSchemaForDto(data.properties)
-      : {};
-    this.immutable = data.immutable ?? null;
+      : undefined;
+    this.immutable = data.immutable ?? false;
+  }
+
+  private getLengthValue(
+    data: ConfigSchemaValueParams,
+    propVal: number | undefined
+  ) {
+    if (['string', 'array'].includes(data.type)) {
+      return propVal ?? null;
+    }
+    return undefined;
   }
 }
