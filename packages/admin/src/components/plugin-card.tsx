@@ -11,10 +11,10 @@ import { cn } from '@longpoint/ui/utils';
 import { PlugIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type PluginSummary = components['schemas']['PluginSummary'];
+type Plugin = components['schemas']['Plugin'];
 
 interface PluginCardProps {
-  plugin: PluginSummary;
+  plugin: Plugin;
 }
 
 export function PluginCard({ plugin }: PluginCardProps) {

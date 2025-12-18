@@ -4,7 +4,7 @@ import { AssetGridItem } from './asset-grid-item';
 import { BaseDataGrid } from './data-table/base-data-grid';
 
 export interface AssetGridProps {
-  items: components['schemas']['AssetSummary'][];
+  items: components['schemas']['Asset'][];
   isLoading?: boolean;
   links: Record<string, string>;
   multiSelect?: boolean;
@@ -31,7 +31,7 @@ export function AssetGrid({
     onSelectionChange(newSelection);
   };
 
-  const renderItem = (item: components['schemas']['AssetSummary']) => {
+  const renderItem = (item: components['schemas']['Asset']) => {
     return (
       <AssetGridItem
         item={item}

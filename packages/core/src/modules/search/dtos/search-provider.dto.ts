@@ -5,18 +5,14 @@ import {
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 
-export interface SearchProviderParams {
+export interface SearchProviderReferenceParams {
   id: string;
   name: string;
   image?: string | null;
-  supportsEmbedding?: boolean;
-  config?: ConfigValues;
-  configSchema?: ConfigSchemaDefinition;
-  indexConfigSchema?: ConfigSchemaDefinition;
 }
 
-@ApiSchema({ name: 'SearchProvider' })
-export class SearchProviderDto {
+@ApiSchema({ name: 'SearchProviderReference' })
+export class SearchProviderReferenceDto {
   @ApiProperty({
     description: 'The ID of the search provider',
     example: 'pinecone',
@@ -38,6 +34,22 @@ export class SearchProviderDto {
   })
   image: string | null;
 
+  constructor(data: SearchProviderReferenceParams) {
+    this.id = data.id;
+    this.name = data.name;
+    this.image = data.image ?? null;
+  }
+}
+
+export interface SearchProviderParams extends SearchProviderReferenceParams {
+  supportsEmbedding?: boolean;
+  config?: ConfigValues;
+  configSchema?: ConfigSchemaDefinition;
+  indexConfigSchema?: ConfigSchemaDefinition;
+}
+
+@ApiSchema({ name: 'SearchProvider' })
+export class SearchProviderDto extends SearchProviderReferenceDto {
   @ApiProperty({
     description:
       'Whether the search provider is capable of embedding documents without an external model',
@@ -76,9 +88,7 @@ export class SearchProviderDto {
   indexConfigSchema: ConfigSchemaForDto;
 
   constructor(data: SearchProviderParams) {
-    this.id = data.id;
-    this.name = data.name;
-    this.image = data.image ?? null;
+    super(data);
     this.supportsEmbedding = data.supportsEmbedding ?? false;
     this.config = data.config ?? null;
     this.configSchema = data.configSchema

@@ -16,8 +16,12 @@ import {
 } from '../asset.errors';
 import { AssetEventKey } from '../asset.events';
 import { SelectedAsset, selectAsset } from '../asset.selectors';
-import { AssetSummaryDto, UpdateAssetDto } from '../dtos';
-import { AssetDto } from '../dtos/containers/asset.dto';
+import { UpdateAssetDto } from '../dtos';
+import {
+  AssetDetailsDto,
+  AssetDto,
+  AssetReferenceDto,
+} from '../dtos/containers/asset.dto';
 import { AssetVariantEntity } from './asset-variant.entity';
 
 export interface AssetEntityArgs extends SelectedAsset {
@@ -207,7 +211,26 @@ export class AssetEntity {
     }
   }
 
-  async toDto(): Promise<AssetDto> {
+  toReferenceDto(): AssetReferenceDto {
+    return new AssetReferenceDto({
+      id: this.id,
+      name: this.name,
+    });
+  }
+
+  toDto(): AssetDto {
+    return new AssetDto({
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      status: this.status,
+      thumbnails: this.thumbnails.map((t) => t.toDto()),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    });
+  }
+
+  async toDetailsDto(): Promise<AssetDetailsDto> {
     const collections = await this.prismaService.assetCollection.findMany({
       where: { assetId: this.id },
       select: {
@@ -220,33 +243,21 @@ export class AssetEntity {
       },
     });
 
-    return new AssetDto({
+    return new AssetDetailsDto({
       id: this.id,
       name: this.name,
       type: this.type,
       status: this.status,
+      thumbnails: this.thumbnails.map((t) => t.toDto()),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       totalSize: this.totalSize,
       totalVariants: this.totalVariants,
       original: this.original.toDto(),
       derivatives: this.derivatives.map((d) => d.toDto()),
-      thumbnails: this.thumbnails.map((t) => t.toDto()),
       collections: collections.map(
         (c) => new CollectionReferenceDto(c.collection)
       ),
-    });
-  }
-
-  async toSummaryDto(): Promise<AssetSummaryDto> {
-    return new AssetSummaryDto({
-      id: this.id,
-      name: this.name,
-      thumbnails: this.thumbnails.map((t) => t.toDto()),
-      type: this.type,
-      status: this.status,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
     });
   }
 

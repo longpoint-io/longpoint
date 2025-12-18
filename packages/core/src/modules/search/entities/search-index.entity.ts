@@ -1,5 +1,5 @@
 import { SearchIndexItemStatus } from '@/database';
-import { AssetService, AssetSummaryDto } from '@/modules/asset';
+import { AssetDto, AssetService } from '@/modules/asset';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
@@ -61,9 +61,9 @@ export class SearchIndexEntity {
   /**
    * Queries the search index with a text query and returns matching assets.
    * @param queryText The search query text
-   * @returns Array of AssetSummaryDto matching the query
+   * @returns Array of AssetDto matching the query
    */
-  async query(queryText: string): Promise<AssetSummaryDto[]> {
+  async query(queryText: string): Promise<AssetDto[]> {
     const indexConfigValues = await this.getIndexConfigValues();
     const searchResults = await this.searchProvider.embedAndSearch(
       queryText,
@@ -82,11 +82,7 @@ export class SearchIndexEntity {
     );
     assets.sort((a, b) => scoreMap.get(b.id)! - scoreMap.get(a.id)!);
 
-    const summaryDtos = await Promise.all(
-      assets.map((asset) => asset.toSummaryDto())
-    );
-
-    return summaryDtos;
+    return assets.map((asset) => asset.toDto());
   }
 
   async sync(): Promise<void> {
@@ -438,6 +434,7 @@ export class SearchIndexEntity {
   }
 
   async toDto(): Promise<SearchIndexDto> {
+    const indexConfigValues = await this.getIndexConfigValues();
     return new SearchIndexDto({
       id: this.id,
       active: this._active,
@@ -446,7 +443,7 @@ export class SearchIndexEntity {
       config: this._configFromDb
         ? await this.searchProvider.processIndexConfigFromDb(this._configFromDb)
         : null,
-      searchProvider: this.searchProvider.toShortDto(),
+      searchProvider: this.searchProvider.toReferenceDto(),
       assetsIndexed: this._mediaIndexed,
       lastIndexedAt: this._lastIndexedAt,
     });

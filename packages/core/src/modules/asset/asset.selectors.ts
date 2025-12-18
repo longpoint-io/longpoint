@@ -1,6 +1,6 @@
 import { Prisma } from '@/database';
 
-export const selectAssetSummary = () => {
+export const selectAsset = () => {
   return {
     id: true,
     name: true,
@@ -8,19 +8,6 @@ export const selectAssetSummary = () => {
     status: true,
     createdAt: true,
     updatedAt: true,
-    variants: {
-      select: selectAssetVariant(),
-    },
-  } satisfies Prisma.AssetSelect;
-};
-
-export type SelectedAssetSummary = Prisma.AssetGetPayload<{
-  select: ReturnType<typeof selectAssetSummary>;
-}>;
-
-export const selectAsset = () => {
-  return {
-    ...selectAssetSummary(),
     variants: {
       select: selectAssetVariant(),
     },

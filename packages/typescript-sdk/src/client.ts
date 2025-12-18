@@ -17,7 +17,7 @@ export class Longpoint {
   collections: CollectionsClient;
   users: UsersClient;
   rules: RulesClient;
-  transform: TransformClient;
+  transformers: TransformersClient;
   search: SearchClient;
   system: SystemClient;
 
@@ -49,7 +49,7 @@ export class Longpoint {
     this.collections = new CollectionsClient(this.httpClient);
     this.users = new UsersClient(this.httpClient);
     this.rules = new RulesClient(this.httpClient);
-    this.transform = new TransformClient(this.httpClient);
+    this.transformers = new TransformersClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
   }
@@ -61,7 +61,7 @@ class PluginsClient {
     /**
    * List all installed plugins
    */
-    async listPlugins(): Promise<components['schemas']['PluginSummary'][]> {
+    async listPlugins(): Promise<components['schemas']['Plugin'][]> {
         const url = `plugins`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -70,7 +70,7 @@ class PluginsClient {
     /**
    * Get a plugin by ID
    */
-    async getPlugin(pluginId: string): Promise<components['schemas']['Plugin']> {
+    async getPlugin(pluginId: string): Promise<components['schemas']['PluginDetails']> {
         const url = `plugins/${encodeURIComponent(String(pluginId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -79,7 +79,7 @@ class PluginsClient {
     /**
    * Update plugin settings
    */
-    async updatePluginSettings(pluginId: string, data: components['schemas']['UpdatePluginSettings']): Promise<components['schemas']['Plugin']> {
+    async updatePluginSettings(pluginId: string, data: components['schemas']['UpdatePluginSettings']): Promise<components['schemas']['PluginDetails']> {
         const url = `plugins/${encodeURIComponent(String(pluginId))}/settings`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -90,10 +90,10 @@ class ClassifiersClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * List classifiers
+   * List installed classifiers
    */
     async listClassifiers(): Promise<components['schemas']['Classifier'][]> {
-        const url = `analysis/classifiers`;
+        const url = `classifiers`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -201,7 +201,7 @@ class AssetsClient {
     /**
    * Get an asset
    */
-    async getAsset(assetId: string): Promise<components['schemas']['Asset']> {
+    async getAsset(assetId: string): Promise<components['schemas']['AssetDetails']> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -210,7 +210,7 @@ class AssetsClient {
     /**
    * Update an asset
    */
-    async updateAsset(assetId: string, data: components['schemas']['UpdateAsset']): Promise<components['schemas']['Asset']> {
+    async updateAsset(assetId: string, data: components['schemas']['UpdateAsset']): Promise<components['schemas']['AssetDetails']> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -326,7 +326,7 @@ class StorageClient {
     /**
    * Create a storage provider config
    */
-    async createStorageConfig(data: components['schemas']['CreateStorageConfig']): Promise<components['schemas']['StorageConfig']> {
+    async createStorageConfig(data: components['schemas']['CreateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -335,7 +335,7 @@ class StorageClient {
     /**
    * List storage configs
    */
-    async listStorageConfigs(options?: { providerId?: string }): Promise<components['schemas']['StorageConfigSummary'][]> {
+    async listStorageConfigs(options?: { providerId?: string }): Promise<components['schemas']['StorageConfig'][]> {
         const params = new URLSearchParams();
         if (options) {
           if (options.providerId !== undefined) {
@@ -351,7 +351,7 @@ class StorageClient {
     /**
    * Get a storage config
    */
-    async getStorageConfig(id: string): Promise<components['schemas']['StorageConfig']> {
+    async getStorageConfig(id: string): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -360,7 +360,7 @@ class StorageClient {
     /**
    * Update a storage config
    */
-    async updateStorageConfig(id: string, data: components['schemas']['UpdateStorageConfig']): Promise<components['schemas']['StorageConfig']> {
+    async updateStorageConfig(id: string, data: components['schemas']['UpdateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -654,7 +654,7 @@ class RulesClient {
   }
 }
 
-class TransformClient {
+class TransformersClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
@@ -715,12 +715,12 @@ class TransformClient {
   }
 
     /**
-   * Generate a variant from a transformer template
+   * Generate a new asset variant with a transformer
    *
-   * Creates a new derivative variant by applying the transformer template to the source variant.
+   * Creates a new derivative variant by applying the transformer template to a source variant.
    */
-    async generateVariantFromTemplate(templateId: string, data: components['schemas']['GenerateVariant']): Promise<void> {
-        const url = `transformer-templates/${encodeURIComponent(String(templateId))}/generate-variant`;
+    async transformAssetVariant(templateId: string, data: components['schemas']['GenerateVariant']): Promise<void> {
+        const url = `transformer-templates/${encodeURIComponent(String(templateId))}/run`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }

@@ -72,24 +72,22 @@ export class TransformerEntity implements Serializable {
       .processOutboundValues(input);
   }
 
-  toDto(version?: 'default' | 'details'): TransformerDto {
-    switch (version) {
-      case 'details':
-        return new TransformerDetailsDto({
-          id: this.id,
-          displayName: this.displayName,
-          description: this.description,
-          supportedMimeTypes: this.supportedMimeTypes,
-          inputSchema: this.registryEntry.contribution.input ?? {},
-        });
-      case 'default':
-      default:
-        return new TransformerDto({
-          id: this.id,
-          displayName: this.displayName,
-          description: this.description,
-          supportedMimeTypes: this.supportedMimeTypes,
-        });
-    }
+  toDto(): TransformerDto {
+    return new TransformerDto({
+      id: this.id,
+      displayName: this.displayName,
+      description: this.description,
+      supportedMimeTypes: this.supportedMimeTypes,
+    });
+  }
+
+  toDetailsDto(): TransformerDetailsDto {
+    return new TransformerDetailsDto({
+      id: this.id,
+      displayName: this.displayName,
+      description: this.description,
+      supportedMimeTypes: this.supportedMimeTypes,
+      inputSchema: this.registryEntry.contribution.input ?? {},
+    });
   }
 }

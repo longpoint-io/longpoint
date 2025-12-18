@@ -60,7 +60,7 @@ export class StorageUnitController {
     const storageUnits = await this.storageUnitService.listStorageUnits(query);
     return new ListStorageUnitsResponseDto({
       query,
-      items: await Promise.all(storageUnits.map((unit) => unit.toSummaryDto())),
+      items: await Promise.all(storageUnits.map((unit) => unit.toDto())),
       path: '/storage-units',
     });
   }

@@ -18,7 +18,6 @@ import { StorageUnitService } from '../../storage/services/storage-unit.service'
 import { AssetNotFound, AssetVariantNotFound } from '../asset.errors';
 import {
   selectAsset,
-  selectAssetSummary,
   selectAssetVariant,
   SelectedAsset,
   SelectedAssetVariant,
@@ -222,7 +221,7 @@ export class AssetService {
     const assets = await this.prismaService.asset.findMany({
       where: { id: { in: ids } },
       select: {
-        ...selectAssetSummary(),
+        ...selectAsset(),
         storageUnitId: true,
       },
     });

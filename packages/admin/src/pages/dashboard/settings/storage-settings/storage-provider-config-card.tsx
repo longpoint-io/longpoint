@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { StorageProviderIcon } from './storage-provider-icon';
 
 interface StorageProviderConfigCardProps {
-  config: components['schemas']['StorageConfigSummary'];
+  config: components['schemas']['StorageConfig'];
 }
 
 export function StorageProviderConfigCard({

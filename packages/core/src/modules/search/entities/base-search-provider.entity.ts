@@ -1,6 +1,6 @@
 import { ConfigSchemaService } from '@/modules/common/services';
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import { SearchProviderDto, SearchProviderShortDto } from '../dtos';
+import { SearchProviderDto, SearchProviderReferenceDto } from '../dtos';
 
 export interface BaseSearchProviderEntityArgs {
   id: string;
@@ -64,8 +64,8 @@ export class BaseSearchProviderEntity {
     });
   }
 
-  toShortDto() {
-    return new SearchProviderShortDto({
+  toReferenceDto() {
+    return new SearchProviderReferenceDto({
       id: this.id,
       name: this.displayName,
       image: this.image,

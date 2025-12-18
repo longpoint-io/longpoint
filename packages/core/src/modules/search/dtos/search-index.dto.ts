@@ -1,14 +1,13 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
-import { SearchProviderShortDto } from './search-provider-short.dto';
+import { SearchProviderReferenceDto } from './search-provider.dto';
 
 export interface SearchIndexParams {
   id: string;
   name: string;
   active: boolean;
   indexing: boolean;
-  searchProvider: SearchProviderShortDto;
+  searchProvider: SearchProviderReferenceDto;
   assetsIndexed: number;
   lastIndexedAt: Date | null;
   config: ConfigValues | null;
@@ -22,8 +21,6 @@ export class SearchIndexDto {
   })
   id: string;
 
-  @IsString()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'The name of the index',
     example: 'my-index',
@@ -45,13 +42,14 @@ export class SearchIndexDto {
 
   @ApiProperty({
     description: 'The search provider used by the index',
+    type: SearchProviderReferenceDto,
     example: {
       id: 'pinecone',
       name: 'Pinecone',
       image: null,
     },
   })
-  searchProvider: SearchProviderShortDto;
+  searchProvider: SearchProviderReferenceDto;
 
   @ApiProperty({
     description: 'The number of assets indexed',

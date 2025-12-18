@@ -3,17 +3,17 @@ import {
   PaginationResponseDto,
 } from '@/shared/dtos';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { AssetSummaryDto } from './asset-summary.dto';
+import { AssetDto } from './asset.dto';
 
 @ApiSchema({ name: 'ListAssetsResponse' })
-export class ListAssetsResponseDto extends PaginationResponseDto<AssetSummaryDto> {
+export class ListAssetsResponseDto extends PaginationResponseDto<AssetDto> {
   @ApiProperty({
     description: 'The assets in the response',
-    type: [AssetSummaryDto],
+    type: [AssetDto],
   })
-  override items: AssetSummaryDto[] = [];
+  override items: AssetDto[] = [];
 
-  constructor(args: PaginationResponseArgs<AssetSummaryDto>) {
+  constructor(args: PaginationResponseArgs<AssetDto>) {
     super(args);
     this.items = args.items;
   }

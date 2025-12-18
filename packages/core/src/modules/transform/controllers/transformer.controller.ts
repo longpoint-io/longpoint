@@ -10,13 +10,13 @@ import { TransformerService } from '../services/transformer.service';
 import { ApiTransformerNotFoundResponse } from '../transform.errors';
 
 @Controller('transformers')
-@ApiSdkTag(SdkTag.Transform)
+@ApiSdkTag(SdkTag.Transformers)
 @ApiBearerAuth()
 export class TransformerController {
   constructor(private readonly transformerService: TransformerService) {}
 
   @Get()
-  @RequirePermission(Permission.TRANSFORM_TEMPLATES_READ)
+  @RequirePermission(Permission.TRANSFORMER_TEMPLATES_READ)
   @ApiOperation({
     summary: 'List installed transformers',
     operationId: 'listTransformers',
@@ -32,7 +32,7 @@ export class TransformerController {
   }
 
   @Get(':transformerId')
-  @RequirePermission(Permission.TRANSFORM_TEMPLATES_READ)
+  @RequirePermission(Permission.TRANSFORMER_TEMPLATES_READ)
   @ApiOperation({
     summary: 'Get a transformer',
     operationId: 'getTransformer',
@@ -43,6 +43,6 @@ export class TransformerController {
     const transformer = await this.transformerService.getTransformerByIdOrThrow(
       transformerId
     );
-    return transformer.toDto('details');
+    return transformer.toDetailsDto();
   }
 }

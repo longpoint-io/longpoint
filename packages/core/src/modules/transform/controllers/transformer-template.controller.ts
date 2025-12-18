@@ -29,7 +29,7 @@ import { TransformerTemplateService } from '../services/transformer-template.ser
 import { ApiTransformerTemplateNotFoundResponse } from '../transform.errors';
 
 @Controller('transformer-templates')
-@ApiSdkTag(SdkTag.Transform)
+@ApiSdkTag(SdkTag.Transformers)
 @ApiBearerAuth()
 export class TransformerTemplateController {
   constructor(
@@ -121,13 +121,13 @@ export class TransformerTemplateController {
     await template.delete();
   }
 
-  @Post(':templateId/generate-variant')
+  @Post(':templateId/run')
   @RequirePermission(Permission.TRANSFORMER_TEMPLATES_CREATE)
   @ApiOperation({
-    summary: 'Generate a variant from a transformer template',
+    summary: 'Generate a new asset variant with a transformer',
     description:
-      'Creates a new derivative variant by applying the transformer template to the source variant.',
-    operationId: 'generateVariantFromTemplate',
+      'Creates a new derivative variant by applying the transformer template to a source variant.',
+    operationId: 'transformAssetVariant',
   })
   @ApiOkResponse({
     description: 'The variant generation has been initiated',

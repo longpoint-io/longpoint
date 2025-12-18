@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { AssetType } from './asset-type';
 
 interface AssetGridItemProps {
-  item: components['schemas']['AssetSummary'];
+  item: components['schemas']['Asset'];
   thumbnailLink?: string;
   selected?: boolean;
   onSelectChange?: (selected: boolean) => void;
@@ -38,7 +38,7 @@ export function AssetGridItem({
     <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] group overflow-hidden relative">
       <CardContent className="p-0">
         <div className="flex flex-col">
-          <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-gray-100 group-hover:to-gray-200 transition-colors relative overflow-hidden">
+          <div className="aspect-square bg-linear-to-br from-gray-50 to-gray-100 group-hover:from-gray-100 group-hover:to-gray-200 transition-colors relative overflow-hidden">
             {multiSelect && (
               <div
                 className={cn(
