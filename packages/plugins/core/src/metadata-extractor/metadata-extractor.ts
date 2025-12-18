@@ -4,14 +4,21 @@ import {
   ClassifyResult,
   LongpointPluginError,
 } from '@longpoint/devkit';
+import sharp from 'sharp';
 import { FFprobeCommand } from '../lib/ffmpeg.js';
 
 export default class MetadataExtractor extends Classifier {
   async classify(args: ClassifyArgs): Promise<ClassifyResult> {
-    const { source } = args;
+    const {
+      source: { url, mimeType },
+    } = args;
 
-    if (!source.url) {
+    if (!url) {
       throw new LongpointPluginError('No source URL provided');
+    }
+
+    if (mimeType.startsWith('image/')) {
+      return this.extractImageMetadata(url);
     }
 
     const ffprobe = new FFprobeCommand()
@@ -19,10 +26,10 @@ export default class MetadataExtractor extends Classifier {
       .arg('-print_format', 'json')
       .arg('-show_format')
       .arg('-show_streams')
-      .arg('-i', source.url);
+      .arg('-i', url);
 
     const output = JSON.parse(await ffprobe.executeAndReturnOutput());
-    const mediaType = source.mimeType.split('/')[0];
+    const mediaType = mimeType.split('/')[0];
 
     if (mediaType === 'video') {
       return this.extractVideoMetadata(output);
@@ -32,13 +39,7 @@ export default class MetadataExtractor extends Classifier {
       return this.extractAudioMetadata(output);
     }
 
-    if (mediaType === 'image') {
-      return this.extractImageMetadata(output);
-    }
-
-    throw new LongpointPluginError(
-      `Unsupported media type: ${source.mimeType}`
-    );
+    throw new LongpointPluginError(`Unsupported media type: ${mimeType}`);
   }
 
   private extractVideoMetadata(output: any): ClassifyResult {
@@ -83,22 +84,15 @@ export default class MetadataExtractor extends Classifier {
     return result;
   }
 
-  private extractImageMetadata(output: any): ClassifyResult {
-    const imageStream = output.streams.find(
-      (stream: any) => stream.codec_type === 'image'
-    );
-    if (!imageStream) {
-      return {};
-    }
+  private async extractImageMetadata(url: string): Promise<ClassifyResult> {
+    const response = await fetch(url);
+    const buffer = await response.arrayBuffer();
+    const metadata = await sharp(buffer).metadata();
 
-    const result: ClassifyResult = {};
-
-    if (imageStream.width) {
-      result.width = parseInt(imageStream.width as string);
-    }
-    if (imageStream.height) {
-      result.height = parseInt(imageStream.height as string);
-    }
+    const result: ClassifyResult = {
+      width: metadata.width,
+      height: metadata.height,
+    };
 
     return result;
   }

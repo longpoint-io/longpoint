@@ -7,7 +7,7 @@ import videoTranscoderContribution from './video-transcoder/index.js';
 export default {
   icon: 'icon.png',
   displayName: 'Longpoint Core',
-  description: 'The official core media processing functionality',
+  description: 'The official core set of transformers, classifiers, and more.',
   contributes: {
     transformers: {
       transcoder: videoTranscoderContribution,

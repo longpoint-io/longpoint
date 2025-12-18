@@ -39,7 +39,6 @@ export class UploadService {
             mimeType: true,
             type: true,
             entryPoint: true,
-            classifiersOnUpload: true,
             asset: {
               select: {
                 storageUnitId: true,

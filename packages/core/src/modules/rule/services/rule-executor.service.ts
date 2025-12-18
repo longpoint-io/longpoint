@@ -46,7 +46,7 @@ export class RuleExecutorService {
       } else {
         this.logger.error(
           `Error executing rule action ${action.type} for variant ${eventPayload.id}:`,
-          result.reason
+          result.reason?.message || 'Unknown error'
         );
       }
     });

@@ -1,5 +1,5 @@
 {
-  "name": "longpoint-plugin-video",
+  "name": "longpoint-plugin-core",
   "version": "0.0.1",
   "license": "MIT",
   "type": "module",
@@ -20,11 +20,12 @@
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
-    "@longpoint/devkit": "*",
     "@longpoint/config-schema": "*",
+    "@longpoint/devkit": "*",
+    "sharp": "^0.34.5",
     "tslib": "^2.3.0"
   },
   "nx": {
-    "name": "plugin-video"
+    "name": "plugin-core"
   }
 }
