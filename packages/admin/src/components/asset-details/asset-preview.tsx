@@ -4,7 +4,7 @@ import { ImageIcon, VideoIcon } from 'lucide-react';
 import { useAssetDetailsStore } from './asset-details-store';
 
 type AssetPreviewProps = {
-  asset: components['schemas']['Asset'];
+  asset: components['schemas']['AssetDetails'];
   isVideo: boolean;
 };
 
@@ -33,6 +33,7 @@ export function AssetPreview({ asset, isVideo }: AssetPreviewProps) {
                 <video
                   src={selectedVariant.url}
                   controls
+                  poster={asset.thumbnails[0]?.url ?? undefined}
                   className="w-full h-auto max-h-[600px]"
                 >
                   Your browser does not support the video tag.

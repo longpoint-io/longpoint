@@ -52,9 +52,6 @@ export function CreateRule() {
     createMutation.mutate(data);
   };
 
-  console.log(form.getValues());
-  console.log(form.formState.errors);
-
   return (
     <div className="space-y-8 mb-12">
       <div className="flex items-center gap-4">
