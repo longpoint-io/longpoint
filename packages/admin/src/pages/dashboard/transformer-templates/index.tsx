@@ -23,7 +23,7 @@ export function TransformerTemplates() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['transformer-templates'],
-    queryFn: () => client.transform.listTransformerTemplates(),
+    queryFn: () => client.transformers.listTransformerTemplates(),
   });
 
   if (isLoading) {

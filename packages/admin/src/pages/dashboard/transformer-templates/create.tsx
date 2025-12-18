@@ -44,16 +44,15 @@ export function CreateTransformerTemplate() {
 
   const { data: transformers, isLoading: transformersLoading } = useQuery({
     queryKey: ['transformers'],
-    queryFn: () => client.transform.listTransformers(),
+    queryFn: () => client.transformers.listTransformers(),
   });
 
   const { data: transformerDetails, isLoading: transformerDetailsLoading } =
     useQuery({
       queryKey: ['transformer', selectedTransformerId],
-      queryFn: () => client.transform.getTransformer(selectedTransformerId!),
+      queryFn: () => client.transformers.getTransformer(selectedTransformerId!),
       enabled: !!selectedTransformerId,
     });
-
   const inputSchema = transformerDetails?.inputSchema;
 
   const formSchema = z.object({
@@ -123,7 +122,9 @@ export function CreateTransformerTemplate() {
         payload.input = values.input;
       }
 
-      const result = await client.transform.createTransformerTemplate(payload);
+      const result = await client.transformers.createTransformerTemplate(
+        payload
+      );
 
       toast.success('Transformer template created successfully');
       navigate(`/transformer/templates/${result.id}`);

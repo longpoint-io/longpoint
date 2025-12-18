@@ -6,7 +6,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ClassifierDto } from '../dtos';
 import { ClassifierService } from '../services/classifier.service';
 
-@Controller('analysis/classifiers')
+@Controller('classifiers')
 @ApiSdkTag(SdkTag.Classifiers)
 @ApiBearerAuth()
 export class ClassifierController {
@@ -15,7 +15,7 @@ export class ClassifierController {
   @Get()
   @RequirePermission(Permission.CLASSIFIERS_READ)
   @ApiOperation({
-    summary: 'List classifiers',
+    summary: 'List installed classifiers',
     operationId: 'listClassifiers',
   })
   @ApiOkResponse({ type: [ClassifierDto] })

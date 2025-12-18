@@ -41,7 +41,7 @@ export function RuleActionForm({ control, name }: RuleActionFormProps) {
   const { data: transformerTemplates, isLoading: transformsLoading } = useQuery(
     {
       queryKey: ['transformer-templates'],
-      queryFn: () => client.transform.listTransformerTemplates(),
+      queryFn: () => client.transformers.listTransformerTemplates(),
     }
   );
 

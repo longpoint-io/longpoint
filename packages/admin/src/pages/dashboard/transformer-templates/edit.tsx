@@ -45,13 +45,13 @@ export function EditTransformerTemplate() {
 
   const { data: template, isLoading: templateLoading } = useQuery({
     queryKey: ['transformer-template', templateId],
-    queryFn: () => client.transform.getTransformerTemplate(templateId!),
+    queryFn: () => client.transformers.getTransformerTemplate(templateId!),
     enabled: !!templateId,
   });
 
   const { data: transformers, isLoading: transformersLoading } = useQuery({
     queryKey: ['transformers'],
-    queryFn: () => client.transform.listTransformers(),
+    queryFn: () => client.transformers.listTransformers(),
   });
 
   // Use selectedTransformerId if set, otherwise use the template's transformerId
@@ -60,7 +60,7 @@ export function EditTransformerTemplate() {
   const { data: transformerDetails, isLoading: transformerDetailsLoading } =
     useQuery({
       queryKey: ['transformer', currentTransformerId],
-      queryFn: () => client.transform.getTransformer(currentTransformerId!),
+      queryFn: () => client.transformers.getTransformer(currentTransformerId!),
       enabled: !!currentTransformerId,
     });
 
@@ -147,7 +147,7 @@ export function EditTransformerTemplate() {
         payload.input = values.input;
       }
 
-      await client.transform.updateTransformerTemplate(templateId, payload);
+      await client.transformers.updateTransformerTemplate(templateId, payload);
 
       toast.success('Transformer template updated successfully');
       navigate(`/transformer/templates/${templateId}`);

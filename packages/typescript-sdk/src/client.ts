@@ -17,7 +17,7 @@ export class Longpoint {
   collections: CollectionsClient;
   users: UsersClient;
   rules: RulesClient;
-  transform: TransformClient;
+  transformers: TransformersClient;
   search: SearchClient;
   system: SystemClient;
 
@@ -49,7 +49,7 @@ export class Longpoint {
     this.collections = new CollectionsClient(this.httpClient);
     this.users = new UsersClient(this.httpClient);
     this.rules = new RulesClient(this.httpClient);
-    this.transform = new TransformClient(this.httpClient);
+    this.transformers = new TransformersClient(this.httpClient);
     this.search = new SearchClient(this.httpClient);
     this.system = new SystemClient(this.httpClient);
   }
@@ -90,10 +90,10 @@ class ClassifiersClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * List classifiers
+   * List installed classifiers
    */
     async listClassifiers(): Promise<components['schemas']['Classifier'][]> {
-        const url = `analysis/classifiers`;
+        const url = `classifiers`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -654,7 +654,7 @@ class RulesClient {
   }
 }
 
-class TransformClient {
+class TransformersClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
