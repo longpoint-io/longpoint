@@ -138,7 +138,7 @@ export function EditTransformerTemplate() {
       }
 
       // Only include transformerId if it changed
-      if (data.transformerId !== template.transformerId) {
+      if (data.transformerId !== template?.transformerId) {
         payload.transformerId = data.transformerId;
       }
 

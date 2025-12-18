@@ -1125,14 +1125,14 @@ export interface components {
              *       "cherry"
              *     ]
              */
-            enum: string[] | null;
+            enum?: string[] | null;
             /**
              * @description Whether the field is immutable
              * @example true
              */
-            immutable: boolean | null;
+            immutable: boolean;
             /** @description The item schema, if the field type is an array */
-            items: components["schemas"]["ConfigSchemaItems"] | null;
+            items?: components["schemas"]["ConfigSchemaItems"];
             /**
              * @description The label of the field
              * @example Name
@@ -1156,7 +1156,7 @@ export interface components {
              */
             placeholder: string | null;
             /** @description The properties of the field, if the field type is an object */
-            properties: {
+            properties?: {
                 [key: string]: components["schemas"]["ConfigSchemaValue"];
             };
             /**

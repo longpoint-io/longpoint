@@ -34,7 +34,7 @@ export function SelectTransformerTemplate({
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
-    client.transform
+    client.transformers
       .listTransformerTemplates({ pageSize: 100 })
       .then((response) => {
         if (!cancelled) {
