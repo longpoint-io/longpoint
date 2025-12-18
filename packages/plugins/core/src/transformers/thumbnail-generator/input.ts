@@ -1,5 +1,5 @@
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import dimensionsInputSchema from '../lib/dimensions.js';
+import dimensionsInputSchema from '../../lib/dimensions.js';
 
 const thumbnailGeneratorInputSchema = {
   dimensions: {

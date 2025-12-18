@@ -1,8 +1,9 @@
 import { LongpointPluginConfig } from '@longpoint/devkit';
-import animatedPreviewContribution from './animated-preview/index.js';
-import metadataExtractorContribution from './metadata-extractor/index.js';
-import thumbnailGeneratorContribution from './thumbnail-generator/index.js';
-import videoTranscoderContribution from './video-transcoder/index.js';
+import metadataExtractorContribution from './classifiers/metadata-extractor/index.js';
+import localStorageContribution from './storage/local/index.js';
+import animatedPreviewContribution from './transformers/animated-preview/index.js';
+import thumbnailGeneratorContribution from './transformers/thumbnail-generator/index.js';
+import videoTranscoderContribution from './transformers/video-transcoder/index.js';
 
 export default {
   icon: 'icon.png',
@@ -16,6 +17,9 @@ export default {
     },
     classifiers: {
       metadataExtractor: metadataExtractorContribution,
+    },
+    storage: {
+      local: localStorageContribution,
     },
   },
 } satisfies LongpointPluginConfig;
