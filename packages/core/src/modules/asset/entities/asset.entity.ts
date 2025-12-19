@@ -44,6 +44,7 @@ export class AssetEntity {
   private _name: string;
   private _type: AssetType;
   private _status: AssetStatus;
+  private _metadata: JsonObject | null;
   private _createdAt: Date;
   private _updatedAt: Date;
   private readonly storageUnit: StorageUnitEntity;
@@ -56,6 +57,7 @@ export class AssetEntity {
     this._name = args.name;
     this._type = args.type;
     this._status = args.status;
+    this._metadata = (args.metadata as JsonObject | null) ?? null;
     this._createdAt = args.createdAt;
     this._updatedAt = args.updatedAt;
     this.storageUnit = args.storageUnit;
@@ -68,7 +70,11 @@ export class AssetEntity {
   }
 
   async update(data: UpdateAssetDto) {
-    const { name: newName, collectionIds: newCollectionIds } = data;
+    const {
+      name: newName,
+      collectionIds: newCollectionIds,
+      metadata: newMetadata,
+    } = data;
 
     if (newName && newName !== this._name) {
       const existingAsset = await this.prismaService.asset.findFirst({
@@ -144,7 +150,8 @@ export class AssetEntity {
         return await tx.asset.update({
           where: { id: this.id },
           data: {
-            name: newName,
+            ...(newName !== undefined && { name: newName }),
+            ...(newMetadata !== undefined && { metadata: newMetadata }),
             collections: collectionsUpdate,
           },
           select: selectAsset(),
@@ -154,6 +161,7 @@ export class AssetEntity {
       this._name = updated.name;
       this._type = updated.type;
       this._status = updated.status as AssetStatus;
+      this._metadata = (updated.metadata as JsonObject | null) ?? null;
       this._createdAt = updated.createdAt;
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
@@ -228,6 +236,7 @@ export class AssetEntity {
       thumbnails: this.thumbnails.map((t) => t.toDto()),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      metadata: this.metadata,
     });
   }
 
@@ -252,6 +261,7 @@ export class AssetEntity {
       thumbnails: this.thumbnails.map((t) => t.toDto()),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      metadata: this.metadata,
       totalSize: this.totalSize,
       totalVariants: this.totalVariants,
       original: this.original.toDto(),
@@ -338,6 +348,7 @@ export class AssetEntity {
       metadata: {
         type: this.type,
         storageUnitId: this.storageUnit.id,
+        ...(this.metadata ? this.metadata : {}),
       },
     };
   }
@@ -378,6 +389,10 @@ export class AssetEntity {
 
   get status() {
     return this._status;
+  }
+
+  get metadata() {
+    return this._metadata;
   }
 
   get totalSize() {

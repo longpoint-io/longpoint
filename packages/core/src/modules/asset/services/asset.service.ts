@@ -110,6 +110,7 @@ export class AssetService {
         type: assetType,
         status: 'WAITING_FOR_UPLOAD',
         storageUnitId: storageUnit.id,
+        ...(data.metadata !== undefined && { metadata: data.metadata }),
         variants: {
           create: {
             type: 'ORIGINAL',

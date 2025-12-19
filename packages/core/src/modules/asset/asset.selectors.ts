@@ -6,6 +6,7 @@ export const selectAsset = () => {
     name: true,
     type: true,
     status: true,
+    metadata: true,
     createdAt: true,
     updatedAt: true,
     variants: {
