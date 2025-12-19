@@ -766,6 +766,15 @@ export interface components {
              */
             id: string;
             /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "conversationId": "conv_123"
+             *     }
+             */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
+            /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields
              */
@@ -807,6 +816,15 @@ export interface components {
              * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
+            /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "conversationId": "conv_123"
+             *     }
+             */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
             /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields
@@ -1178,6 +1196,15 @@ export interface components {
              *     ]
              */
             collectionIds?: string[];
+            /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "category": "podcast"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            };
             /**
              * @description The MIME type of the primary variant
              * @example image/jpeg
@@ -2174,6 +2201,15 @@ export interface components {
              *     ]
              */
             collectionIds?: string[];
+            /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "category": "podcast"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            };
             /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields

@@ -274,7 +274,7 @@ export function AssetDetails() {
         <TabsContent value="details" className="mt-3">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <AssetPreview asset={media} isVideo={isVideo} />
-            <AssetDetailsPanel asset={media} hasDerivatives={hasDerivatives} />
+            <AssetDetailsPanel asset={media} />
           </div>
         </TabsContent>
         <TabsContent value="variants" className="mt-3">

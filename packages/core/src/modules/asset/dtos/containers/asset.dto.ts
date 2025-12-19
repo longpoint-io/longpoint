@@ -7,7 +7,7 @@ import {
 import { type SelectedAsset } from '@/modules/asset/asset.selectors';
 import { CollectionReferenceDto } from '@/modules/collection';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { AssetVariantDto } from './asset-variant.dto';
 
 export type AssetReferenceParams = Pick<SelectedAsset, 'id' | 'name'>;
@@ -72,7 +72,7 @@ export class AssetDto extends AssetReferenceDto {
   })
   updatedAt: Date;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description:
       'Freeform metadata that can be populated manually or by classifiers',
     example: {
