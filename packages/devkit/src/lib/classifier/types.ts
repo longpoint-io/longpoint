@@ -36,21 +36,39 @@ export interface ClassifierContribution<
   templates?: Record<string, ContributionTemplate>;
 }
 
-export const KeyAssetMetadataField = {
-  ASSET_NAME: 'assetName',
-  WIDTH: 'width',
-  HEIGHT: 'height',
-  DURATION: 'duration',
-} as const;
-
-export type KeyAssetMetadataField =
-  (typeof KeyAssetMetadataField)[keyof typeof KeyAssetMetadataField];
-
-export interface ClassifyResult
-  extends Partial<Record<KeyAssetMetadataField, any>> {
-  width?: number;
-  height?: number;
-  duration?: number;
-  assetName?: string;
-  [key: string]: string | number | boolean | undefined;
+export interface ClassifyResult {
+  /**
+   * Asset-level fields to update
+   */
+  asset?: {
+    /**
+     * The name of the asset
+     */
+    name?: string;
+    /**
+     * The metadata to update on the asset
+     */
+    metadata?: Record<string, unknown>;
+  };
+  /**
+   * Variant-level fields to update
+   */
+  variant?: {
+    /**
+     * The width of the variant
+     */
+    width?: number;
+    /**
+     * The height of the variant
+     */
+    height?: number;
+    /**
+     * The duration of the variant
+     */
+    duration?: number;
+    /**
+     * The metadata to update on the variant
+     */
+    metadata?: Record<string, unknown>;
+  };
 }

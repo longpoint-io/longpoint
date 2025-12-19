@@ -1,4 +1,4 @@
-import { llmFieldCapture, LongpointPluginConfig } from '@longpoint/devkit';
+import { llmClassifierInput, LongpointPluginConfig } from '@longpoint/devkit';
 import { ClaudeClassifier } from './claude-classifier.js';
 import { AnthropicPluginSettings, settings } from './settings.js';
 
@@ -21,7 +21,7 @@ export default {
           'image/gif',
           'image/webp',
         ],
-        input: llmFieldCapture,
+        input: llmClassifierInput,
       },
       'claude-sonnet-4-5-20250929': {
         classifier: ClaudeClassifier,
@@ -35,7 +35,7 @@ export default {
           'image/webp',
         ],
         maxFileSize: '5MB',
-        input: llmFieldCapture,
+        input: llmClassifierInput,
       },
     },
   },

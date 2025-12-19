@@ -139,10 +139,8 @@ export class SearchIndexEntity {
 
       const assetsToIndex = [...newAssets.map((a) => a.id), ...staleAssetIds];
 
-      if (assetsToIndex.length === 0) {
-        this.logger.log('No assets to index');
-      } else {
-        this.logger.log(
+      if (assetsToIndex.length > 0) {
+        this.logger.debug(
           `Indexing ${assetsToIndex.length} assets in batches (${newAssets.length} new, ${staleAssetIds.length} stale)`
         );
         await this.indexAssetsBatch(assetsToIndex);
@@ -225,8 +223,8 @@ export class SearchIndexEntity {
       }
 
       const externalIds = nullItems.map((item) => item.externalId);
-      this.logger.log(
-        `Deleting batch of ${externalIds.length} external IDs with null assetId`
+      this.logger.debug(
+        `Removing batch of ${externalIds.length} external IDs from search index`
       );
 
       // Delete from vector store first, then from database

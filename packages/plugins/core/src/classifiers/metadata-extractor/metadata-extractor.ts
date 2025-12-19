@@ -50,19 +50,25 @@ export default class MetadataExtractor extends Classifier {
       return {};
     }
 
-    const result: ClassifyResult = {};
+    const result: ClassifyResult = {
+      variant: {},
+    };
 
     if (videoStream.width) {
-      result.width = parseInt(videoStream.width as string);
+      result.variant!.width = parseInt(videoStream.width as string);
     }
     if (videoStream.height) {
-      result.height = parseInt(videoStream.height as string);
+      result.variant!.height = parseInt(videoStream.height as string);
     }
     if (videoStream.duration) {
-      result.duration = parseFloat(videoStream.duration as string);
+      result.variant!.duration = parseFloat(videoStream.duration as string);
     }
 
-    result.codec = videoStream.codec_name;
+    if (videoStream.codec_name) {
+      result.variant!.metadata = {
+        codec: videoStream.codec_name,
+      };
+    }
 
     return result;
   }
@@ -75,10 +81,12 @@ export default class MetadataExtractor extends Classifier {
       return {};
     }
 
-    const result: ClassifyResult = {};
+    const result: ClassifyResult = {
+      variant: {},
+    };
 
     if (audioStream.duration) {
-      result.duration = parseFloat(audioStream.duration as string);
+      result.variant!.duration = parseFloat(audioStream.duration as string);
     }
 
     return result;
@@ -90,9 +98,15 @@ export default class MetadataExtractor extends Classifier {
     const metadata = await sharp(buffer).metadata();
 
     const result: ClassifyResult = {
-      width: metadata.width,
-      height: metadata.height,
+      variant: {},
     };
+
+    if (metadata.width) {
+      result.variant!.width = metadata.width;
+    }
+    if (metadata.height) {
+      result.variant!.height = metadata.height;
+    }
 
     return result;
   }
