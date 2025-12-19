@@ -1,10 +1,6 @@
 import type { ConfigValues } from '@longpoint/config-schema';
-import {
-  ApiProperty,
-  ApiPropertyOptional,
-  ApiSchema,
-  PickType,
-} from '@nestjs/swagger';
+import { IsDisplayName } from '@longpoint/validations/resource-identifiers';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsNotEmpty,
@@ -12,12 +8,16 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { SearchIndexDto } from './search-index.dto';
 
 @ApiSchema({ name: 'CreateSearchIndex' })
-export class CreateSearchIndexDto extends PickType(SearchIndexDto, [
-  'name',
-] as const) {
+export class CreateSearchIndexDto {
+  @IsDisplayName('search index')
+  @ApiProperty({
+    description: 'The name of the search index',
+    example: 'Main',
+  })
+  name!: string;
+
   @IsBoolean()
   @IsOptional()
   @ApiPropertyOptional({

@@ -65,8 +65,10 @@ export class SearchIndexEntity {
    */
   async query(queryText: string): Promise<AssetDto[]> {
     const indexConfigValues = await this.getIndexConfigValues();
-    const searchResults = await this.searchProvider.embedAndSearch(
-      queryText,
+    const searchResults = await this.searchProvider.search(
+      {
+        query: queryText,
+      },
       indexConfigValues
     );
 
@@ -101,10 +103,10 @@ export class SearchIndexEntity {
     });
 
     try {
-      // Step 1: Delete items with null assetId in batches
+      // 1) Delete items with null assetId in batches
       await this.deleteNullAssetItems();
 
-      // Step 2: Find assets that need indexing (new ones and stale ones)
+      // 2) Find assets that need indexing (new ones and stale ones)
       const newAssets = await this.prismaService.asset.findMany({
         where: {
           status: 'READY',
@@ -378,13 +380,13 @@ export class SearchIndexEntity {
         }
         return {
           id: externalId, // Use search index item external ID as the vector document ID
-          text: asset.toEmbeddingText(),
+          ...asset.toSearchDocument(),
         };
       });
 
       // if (!this.embeddingModel) {
       const indexConfigValues = await this.getIndexConfigValues();
-      await this.searchProvider.embedAndUpsert(documents, indexConfigValues);
+      await this.searchProvider.upsert(documents, indexConfigValues);
       // } else {
       // TODO: Handle after embedding model is implemented
       // }
@@ -400,10 +402,9 @@ export class SearchIndexEntity {
         },
       });
     } catch (error) {
-      // Get item IDs for cleanup
       const externalIdsToDelete = indexItems.map((item) => item.externalId);
 
-      // Delete from vector store first
+      // Delete from index first
       if (externalIdsToDelete.length > 0) {
         try {
           const indexConfigValues = await this.getIndexConfigValues();
@@ -434,15 +435,12 @@ export class SearchIndexEntity {
   }
 
   async toDto(): Promise<SearchIndexDto> {
-    const indexConfigValues = await this.getIndexConfigValues();
     return new SearchIndexDto({
       id: this.id,
       active: this._active,
       indexing: this._indexing,
       name: this._name,
-      config: this._configFromDb
-        ? await this.searchProvider.processIndexConfigFromDb(this._configFromDb)
-        : null,
+      config: await this.getIndexConfigValues(),
       searchProvider: this.searchProvider.toReferenceDto(),
       assetsIndexed: this._mediaIndexed,
       lastIndexedAt: this._lastIndexedAt,

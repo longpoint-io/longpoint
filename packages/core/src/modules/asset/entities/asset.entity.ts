@@ -4,6 +4,7 @@ import {
   CollectionReferenceDto,
 } from '@/modules/collection';
 import { getAssetPath } from '@/shared/utils/asset.utils';
+import { SearchDocument } from '@longpoint/devkit';
 import { JsonObject } from '@longpoint/types';
 import { formatBytes } from '@longpoint/utils/format';
 import { PrismaService } from '../../common/services/prisma/prisma.service';
@@ -266,33 +267,79 @@ export class AssetEntity {
    * Aggregates asset metadata, variant information, and classifier results
    * into a format suitable for generating vector embeddings.
    *
-   * @returns The embedding document, or null if the asset has no primary variant
+   * @returns The text content for the search document
    */
-  toEmbeddingText(): string {
-    const dimensions =
+  toSearchDocument(): Omit<SearchDocument, 'id'> {
+    const textParts: string[] = [`Name: ${this.name}`, `Type: ${this.type}`];
+
+    const originalDimensions =
       this.original.width && this.original.height
         ? `${this.original.width}x${this.original.height}`
         : undefined;
 
-    const textParts: string[] = [
-      `Name: ${this.name}`,
-      `MIME Type: ${this.original.mimeType}`,
-      dimensions ? `Dimensions: ${dimensions}` : '',
-      this.original.size ? `Size: ${formatBytes(this.original.size)}` : '',
+    textParts.push(
+      `Original Format: ${this.original.mimeType}`,
+      originalDimensions ? `Original Dimensions: ${originalDimensions}` : '',
+      this.original.size
+        ? `Original Size: ${formatBytes(this.original.size)}`
+        : '',
       this.original.aspectRatio
-        ? `Aspect Ratio: ${this.original.aspectRatio.toFixed(2)}`
+        ? `Original Aspect Ratio: ${this.original.aspectRatio.toFixed(2)}`
         : '',
       this.original.duration
         ? `Duration: ${this.original.duration} seconds`
         : '',
       this.original.metadata
-        ? `Metadata: ${this.formatMetadataForDocument(this.original.metadata)}`
-        : '',
-    ];
+        ? `Original Metadata: ${this.formatMetadataForDocument(
+            this.original.metadata
+          )}`
+        : ''
+    );
+
+    this.derivatives.forEach((derivative, index) => {
+      const derivativeLabel =
+        derivative.displayName || `Derivative ${index + 1}`;
+      const derivativeDimensions =
+        derivative.width && derivative.height
+          ? `${derivative.width}x${derivative.height}`
+          : undefined;
+
+      textParts.push(
+        `${derivativeLabel} Format: ${derivative.mimeType}`,
+        derivativeDimensions
+          ? `${derivativeLabel} Dimensions: ${derivativeDimensions}`
+          : '',
+        derivative.size
+          ? `${derivativeLabel} Size: ${formatBytes(derivative.size)}`
+          : '',
+        derivative.aspectRatio
+          ? `${derivativeLabel} Aspect Ratio: ${derivative.aspectRatio.toFixed(
+              2
+            )}`
+          : '',
+        derivative.duration
+          ? `${derivativeLabel} Duration: ${derivative.duration} seconds`
+          : '',
+        derivative.metadata
+          ? `${derivativeLabel} Metadata: ${this.formatMetadataForDocument(
+              derivative.metadata
+            )}`
+          : ''
+      );
+    });
+
+    // Aggregate information
+    textParts.push(`Total Size: ${formatBytes(this.totalSize)}`);
 
     const text = textParts.filter(Boolean).join(', ');
 
-    return text;
+    return {
+      textOrEmbedding: text,
+      metadata: {
+        type: this.type,
+        storageUnitId: this.storageUnit.id,
+      },
+    };
   }
 
   /**

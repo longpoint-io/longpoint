@@ -758,9 +758,9 @@ class SearchClient {
   constructor(private httpClient: AxiosInstance) {}
 
     /**
-   * Search media containers
+   * Search assets
    */
-    async searchMedia(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
+    async searchAssets(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
         const url = `search`;
         const response = await this.httpClient.post(url, data);
         return response.data;

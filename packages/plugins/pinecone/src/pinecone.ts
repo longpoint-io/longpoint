@@ -1,13 +1,19 @@
 import { ConfigValues } from '@longpoint/config-schema';
 import {
-  EmbedAndUpsertDocument,
+  DocumentMetadata,
+  SearchArgs,
+  SearchDocument,
   SearchProvider,
   SearchProviderArgs,
   SearchResult,
-  VectorDocument,
-  VectorMetadata,
 } from '@longpoint/devkit';
-import { Pinecone } from '@pinecone-database/pinecone';
+import {
+  IntegratedRecord,
+  Pinecone,
+  PineconeRecord,
+  RecordMetadata,
+  RecordMetadataValue,
+} from '@pinecone-database/pinecone';
 import { PineconePluginSettings } from './settings.js';
 
 export class PineconeSearchProvider extends SearchProvider<PineconePluginSettings> {
@@ -18,29 +24,41 @@ export class PineconeSearchProvider extends SearchProvider<PineconePluginSetting
   }
 
   async upsert(
-    documents: VectorDocument[],
+    documents: SearchDocument[],
     indexConfigValues: ConfigValues
   ): Promise<void> {
-    await this.client.index(indexConfigValues.name).upsert(
-      documents.map((d) => ({
-        id: d.id,
-        values: d.embedding,
-        metadata: d.metadata,
-      }))
-    );
-  }
+    if (documents.length === 0) {
+      return;
+    }
 
-  override async embedAndUpsert(
-    documents: EmbedAndUpsertDocument[],
-    indexConfigValues: ConfigValues
-  ): Promise<void> {
-    await this.client.index(indexConfigValues.name).upsertRecords(
-      documents.map((d) => ({
-        id: d.id,
-        text: d.text,
-        ...(d.metadata ? d.metadata : {}),
-      }))
-    );
+    const embeddingDocuments: PineconeRecord[] = [];
+    const textDocuments: IntegratedRecord[] = [];
+
+    for (const d of documents) {
+      if (typeof d.textOrEmbedding === 'string') {
+        textDocuments.push({
+          id: d.id,
+          text: d.textOrEmbedding,
+          ...(d.metadata ? this.normalizeMetadata(d.metadata) : {}),
+        });
+      } else {
+        embeddingDocuments.push({
+          id: d.id,
+          values: d.textOrEmbedding,
+          metadata: d.metadata ? this.normalizeMetadata(d.metadata) : undefined,
+        });
+      }
+    }
+
+    const index = this.client.index(indexConfigValues.name);
+
+    if (embeddingDocuments.length > 0) {
+      await index.upsert(embeddingDocuments);
+    }
+
+    if (textDocuments.length > 0) {
+      await index.upsertRecords(textDocuments);
+    }
   }
 
   async delete(
@@ -55,47 +73,61 @@ export class PineconeSearchProvider extends SearchProvider<PineconePluginSetting
   }
 
   async search(
-    queryVector: number[],
+    args: SearchArgs,
     indexConfigValues: ConfigValues
   ): Promise<SearchResult[]> {
     const limit = indexConfigValues.limit ?? 10;
-    const result = await this.client.index(indexConfigValues.name).query({
-      vector: queryVector,
+
+    const index = this.client.index(indexConfigValues.name);
+
+    if (typeof args.query === 'string') {
+      const result = await index.searchRecords({
+        query: {
+          topK: limit,
+          inputs: { text: args.query },
+          filter: args.filter,
+        },
+      });
+      return result.result.hits.map((h) => ({
+        id: h._id,
+        score: h._score ?? 0,
+        metadata: h.fields as DocumentMetadata,
+      }));
+    }
+
+    const result = await index.query({
+      vector: args.query,
       topK: limit,
+      filter: args.filter,
     });
+
     return result.matches.map((m) => ({
       id: m.id,
       score: m.score ?? 0,
-      metadata: m.metadata as VectorMetadata,
+      metadata: m.metadata as DocumentMetadata,
     }));
   }
 
-  override async embedAndSearch(
-    queryText: string,
-    indexConfigValues: ConfigValues
-  ): Promise<SearchResult[]> {
-    const limit = indexConfigValues.limit ?? 10;
-    const result = await this.client
-      .index(indexConfigValues.name)
-      .searchRecords({
-        query: {
-          topK: limit,
-          inputs: { text: queryText },
-        },
-        // rerank: {
-        //   model: 'bge-reranker-v2-m3',
-        //   rankFields: ['chunk_text'],
-        //   topN: limit,
-        // },
-      });
-    return result.result.hits.map((h) => {
-      const { _id, _score, fields } = h;
-      return {
-        id: _id,
-        score: _score ?? 0,
-        metadata: fields as VectorMetadata,
-      };
-    });
+  /**
+   * Normalize the metadata to a format that can be used by Pinecone.
+   * @param metadata The metadata to normalize.
+   * @returns The normalized metadata.
+   * @see https://docs.pinecone.io/guides/index-data/indexing-overview#metadata-format
+   */
+  private normalizeMetadata(metadata: DocumentMetadata): RecordMetadata {
+    const normalized: RecordMetadata = {};
+    for (const [key, value] of Object.entries(metadata)) {
+      let normalizedValue = value;
+      if (Array.isArray(value) && !value.every((v) => typeof v === 'string')) {
+        normalizedValue = value.map((v) => v.toString());
+      } else if (typeof value === 'object' && value !== null) {
+        normalizedValue = JSON.stringify(value);
+      } else if (value === null) {
+        continue;
+      }
+      normalized[key] = normalizedValue as RecordMetadataValue;
+    }
+    return normalized;
   }
 
   private get client(): Pinecone {

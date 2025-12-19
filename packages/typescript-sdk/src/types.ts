@@ -333,8 +333,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Search media containers */
-        post: operations["searchMedia"];
+        /** Search assets */
+        post: operations["searchAssets"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1324,8 +1324,8 @@ export interface components {
              */
             embeddingModelId?: string;
             /**
-             * @description The name of the index
-             * @example my-index
+             * @description The name of the search index
+             * @example Main
              */
             name: string;
             /**
@@ -3609,7 +3609,7 @@ export interface operations {
             };
         };
     };
-    searchMedia: {
+    searchAssets: {
         parameters: {
             query?: never;
             header?: never;

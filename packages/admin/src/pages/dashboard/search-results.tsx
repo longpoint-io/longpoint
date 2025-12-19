@@ -34,7 +34,7 @@ export function SearchResults() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['search', query],
     queryFn: async () => {
-      const response = await client.search.searchMedia({ query });
+      const response = await client.search.searchAssets({ query });
       const links = await client.assets.generateLinks({
         assets: response.results.map((result) => ({
           assetId: result.id,
@@ -60,6 +60,7 @@ export function SearchResults() {
     status: result.status,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
+    thumbnails: result.thumbnails,
   }));
 
   return (

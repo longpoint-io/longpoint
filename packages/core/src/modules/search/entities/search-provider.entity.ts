@@ -2,10 +2,10 @@ import { ConfigSchemaService } from '@/modules/common/services';
 import { SearchProviderRegistryEntry } from '@/modules/plugin/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import {
-  EmbedAndUpsertDocument,
+  SearchArgs,
+  SearchDocument,
   SearchProvider,
   SearchResult,
-  VectorDocument,
 } from '@longpoint/devkit';
 import { BaseSearchProviderEntity } from './base-search-provider.entity';
 
@@ -37,17 +37,10 @@ export class SearchProviderEntity extends BaseSearchProviderEntity {
   }
 
   upsert(
-    documents: VectorDocument[],
+    documents: SearchDocument[],
     indexConfigValues: ConfigValues
   ): Promise<void> {
     return this.plugin.upsert(documents, indexConfigValues);
-  }
-
-  embedAndUpsert(
-    documents: EmbedAndUpsertDocument[],
-    indexConfigValues: ConfigValues
-  ): Promise<void> {
-    return this.plugin.embedAndUpsert(documents, indexConfigValues);
   }
 
   delete(
@@ -58,17 +51,10 @@ export class SearchProviderEntity extends BaseSearchProviderEntity {
   }
 
   search(
-    queryVector: number[],
+    args: SearchArgs,
     indexConfigValues: ConfigValues
   ): Promise<SearchResult[]> {
-    return this.plugin.search(queryVector, indexConfigValues);
-  }
-
-  embedAndSearch(
-    queryText: string,
-    indexConfigValues: ConfigValues
-  ): Promise<SearchResult[]> {
-    return this.plugin.embedAndSearch(queryText, indexConfigValues);
+    return this.plugin.search(args, indexConfigValues);
   }
 
   dropIndex(indexConfigValues: ConfigValues): Promise<void> {

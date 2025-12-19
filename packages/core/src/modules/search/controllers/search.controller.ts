@@ -13,10 +13,10 @@ export class SearchController {
   constructor(private readonly searchIndexService: SearchIndexService) {}
 
   @Post()
-  @RequirePermission(Permission.MEDIA_CONTAINER_READ)
+  @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
-    summary: 'Search media containers',
-    operationId: 'searchMedia',
+    summary: 'Search assets',
+    operationId: 'searchAssets',
   })
   @ApiOkResponse({ type: SearchResultsDto })
   async search(@Body() body: SearchQueryDto): Promise<SearchResultsDto> {
