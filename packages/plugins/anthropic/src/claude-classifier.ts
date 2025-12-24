@@ -32,49 +32,32 @@ export class ClaudeClassifier extends Classifier<AnthropicPluginSettings> {
       ${fieldDescriptions.join('\n')}
     `;
 
-    const maxRetries = this.pluginSettings.classifierRetries ?? 3;
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const response = await client.beta.messages.parse({
-          model: this.providerId,
-          max_tokens: 1024,
-          betas: ['structured-outputs-2025-11-13'],
-          system: systemPrompt,
-          messages: [
+    const response = await client.beta.messages.parse({
+      model: this.providerId,
+      max_tokens: 1024,
+      betas: ['structured-outputs-2025-11-13'],
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: [
             {
-              role: 'user',
-              content: [
-                {
-                  type: 'image',
-                  source: this.getSource(args.source),
-                },
-              ],
+              type: 'image',
+              source: this.getSource(args.source),
             },
           ],
-          output_format: {
-            type: 'json_schema',
-            schema: schema,
-          },
-        });
+        },
+      ],
+      output_format: {
+        type: 'json_schema',
+        schema: schema,
+      },
+    });
 
-        const capturedFields =
-          (response.parsed_output as Record<string, unknown> | null) ?? {};
+    const capturedFields =
+      (response.parsed_output as Record<string, unknown> | null) ?? {};
 
-        return this.parseResponse(capturedFields);
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        if (attempt === maxRetries - 1) {
-          throw new Error(
-            `Failed to classify after ${maxRetries} attempts. Last error: ${lastError.message}`
-          );
-        }
-      }
-    }
-
-    // This should never be reached
-    throw lastError || new Error('Failed to classify');
+    return this.parseResponse(capturedFields);
   }
 
   private buildJsonSchema(
