@@ -51,6 +51,10 @@ export interface SearchArgs {
    */
   query: string | number[];
   /**
+   * The number of results to return.
+   */
+  pageSize?: number;
+  /**
    * Optional metadata filter to apply to the search.
    */
   filter?: MetadataFilter;

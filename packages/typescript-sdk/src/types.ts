@@ -1907,6 +1907,10 @@ export interface components {
             name: string;
         };
         SearchQuery: {
+            /** @description The cursor to the next page */
+            cursor?: string;
+            /** @description The number of items per page */
+            pageSize?: number;
             /**
              * @description The search query text
              * @example sunset beach
@@ -1915,12 +1919,9 @@ export interface components {
         };
         SearchResults: {
             /** @description The search results */
-            results: components["schemas"]["Asset"][];
-            /**
-             * @description Total number of results
-             * @example 5
-             */
-            total: number;
+            items: components["schemas"]["Asset"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
         };
         SetupStatus: {
             /**

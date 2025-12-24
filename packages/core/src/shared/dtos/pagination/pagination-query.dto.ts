@@ -34,7 +34,6 @@ export const ApiPaginationQueryDto = ({
     @Transform(({ value }) => Number(value))
     @ApiPropertyOptional({
       description: 'The number of items per page',
-      default: defaultPageSize,
       type: 'number',
     })
     pageSize: number = defaultPageSize;
@@ -68,7 +67,7 @@ export const ApiPaginationQueryDto = ({
       }
 
       return {
-        take: this.pageSize,
+        take: this.pageSize ?? defaultPageSize,
         skip: this.cursor ? 1 : 0,
         cursor: this.cursor
           ? ({

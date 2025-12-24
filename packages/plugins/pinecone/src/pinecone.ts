@@ -76,14 +76,12 @@ export class PineconeSearchProvider extends SearchProvider<PineconePluginSetting
     args: SearchArgs,
     indexConfigValues: ConfigValues
   ): Promise<SearchResult[]> {
-    const limit = indexConfigValues.limit ?? 10;
-
     const index = this.client.index(indexConfigValues.name);
 
     if (typeof args.query === 'string') {
       const result = await index.searchRecords({
         query: {
-          topK: limit,
+          topK: args.pageSize ?? 10,
           inputs: { text: args.query },
           filter: args.filter,
         },
@@ -97,7 +95,7 @@ export class PineconeSearchProvider extends SearchProvider<PineconePluginSetting
 
     const result = await index.query({
       vector: args.query,
-      topK: limit,
+      topK: args.pageSize ?? 10,
       filter: args.filter,
     });
 

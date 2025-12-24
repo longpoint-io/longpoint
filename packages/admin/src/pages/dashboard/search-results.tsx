@@ -36,13 +36,13 @@ export function SearchResults() {
     queryFn: async () => {
       const response = await client.search.searchAssets({ query });
       const links = await client.assets.generateLinks({
-        assets: response.results.map((result) => ({
+        assets: response.items.map((result) => ({
           assetId: result.id,
           w: 500,
         })),
       });
       return {
-        results: response.results,
+        results: response.items,
         links,
       };
     },
@@ -59,6 +59,7 @@ export function SearchResults() {
     type: result.type,
     status: result.status,
     createdAt: result.createdAt,
+    metadata: result.metadata,
     updatedAt: result.updatedAt,
     thumbnails: result.thumbnails,
   }));

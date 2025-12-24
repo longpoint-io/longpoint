@@ -3,7 +3,7 @@ import { AssetDto, AssetService } from '@/modules/asset';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
-import { SearchIndexDto } from '../dtos';
+import { SearchIndexDto, SearchQueryDto } from '../dtos';
 import { SearchProviderEntity } from './search-provider.entity';
 
 export interface SearchIndexEntityArgs {
@@ -63,11 +63,12 @@ export class SearchIndexEntity {
    * @param queryText The search query text
    * @returns Array of AssetDto matching the query
    */
-  async query(queryText: string): Promise<AssetDto[]> {
+  async query(query: SearchQueryDto): Promise<AssetDto[]> {
     const indexConfigValues = await this.getIndexConfigValues();
     const searchResults = await this.searchProvider.search(
       {
-        query: queryText,
+        query: query.query,
+        pageSize: query.pageSize,
       },
       indexConfigValues
     );

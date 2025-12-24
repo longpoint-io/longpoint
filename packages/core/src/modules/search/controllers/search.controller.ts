@@ -23,11 +23,19 @@ export class SearchController {
     const activeIndex = await this.searchIndexService.getActiveIndex();
 
     if (!activeIndex) {
-      return new SearchResultsDto([]);
+      return new SearchResultsDto({
+        query: body,
+        items: [],
+        path: '/search',
+      });
     }
 
-    const results = await activeIndex.query(body.query);
+    const results = await activeIndex.query(body);
 
-    return new SearchResultsDto(results);
+    return new SearchResultsDto({
+      query: body,
+      items: results,
+      path: '/search',
+    });
   }
 }
