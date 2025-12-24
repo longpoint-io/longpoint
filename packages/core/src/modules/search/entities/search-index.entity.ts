@@ -11,7 +11,7 @@ export interface SearchIndexEntityArgs {
   active: boolean;
   indexing: boolean;
   name: string;
-  mediaIndexed: number;
+  assetsIndexed: number;
   configFromDb: ConfigValues;
   lastIndexedAt: Date | null;
   searchProvider: SearchProviderEntity;
@@ -25,7 +25,7 @@ export class SearchIndexEntity {
   private _active: boolean;
   private _indexing: boolean;
   private _name: string;
-  private _mediaIndexed: number;
+  private _assetsIndexed: number;
   private _lastIndexedAt: Date | null;
   private _configFromDb: ConfigValues;
   private readonly searchProvider: SearchProviderEntity;
@@ -38,7 +38,7 @@ export class SearchIndexEntity {
     this._active = args.active;
     this._indexing = args.indexing;
     this._name = args.name;
-    this._mediaIndexed = args.mediaIndexed;
+    this._assetsIndexed = args.assetsIndexed;
     this._configFromDb = args.configFromDb;
     this._lastIndexedAt = args.lastIndexedAt;
     this.searchProvider = args.searchProvider;
@@ -103,47 +103,64 @@ export class SearchIndexEntity {
     });
 
     try {
-      // 1) Delete items with null assetId in batches
       await this.deleteNullAssetItems();
 
-      // 2) Find assets that need indexing (new ones and stale ones)
-      const newAssets = await this.prismaService.asset.findMany({
-        where: {
-          status: 'READY',
-          deletedAt: null,
-          searchIndexItems: {
-            none: {
-              indexId: this.id,
+      let iteration = 0;
+      const maxIterations = 5; // Prevent infinite loops
+
+      while (iteration < maxIterations) {
+        // Find assets that need indexing (new ones and stale ones)
+        const newAssets = await this.prismaService.asset.findMany({
+          where: {
+            status: 'READY',
+            deletedAt: null,
+            searchIndexItems: {
+              none: {
+                indexId: this.id,
+              },
             },
           },
-        },
-        select: {
-          id: true,
-        },
-      });
+          select: {
+            id: true,
+          },
+        });
 
-      const staleItems = await this.prismaService.searchIndexItem.findMany({
-        where: {
-          indexId: this.id,
-          status: SearchIndexItemStatus.STALE,
-          assetId: { not: null },
-        },
-        select: {
-          assetId: true,
-        },
-      });
+        const staleItems = await this.prismaService.searchIndexItem.findMany({
+          where: {
+            indexId: this.id,
+            status: SearchIndexItemStatus.STALE,
+            assetId: { not: null },
+          },
+          select: {
+            assetId: true,
+          },
+        });
 
-      const staleAssetIds = staleItems
-        .map((item) => item.assetId)
-        .filter((id): id is string => id !== null);
+        const staleAssetIds = staleItems
+          .map((item) => item.assetId)
+          .filter((id): id is string => id !== null);
 
-      const assetsToIndex = [...newAssets.map((a) => a.id), ...staleAssetIds];
+        const assetsToIndex = [...newAssets.map((a) => a.id), ...staleAssetIds];
 
-      if (assetsToIndex.length > 0) {
+        if (assetsToIndex.length === 0) {
+          // No more assets to index, we're done
+          break;
+        }
+
         this.logger.debug(
-          `Indexing ${assetsToIndex.length} assets in batches (${newAssets.length} new, ${staleAssetIds.length} stale)`
+          `Indexing ${assetsToIndex.length} assets in batches (${
+            newAssets.length
+          } new, ${staleAssetIds.length} stale) [iteration ${iteration + 1}]`
         );
         await this.indexAssetsBatch(assetsToIndex);
+
+        iteration++;
+      }
+
+      if (iteration >= maxIterations) {
+        this.logger.warn(
+          `Reached max iterations (${maxIterations}) during sync - there may be more assets to index`
+        );
       }
 
       const totalIndexed = await this.prismaService.searchIndexItem.count({
@@ -158,12 +175,12 @@ export class SearchIndexEntity {
         data: {
           indexing: false,
           lastIndexedAt: new Date(),
-          mediaIndexed: totalIndexed,
+          assetsIndexed: totalIndexed,
         },
       });
 
       this._lastIndexedAt = updatedIndex.lastIndexedAt;
-      this._mediaIndexed = updatedIndex.mediaIndexed;
+      this._assetsIndexed = updatedIndex.assetsIndexed;
       this._indexing = updatedIndex.indexing;
     } catch (error) {
       // Ensure indexing flag is cleared even on error
@@ -440,7 +457,7 @@ export class SearchIndexEntity {
       name: this._name,
       config: await this.getIndexConfigValues(),
       searchProvider: this.searchProvider.toReferenceDto(),
-      assetsIndexed: this._mediaIndexed,
+      assetsIndexed: this._assetsIndexed,
       lastIndexedAt: this._lastIndexedAt,
     });
   }
@@ -453,8 +470,8 @@ export class SearchIndexEntity {
     return this._indexing;
   }
 
-  get mediaIndexed(): number {
-    return this._mediaIndexed;
+  get assetsIndexed(): number {
+    return this._assetsIndexed;
   }
 
   get lastIndexedAt(): Date | null {

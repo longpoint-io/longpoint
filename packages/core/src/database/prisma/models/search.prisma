@@ -3,7 +3,7 @@ model SearchIndex {
   name             String    @unique
   active           Boolean   @default(true)
   indexing         Boolean   @default(false)
-  mediaIndexed     Int       @default(0)
+  assetsIndexed    Int       @default(0)
   /// Fully qualified model ID of the embedding model to use for this index. `null` implies the search provider is capable of embedding documents without an external model.
   embeddingModelId String?
   /// Search provider ID

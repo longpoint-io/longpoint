@@ -7,7 +7,7 @@ export const selectSearchIndex = () => {
     active: true,
     indexing: true,
     lastIndexedAt: true,
-    mediaIndexed: true,
+    assetsIndexed: true,
     searchProviderId: true,
     embeddingModelId: true,
     config: true,
