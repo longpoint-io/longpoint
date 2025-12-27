@@ -34,7 +34,9 @@ export function SearchResults() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['search', query],
     queryFn: async () => {
-      const response = await client.search.searchAssets({ query });
+      const response = await client.search.searchAssets({
+        text: query,
+      });
       const links = await client.assets.generateLinks({
         assets: response.items.map((result) => ({
           assetId: result.id,

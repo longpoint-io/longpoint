@@ -83,7 +83,7 @@ export class PineconeSearchProvider extends SearchProvider<PineconePluginSetting
         query: {
           topK: args.pageSize ?? 10,
           inputs: { text: args.query },
-          filter: args.filter,
+          filter: args.metadata,
         },
       });
       return result.result.hits.map((h) => ({
@@ -96,7 +96,7 @@ export class PineconeSearchProvider extends SearchProvider<PineconePluginSetting
     const result = await index.query({
       vector: args.query,
       topK: args.pageSize ?? 10,
-      filter: args.filter,
+      filter: args.metadata,
     });
 
     return result.matches.map((m) => ({

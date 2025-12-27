@@ -39,7 +39,6 @@ export class CreateRuleDto {
   @ApiPropertyOptional({
     description: 'Whether the rule is enabled',
     example: true,
-    default: true,
   })
   enabled?: boolean;
 

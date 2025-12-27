@@ -112,6 +112,27 @@ export class OpenAPIParser {
       return refName ? `components['schemas']['${refName}']` : 'any';
     }
 
+    // Handle oneOf (union types)
+    if (schema.oneOf && schema.oneOf.length > 0) {
+      const types = schema.oneOf
+        .map((item) => {
+          if (item.$ref) {
+            const refName = item.$ref.split('/').pop();
+            return refName ? `components['schemas']['${refName}']` : null;
+          }
+          if (item.type === 'array' && item.items) {
+            const itemType = this.getTypeFromSchema(item.items);
+            return `${itemType}[]`;
+          }
+          if (item.type) {
+            return this.getTypeFromSchema({ type: item.type } as OpenAPISchema);
+          }
+          return null;
+        })
+        .filter((type): type is string => type !== null);
+      return types.length > 0 ? types.join(' | ') : 'any';
+    }
+
     // Handle allOf (composition)
     if (schema.allOf && schema.allOf.length > 0) {
       const refs = schema.allOf

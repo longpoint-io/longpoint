@@ -55,7 +55,11 @@ export interface SearchArgs {
    */
   pageSize?: number;
   /**
-   * Optional metadata filter to apply to the search.
+   * Optional metadata to filter the search results by.
+   * @example {
+   *   storageUnitId: 'mbjq36xe6397dsi6x9nq4ghc',
+   *   category: 'Podcast',
+   * }
    */
-  filter?: MetadataFilter;
+  metadata?: MetadataFilter;
 }

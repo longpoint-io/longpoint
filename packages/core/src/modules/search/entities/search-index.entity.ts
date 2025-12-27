@@ -67,8 +67,9 @@ export class SearchIndexEntity {
     const indexConfigValues = await this.getIndexConfigValues();
     const searchResults = await this.searchProvider.search(
       {
-        query: query.query,
+        query: query.text,
         pageSize: query.pageSize,
+        metadata: query.metadata,
       },
       indexConfigValues
     );

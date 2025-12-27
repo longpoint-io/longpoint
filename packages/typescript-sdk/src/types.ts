@@ -1322,10 +1322,9 @@ export interface components {
             displayName: string;
             /**
              * @description Whether the rule is enabled
-             * @default true
              * @example true
              */
-            enabled: boolean;
+            enabled?: boolean;
             /**
              * @description The event that triggers this rule
              * @example asset.variant.ready
@@ -1909,13 +1908,25 @@ export interface components {
         SearchQuery: {
             /** @description The cursor to the next page */
             cursor?: string;
+            /**
+             * @description Asset metadata filters to apply to the search
+             * @example {
+             *       "category": "Podcast",
+             *       "storageUnitId": "mbjq36xe6397dsi6x9nq4ghc"
+             *     }
+             */
+            metadata?: {
+                storageUnitId?: string;
+            } & {
+                [key: string]: string | number | boolean | unknown;
+            };
             /** @description The number of items per page */
             pageSize?: number;
             /**
              * @description The search query text
              * @example sunset beach
              */
-            query: string;
+            text: string;
         };
         SearchResults: {
             /** @description The search results */
@@ -1943,10 +1954,10 @@ export interface components {
              */
             operator: "EQUALS" | "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "IN" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO" | "NOT_EQUALS" | "NOT_IN" | "STARTS_WITH" | "ENDS_WITH";
             /**
-             * @description The value to compare against (can be string, number, boolean, etc.)
+             * @description The value to compare against (can be string, number, boolean, array, etc.)
              * @example ORIGINAL
              */
-            value: Record<string, never>;
+            value: string | number | boolean | (string | number | boolean)[];
         };
         StorageConfig: {
             /**
@@ -2299,10 +2310,9 @@ export interface components {
             displayName?: string;
             /**
              * @description Whether the rule is enabled
-             * @default true
              * @example true
              */
-            enabled: boolean;
+            enabled?: boolean;
             /**
              * @description The event that triggers this rule
              * @example asset.variant.ready

@@ -24,6 +24,12 @@ export interface OpenAPISchema {
   description?: string;
   example?: any;
   allOf?: Array<{ $ref?: string; [key: string]: any }>;
+  oneOf?: Array<{
+    type?: string;
+    $ref?: string;
+    items?: OpenAPISchema;
+    [key: string]: any;
+  }>;
   $ref?: string;
   items?: OpenAPISchema;
 }
