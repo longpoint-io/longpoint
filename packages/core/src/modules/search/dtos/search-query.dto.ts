@@ -1,4 +1,6 @@
+import { AssetType } from '@/database';
 import { ApiPaginationQueryDto } from '@/shared/dtos';
+import { type MetadataFilter } from '@longpoint/devkit';
 import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
@@ -17,16 +19,10 @@ export class SearchQueryDto extends ApiPaginationQueryDto({
   @IsObject()
   @IsOptional()
   @ApiPropertyOptional({
-    additionalProperties: {
-      oneOf: [
-        { type: 'string' },
-        { type: 'number' },
-        { type: 'boolean' },
-        { items: { type: 'string' } },
-      ],
-    },
+    additionalProperties: true,
     properties: {
       storageUnitId: { type: 'string', required: false },
+      type: { type: 'string', enum: AssetType, required: false },
     },
     description: 'Asset metadata filters to apply to the search',
     example: {
@@ -34,5 +30,5 @@ export class SearchQueryDto extends ApiPaginationQueryDto({
       storageUnitId: 'mbjq36xe6397dsi6x9nq4ghc',
     },
   })
-  metadata?: Record<string, string | number | boolean | string[]>;
+  metadata?: MetadataFilter;
 }

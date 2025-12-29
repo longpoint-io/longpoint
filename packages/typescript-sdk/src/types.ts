@@ -1917,8 +1917,10 @@ export interface components {
              */
             metadata?: {
                 storageUnitId?: string;
+                /** @enum {string} */
+                type?: "IMAGE" | "VIDEO";
             } & {
-                [key: string]: string | number | boolean | unknown;
+                [key: string]: unknown;
             };
             /** @description The number of items per page */
             pageSize?: number;

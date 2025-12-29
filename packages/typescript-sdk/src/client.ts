@@ -230,7 +230,7 @@ class AssetsClient {
     /**
    * Generate links for assets
    */
-    async generateLinks(data: components['schemas']['GenerateMediaLinks']): Promise<Record<string, any>> {
+    async generateLinks(data: components['schemas']['GenerateMediaLinks']): Promise<Record<string, string>> {
         const url = `asset-links`;
         const response = await this.httpClient.post(url, data);
         return response.data;

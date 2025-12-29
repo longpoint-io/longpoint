@@ -32,6 +32,7 @@ export interface OpenAPISchema {
   }>;
   $ref?: string;
   items?: OpenAPISchema;
+  additionalProperties?: boolean | OpenAPISchema;
 }
 
 export interface OpenAPIOperation {
