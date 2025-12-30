@@ -14,10 +14,10 @@ export class SearchProviderController {
   @Get()
   @ApiOperation({
     summary: 'List installed search providers',
-    operationId: 'listSearchProviders',
+    operationId: 'search.listProviders',
   })
   @ApiOkResponse({ type: [SearchProviderDto] })
-  async listSearchProviders() {
+  async listProviders() {
     const providers = await this.searchProviderService.listProviders();
     return providers.map((provider) => provider.toDto());
   }
@@ -25,10 +25,10 @@ export class SearchProviderController {
   @Patch(':providerId')
   @ApiOperation({
     summary: 'Update the config for a search provider',
-    operationId: 'updateSearchProviderConfig',
+    operationId: 'search.updateConfig',
   })
   @ApiOkResponse({ type: SearchProviderDto })
-  async updateSearchProviderConfig(
+  async updateConfig(
     @Param('providerId') providerId: string,
     @Body() body: UpdateSearchProviderConfigDto
   ) {

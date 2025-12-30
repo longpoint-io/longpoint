@@ -22,10 +22,10 @@ export class SearchIndexController {
   @RequirePermission(Permission.SEARCH_INDEXES_CREATE)
   @ApiOperation({
     summary: 'Create a search index',
-    operationId: 'createSearchIndex',
+    operationId: 'search.createIndex',
   })
   @ApiCreatedResponse({ type: SearchIndexDto })
-  async createSearchIndex(@Body() body: CreateSearchIndexDto) {
+  async createIndex(@Body() body: CreateSearchIndexDto) {
     const index = await this.searchIndexService.createIndex(body);
     return index.toDto();
   }
@@ -34,7 +34,7 @@ export class SearchIndexController {
   @RequirePermission(Permission.SEARCH_INDEXES_READ)
   @ApiOperation({
     summary: 'List search indexes',
-    operationId: 'listSearchIndexes',
+    operationId: 'search.listIndexes',
   })
   @ApiOkResponse({ type: [SearchIndexDto] })
   async listSearchIndexes() {
@@ -46,10 +46,10 @@ export class SearchIndexController {
   @RequirePermission(Permission.SEARCH_INDEXES_DELETE)
   @ApiOperation({
     summary: 'Delete a search index',
-    operationId: 'deleteSearchIndex',
+    operationId: 'search.deleteIndex',
   })
   @ApiNoContentResponse()
-  async deleteSearchIndex(@Param('id') id: string) {
+  async deleteIndex(@Param('id') id: string) {
     const index = await this.searchIndexService.getIndexByIdOrThrow(id);
     await index.delete();
   }

@@ -15,7 +15,7 @@ export class SearchController {
   @Post('assets')
   @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
-    summary: 'Search assets with the active search provider',
+    summary: 'Query assets with the active search provider',
     operationId: 'assets.search',
   })
   @ApiOkResponse({ type: SearchResultsDto })

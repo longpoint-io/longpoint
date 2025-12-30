@@ -349,10 +349,10 @@ export interface paths {
             cookie?: never;
         };
         /** List search indexes */
-        get: operations["listSearchIndexes"];
+        get: operations["search.listIndexes"];
         put?: never;
         /** Create a search index */
-        post: operations["createSearchIndex"];
+        post: operations["search.createIndex"];
         delete?: never;
         options?: never;
         head?: never;
@@ -370,7 +370,7 @@ export interface paths {
         put?: never;
         post?: never;
         /** Delete a search index */
-        delete: operations["deleteSearchIndex"];
+        delete: operations["search.deleteIndex"];
         options?: never;
         head?: never;
         patch?: never;
@@ -384,7 +384,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed search providers */
-        get: operations["listSearchProviders"];
+        get: operations["search.listProviders"];
         put?: never;
         post?: never;
         delete?: never;
@@ -407,7 +407,7 @@ export interface paths {
         options?: never;
         head?: never;
         /** Update the config for a search provider */
-        patch: operations["updateSearchProviderConfig"];
+        patch: operations["search.updateConfig"];
         trace?: never;
     };
     "/storage/configs": {
@@ -3681,7 +3681,7 @@ export interface operations {
             };
         };
     };
-    listSearchIndexes: {
+    "search.listIndexes": {
         parameters: {
             query?: never;
             header?: never;
@@ -3700,7 +3700,7 @@ export interface operations {
             };
         };
     };
-    createSearchIndex: {
+    "search.createIndex": {
         parameters: {
             query?: never;
             header?: never;
@@ -3723,7 +3723,7 @@ export interface operations {
             };
         };
     };
-    deleteSearchIndex: {
+    "search.deleteIndex": {
         parameters: {
             query?: never;
             header?: never;
@@ -3742,7 +3742,7 @@ export interface operations {
             };
         };
     };
-    listSearchProviders: {
+    "search.listProviders": {
         parameters: {
             query?: never;
             header?: never;
@@ -3761,7 +3761,7 @@ export interface operations {
             };
         };
     };
-    updateSearchProviderConfig: {
+    "search.updateConfig": {
         parameters: {
             query?: never;
             header?: never;

@@ -769,7 +769,7 @@ class SearchClient {
     /**
    * Create a search index
    */
-    async createSearchIndex(data: components['schemas']['CreateSearchIndex']): Promise<components['schemas']['SearchIndex']> {
+    async createIndex(data: components['schemas']['CreateSearchIndex']): Promise<components['schemas']['SearchIndex']> {
         const url = `search/indexes`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -778,7 +778,7 @@ class SearchClient {
     /**
    * List search indexes
    */
-    async listSearchIndexes(): Promise<components['schemas']['SearchIndex'][]> {
+    async listIndexes(): Promise<components['schemas']['SearchIndex'][]> {
         const url = `search/indexes`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -787,7 +787,7 @@ class SearchClient {
     /**
    * Delete a search index
    */
-    async deleteSearchIndex(id: string): Promise<void> {
+    async deleteIndex(id: string): Promise<void> {
         const url = `search/indexes/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -796,7 +796,7 @@ class SearchClient {
     /**
    * List installed search providers
    */
-    async listSearchProviders(): Promise<components['schemas']['SearchProvider'][]> {
+    async listProviders(): Promise<components['schemas']['SearchProvider'][]> {
         const url = `search/providers`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -805,7 +805,7 @@ class SearchClient {
     /**
    * Update the config for a search provider
    */
-    async updateSearchProviderConfig(providerId: string, data: components['schemas']['UpdateSearchProviderConfig']): Promise<components['schemas']['SearchProvider']> {
+    async updateConfig(providerId: string, data: components['schemas']['UpdateSearchProviderConfig']): Promise<components['schemas']['SearchProvider']> {
         const url = `search/providers/${encodeURIComponent(String(providerId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
