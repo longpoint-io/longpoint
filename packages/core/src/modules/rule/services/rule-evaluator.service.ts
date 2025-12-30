@@ -22,6 +22,7 @@ interface EvaluationContext {
   };
   asset: {
     id: string;
+    metadata?: Record<string, unknown> | null;
     [key: string]: unknown;
   };
   [key: string]: unknown;
@@ -64,6 +65,7 @@ export class RuleEvaluatorService {
       },
       asset: {
         id: asset.id,
+        metadata: asset.metadata as Record<string, unknown> | null,
       },
     };
   }

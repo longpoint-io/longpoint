@@ -37,6 +37,12 @@ const ASSET_VARIANT_READY_SCHEMA: TriggerEventSchema = {
           type: 'string',
           operators: StringOperators,
         },
+        {
+          path: 'asset.metadata',
+          label: 'Metadata',
+          type: 'metadata',
+          operators: Object.values(ComparisonOperator),
+        },
       ],
     },
     variant: {
@@ -74,8 +80,6 @@ const ASSET_VARIANT_READY_SCHEMA: TriggerEventSchema = {
           label: 'Metadata',
           type: 'metadata',
           operators: Object.values(ComparisonOperator),
-          description:
-            'Freeform metadata field. Use dot notation for nested paths (e.g., "category", "my-classifier.tags")',
         },
       ],
     },
@@ -103,6 +107,18 @@ export function getFieldDefinition(
   if (fieldPath.startsWith('variant.metadata.')) {
     const metadataField = schema.rootObjects.variant?.fields.find(
       (f) => f.path === 'variant.metadata'
+    );
+    if (metadataField) {
+      return {
+        ...metadataField,
+        path: fieldPath,
+      };
+    }
+  }
+
+  if (fieldPath.startsWith('asset.metadata.')) {
+    const metadataField = schema.rootObjects.asset?.fields.find(
+      (f) => f.path === 'asset.metadata'
     );
     if (metadataField) {
       return {

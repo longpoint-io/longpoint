@@ -37,10 +37,17 @@ export function FieldPathSelector({
     if (value?.startsWith('variant.metadata.')) {
       return value.replace('variant.metadata.', '');
     }
+    if (value?.startsWith('asset.metadata.')) {
+      return value.replace('asset.metadata.', '');
+    }
     return '';
   });
 
-  const isMetadataField = selectedFieldPath === 'variant.metadata';
+  const isMetadataField =
+    selectedFieldPath === 'variant.metadata' ||
+    selectedFieldPath === 'asset.metadata' ||
+    selectedFieldPath.startsWith('variant.metadata.') ||
+    selectedFieldPath.startsWith('asset.metadata.');
 
   // Sync external value changes
   useEffect(() => {
@@ -48,32 +55,28 @@ export function FieldPathSelector({
       if (value.startsWith('variant.metadata.')) {
         setSelectedFieldPath('variant.metadata');
         setMetadataPath(value.replace('variant.metadata.', ''));
+      } else if (value.startsWith('asset.metadata.')) {
+        setSelectedFieldPath('asset.metadata');
+        setMetadataPath(value.replace('asset.metadata.', ''));
+      } else if (value === 'variant.metadata' || value === 'asset.metadata') {
+        // Handle case where value is just the base metadata field
+        setSelectedFieldPath(value);
+        setMetadataPath('');
       } else {
         setSelectedFieldPath(value);
         setMetadataPath('');
       }
     }
-  }, [value, selectedFieldPath]);
+  }, [value]);
 
   const handleFieldChange = (fieldPath: string) => {
     setSelectedFieldPath(fieldPath);
-    if (fieldPath === 'variant.metadata') {
+    if (fieldPath === 'variant.metadata' || fieldPath === 'asset.metadata') {
       setMetadataPath('');
     } else {
       setMetadataPath('');
-      if (onChange) {
-        onChange(fieldPath);
-      }
     }
-  };
-
-  const handleMetadataPathChange = (path: string) => {
-    setMetadataPath(path);
-    const fullPath = path ? `variant.metadata.${path}` : 'variant.metadata';
-    setSelectedFieldPath(fullPath);
-    if (onChange) {
-      onChange(fullPath);
-    }
+    // onChange is called in onValueChange handler to ensure consistent behavior
   };
 
   if (!schema) {
@@ -96,13 +99,19 @@ export function FieldPathSelector({
               <Select
                 value={
                   isMetadataField
-                    ? 'variant.metadata'
+                    ? selectedFieldPath === 'asset.metadata'
+                      ? 'asset.metadata'
+                      : 'variant.metadata'
                     : currentValue || selectedFieldPath
                 }
                 onValueChange={(val) => {
                   handleFieldChange(val);
                   field.onChange(val);
-                  if (onChange) {
+                  if (
+                    val !== 'variant.metadata' &&
+                    val !== 'asset.metadata' &&
+                    onChange
+                  ) {
                     onChange(val);
                   }
                 }}
@@ -130,14 +139,19 @@ export function FieldPathSelector({
 
               {isMetadataField && (
                 <Input
-                  placeholder="e.g., category, my-classifier.tags"
+                  placeholder="e.g. conversationId"
                   value={metadataPath}
                   onChange={(e) => {
                     const path = e.target.value;
-                    handleMetadataPathChange(path);
-                    const fullPath = path
-                      ? `variant.metadata.${path}`
-                      : 'variant.metadata';
+                    setMetadataPath(path);
+                    // Determine prefix based on current selectedFieldPath before it changes
+                    const prefix =
+                      selectedFieldPath.startsWith('asset.metadata') ||
+                      selectedFieldPath === 'asset.metadata'
+                        ? 'asset.metadata'
+                        : 'variant.metadata';
+                    const fullPath = path ? `${prefix}.${path}` : prefix;
+                    setSelectedFieldPath(fullPath);
                     field.onChange(fullPath);
                     if (onChange) {
                       onChange(fullPath);

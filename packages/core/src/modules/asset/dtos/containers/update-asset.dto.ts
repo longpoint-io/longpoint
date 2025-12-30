@@ -3,5 +3,5 @@ import { CreateAssetDto } from './create-asset.dto';
 
 @ApiSchema({ name: 'UpdateAsset' })
 export class UpdateAssetDto extends PartialType(
-  PickType(CreateAssetDto, ['name', 'collectionIds'] as const)
+  PickType(CreateAssetDto, ['name', 'collectionIds', 'metadata'] as const)
 ) {}

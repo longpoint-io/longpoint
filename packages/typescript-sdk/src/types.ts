@@ -324,7 +324,7 @@ export interface paths {
         patch: operations["updateRule"];
         trace?: never;
     };
-    "/search": {
+    "/search/assets": {
         parameters: {
             query?: never;
             header?: never;
@@ -333,8 +333,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Search media containers */
-        post: operations["searchMedia"];
+        /** Search assets with the active search provider */
+        post: operations["assets.search"];
         delete?: never;
         options?: never;
         head?: never;
@@ -349,10 +349,10 @@ export interface paths {
             cookie?: never;
         };
         /** List search indexes */
-        get: operations["listSearchIndexes"];
+        get: operations["search.listIndexes"];
         put?: never;
         /** Create a search index */
-        post: operations["createSearchIndex"];
+        post: operations["search.createIndex"];
         delete?: never;
         options?: never;
         head?: never;
@@ -370,7 +370,7 @@ export interface paths {
         put?: never;
         post?: never;
         /** Delete a search index */
-        delete: operations["deleteSearchIndex"];
+        delete: operations["search.deleteIndex"];
         options?: never;
         head?: never;
         patch?: never;
@@ -384,7 +384,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed search providers */
-        get: operations["listSearchProviders"];
+        get: operations["search.listProviders"];
         put?: never;
         post?: never;
         delete?: never;
@@ -407,7 +407,7 @@ export interface paths {
         options?: never;
         head?: never;
         /** Update the config for a search provider */
-        patch: operations["updateSearchProviderConfig"];
+        patch: operations["search.updateConfig"];
         trace?: never;
     };
     "/storage/configs": {
@@ -766,6 +766,15 @@ export interface components {
              */
             id: string;
             /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "conversationId": "conv_123"
+             *     }
+             */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
+            /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields
              */
@@ -807,6 +816,15 @@ export interface components {
              * @example r2qwyd76nvd98cu6ewg8ync2
              */
             id: string;
+            /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "conversationId": "conv_123"
+             *     }
+             */
+            metadata: {
+                [key: string]: unknown;
+            } | null;
             /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields
@@ -1179,6 +1197,15 @@ export interface components {
              */
             collectionIds?: string[];
             /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "category": "podcast"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            };
+            /**
              * @description The MIME type of the primary variant
              * @example image/jpeg
              * @enum {string}
@@ -1295,10 +1322,9 @@ export interface components {
             displayName: string;
             /**
              * @description Whether the rule is enabled
-             * @default true
              * @example true
              */
-            enabled: boolean;
+            enabled?: boolean;
             /**
              * @description The event that triggers this rule
              * @example asset.variant.ready
@@ -1324,8 +1350,8 @@ export interface components {
              */
             embeddingModelId?: string;
             /**
-             * @description The name of the index
-             * @example my-index
+             * @description The name of the search index
+             * @example Main
              */
             name: string;
             /**
@@ -1880,20 +1906,35 @@ export interface components {
             name: string;
         };
         SearchQuery: {
+            /** @description The cursor to the next page */
+            cursor?: string;
+            /**
+             * @description Asset metadata filters to apply to the search
+             * @example {
+             *       "category": "Podcast",
+             *       "storageUnitId": "mbjq36xe6397dsi6x9nq4ghc"
+             *     }
+             */
+            metadata?: {
+                storageUnitId?: string;
+                /** @enum {string} */
+                type?: "IMAGE" | "VIDEO";
+            } & {
+                [key: string]: unknown;
+            };
+            /** @description The number of items per page */
+            pageSize?: number;
             /**
              * @description The search query text
              * @example sunset beach
              */
-            query: string;
+            text: string;
         };
         SearchResults: {
             /** @description The search results */
-            results: components["schemas"]["Asset"][];
-            /**
-             * @description Total number of results
-             * @example 5
-             */
-            total: number;
+            items: components["schemas"]["Asset"][];
+            /** @description The metadata for pagination */
+            metadata: components["schemas"]["PaginationMetadata"];
         };
         SetupStatus: {
             /**
@@ -1915,10 +1956,10 @@ export interface components {
              */
             operator: "EQUALS" | "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "IN" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO" | "NOT_EQUALS" | "NOT_IN" | "STARTS_WITH" | "ENDS_WITH";
             /**
-             * @description The value to compare against (can be string, number, boolean, etc.)
+             * @description The value to compare against (can be string, number, boolean, array, etc.)
              * @example ORIGINAL
              */
-            value: Record<string, never>;
+            value: string | number | boolean | (string | number | boolean)[];
         };
         StorageConfig: {
             /**
@@ -2175,6 +2216,15 @@ export interface components {
              */
             collectionIds?: string[];
             /**
+             * @description Freeform metadata that can be populated manually or by classifiers
+             * @example {
+             *       "category": "podcast"
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            };
+            /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields
              */
@@ -2262,10 +2312,9 @@ export interface components {
             displayName?: string;
             /**
              * @description Whether the rule is enabled
-             * @default true
              * @example true
              */
-            enabled: boolean;
+            enabled?: boolean;
             /**
              * @description The event that triggers this rule
              * @example asset.variant.ready
@@ -3609,7 +3658,7 @@ export interface operations {
             };
         };
     };
-    searchMedia: {
+    "assets.search": {
         parameters: {
             query?: never;
             header?: never;
@@ -3632,7 +3681,7 @@ export interface operations {
             };
         };
     };
-    listSearchIndexes: {
+    "search.listIndexes": {
         parameters: {
             query?: never;
             header?: never;
@@ -3651,7 +3700,7 @@ export interface operations {
             };
         };
     };
-    createSearchIndex: {
+    "search.createIndex": {
         parameters: {
             query?: never;
             header?: never;
@@ -3674,7 +3723,7 @@ export interface operations {
             };
         };
     };
-    deleteSearchIndex: {
+    "search.deleteIndex": {
         parameters: {
             query?: never;
             header?: never;
@@ -3693,7 +3742,7 @@ export interface operations {
             };
         };
     };
-    listSearchProviders: {
+    "search.listProviders": {
         parameters: {
             query?: never;
             header?: never;
@@ -3712,7 +3761,7 @@ export interface operations {
             };
         };
     };
-    updateSearchProviderConfig: {
+    "search.updateConfig": {
         parameters: {
             query?: never;
             header?: never;

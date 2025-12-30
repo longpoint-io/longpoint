@@ -46,7 +46,10 @@ import { LoggerService } from './logger.service';
               configService.get('server.nodeEnv') === 'development'
                 ? {
                     target: 'pino-pretty',
-                    options: { singleLine: true },
+                    options: {
+                      singleLine: true,
+                      ignore: 'pid,hostname',
+                    },
                   }
                 : undefined,
           },

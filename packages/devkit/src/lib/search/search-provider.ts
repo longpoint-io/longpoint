@@ -1,9 +1,5 @@
 import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
-import {
-  EmbedAndUpsertDocument,
-  SearchResult,
-  VectorDocument,
-} from './types.js';
+import { SearchArgs, SearchDocument, SearchResult } from './types.js';
 
 export interface SearchProviderArgs<
   T extends ConfigSchemaDefinition = ConfigSchemaDefinition
@@ -20,35 +16,39 @@ export abstract class SearchProvider<
     this.pluginSettings = args.pluginSettings;
   }
 
+  /**
+   * Upsert one or more documents into the search index.
+   * @param documents
+   * @param indexConfigValues
+   */
   abstract upsert(
-    documents: VectorDocument[],
+    documents: SearchDocument[],
     indexConfigValues: ConfigValues
   ): Promise<void>;
+
+  /**
+   * Delete one or more documents from the search index.
+   * @param documentIds
+   * @param indexConfigValues
+   */
   abstract delete(
     documentIds: string[],
     indexConfigValues: ConfigValues
   ): Promise<void>;
+
+  /**
+   * Search the search index for documents.
+   * @param args
+   * @param indexConfigValues
+   */
   abstract search(
-    queryVector: number[],
+    args: SearchArgs,
     indexConfigValues: ConfigValues
   ): Promise<SearchResult[]>;
+
+  /**
+   * Delete all documents from the search index.
+   * @param indexConfigValues
+   */
   abstract dropIndex(indexConfigValues: ConfigValues): Promise<void>;
-
-  embedAndUpsert(
-    documents: EmbedAndUpsertDocument[],
-    indexConfigValues: ConfigValues
-  ): Promise<void> {
-    throw new Error(
-      `Embed and upsert is not implemented by the search provider plugin.`
-    );
-  }
-
-  embedAndSearch(
-    queryText: string,
-    indexConfigValues: ConfigValues
-  ): Promise<SearchResult[]> {
-    throw new Error(
-      `Embed and search is not implemented by the search provider plugin.`
-    );
-  }
 }

@@ -124,7 +124,7 @@ export class ClassifierTemplateEntity {
         },
         data: {
           status: ClassifierRunStatus.SUCCESS,
-          result,
+          result: result as Prisma.JsonObject,
           completedAt: new Date(),
         },
       });

@@ -32,7 +32,7 @@ export function SearchSettings() {
     error: providersError,
   } = useQuery({
     queryKey: ['search-providers'],
-    queryFn: () => client.search.listSearchProviders(),
+    queryFn: () => client.search.listProviders(),
   });
 
   const {
@@ -41,7 +41,7 @@ export function SearchSettings() {
     error: indexesError,
   } = useQuery({
     queryKey: ['search-indexes'],
-    queryFn: () => client.search.listSearchIndexes(),
+    queryFn: () => client.search.listIndexes(),
   });
 
   const {

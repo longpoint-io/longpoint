@@ -4,6 +4,7 @@ model Asset {
   status    AssetStatus
   /// The primary media type hosted by the asset
   type      AssetType
+  metadata  Json?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   deletedAt DateTime?

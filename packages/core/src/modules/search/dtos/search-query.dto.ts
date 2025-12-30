@@ -1,13 +1,34 @@
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { AssetType } from '@/database';
+import { ApiPaginationQueryDto } from '@/shared/dtos';
+import { type MetadataFilter } from '@longpoint/devkit';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 @ApiSchema({ name: 'SearchQuery' })
-export class SearchQueryDto {
+export class SearchQueryDto extends ApiPaginationQueryDto({
+  defaultPageSize: 100,
+}) {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
     description: 'The search query text',
     example: 'sunset beach',
   })
-  query!: string;
+  text!: string;
+
+  @IsObject()
+  @IsOptional()
+  @ApiPropertyOptional({
+    additionalProperties: true,
+    properties: {
+      storageUnitId: { type: 'string', required: false },
+      type: { type: 'string', enum: AssetType, required: false },
+    },
+    description: 'Asset metadata filters to apply to the search',
+    example: {
+      category: 'Podcast',
+      storageUnitId: 'mbjq36xe6397dsi6x9nq4ghc',
+    },
+  })
+  metadata?: MetadataFilter;
 }

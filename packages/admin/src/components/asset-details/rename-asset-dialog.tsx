@@ -42,7 +42,7 @@ export function RenameAssetDialog({
   const renameForm = useForm<RenameFormData>({
     resolver: zodResolver(renameFormSchema),
     defaultValues: {
-      name: '',
+      name: asset.name,
     },
   });
 

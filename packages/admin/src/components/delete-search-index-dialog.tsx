@@ -37,7 +37,7 @@ export function DeleteSearchIndexDialog({
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.search.deleteSearchIndex(indexId),
+    mutationFn: () => client.search.deleteIndex(indexId),
     onSuccess: () => {
       toast.success('Search index deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['search-indexes'] });

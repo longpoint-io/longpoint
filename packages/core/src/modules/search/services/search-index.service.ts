@@ -4,7 +4,7 @@ import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateSearchIndexDto } from '../dtos';
-import { SearchIndexEntity } from '../entities';
+import { SearchIndexEntity, SearchProviderEntity } from '../entities';
 import {
   NativeEmbeddingNotSupported,
   SearchIndexNotFound,
@@ -59,19 +59,7 @@ export class SearchIndexService {
       index = await this.makeActiveIndex(index.id);
     }
 
-    return new SearchIndexEntity({
-      id: index.id,
-      active: index.active,
-      indexing: index.indexing,
-      name: index.name,
-      lastIndexedAt: index.lastIndexedAt,
-      mediaIndexed: index.mediaIndexed,
-      searchProvider,
-      assetService: this.assetService,
-      prismaService: this.prismaService,
-      configFromDb: index.config as ConfigValues,
-      configSchemaService: this.configSchemaService,
-    });
+    return this.getSearchIndexEntity(index, searchProvider);
   }
 
   async listIndexes(): Promise<SearchIndexEntity[]> {
@@ -80,31 +68,9 @@ export class SearchIndexService {
       orderBy: [{ active: 'desc' }, { lastIndexedAt: 'desc' }],
     });
 
-    const indexEntities: SearchIndexEntity[] = [];
-
-    for (const index of indexes) {
-      const searchProvider =
-        await this.searchProviderService.getProviderBySearchIndexIdOrThrow(
-          index.id
-        );
-      indexEntities.push(
-        new SearchIndexEntity({
-          id: index.id,
-          active: index.active,
-          indexing: index.indexing,
-          name: index.name,
-          lastIndexedAt: index.lastIndexedAt,
-          mediaIndexed: index.mediaIndexed,
-          searchProvider,
-          assetService: this.assetService,
-          prismaService: this.prismaService,
-          configFromDb: index.config as ConfigValues,
-          configSchemaService: this.configSchemaService,
-        })
-      );
-    }
-
-    return indexEntities;
+    return Promise.all(
+      indexes.map((index) => this.getSearchIndexEntity(index))
+    );
   }
 
   async getIndexById(indexId: string): Promise<SearchIndexEntity | null> {
@@ -117,24 +83,7 @@ export class SearchIndexService {
       return null;
     }
 
-    const searchProvider =
-      await this.searchProviderService.getProviderBySearchIndexIdOrThrow(
-        index.id
-      );
-
-    return new SearchIndexEntity({
-      id: index.id,
-      active: index.active,
-      indexing: index.indexing,
-      name: index.name,
-      lastIndexedAt: index.lastIndexedAt,
-      mediaIndexed: index.mediaIndexed,
-      searchProvider,
-      assetService: this.assetService,
-      prismaService: this.prismaService,
-      configFromDb: index.config as ConfigValues,
-      configSchemaService: this.configSchemaService,
-    });
+    return this.getSearchIndexEntity(index);
   }
 
   async getIndexByIdOrThrow(id: string): Promise<SearchIndexEntity> {
@@ -157,19 +106,25 @@ export class SearchIndexService {
       return null;
     }
 
-    const searchProvider =
-      await this.searchProviderService.getProviderBySearchIndexIdOrThrow(
-        index.id
-      );
+    return this.getSearchIndexEntity(index);
+  }
 
+  private async getSearchIndexEntity(
+    index: SelectedSearchIndex,
+    searchProvider?: SearchProviderEntity
+  ) {
     return new SearchIndexEntity({
       id: index.id,
       active: index.active,
       indexing: index.indexing,
       name: index.name,
       lastIndexedAt: index.lastIndexedAt,
-      mediaIndexed: index.mediaIndexed,
-      searchProvider,
+      assetsIndexed: index._count.items,
+      searchProvider:
+        searchProvider ??
+        (await this.searchProviderService.getProviderBySearchIndexIdOrThrow(
+          index.id
+        )),
       assetService: this.assetService,
       prismaService: this.prismaService,
       configFromDb: index.config as ConfigValues,

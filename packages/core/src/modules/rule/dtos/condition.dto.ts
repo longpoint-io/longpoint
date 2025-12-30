@@ -37,10 +37,21 @@ export class SingleConditionDto {
   @Transform(({ value }) => value)
   @ApiProperty({
     description:
-      'The value to compare against (can be string, number, boolean, etc.)',
+      'The value to compare against (can be string, number, boolean, array, etc.)',
     example: 'ORIGINAL',
+    oneOf: [
+      { type: 'string' },
+      { type: 'number' },
+      { type: 'boolean' },
+      {
+        type: 'array',
+        items: {
+          oneOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+        },
+      },
+    ],
   })
-  value!: unknown;
+  value!: string | number | boolean | string[] | number[];
 }
 
 @ApiSchema({ name: 'CompoundCondition' })

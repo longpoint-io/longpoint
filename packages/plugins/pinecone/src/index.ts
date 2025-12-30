@@ -25,13 +25,6 @@ export default {
             placeholder: 'longpoint',
             description: 'The index name as it appears in Pinecone',
           },
-          limit: {
-            label: 'Search Limit',
-            type: 'number',
-            required: false,
-            description:
-              'Maximum number of results to return from search queries (default: 10)',
-          },
         },
       },
     },

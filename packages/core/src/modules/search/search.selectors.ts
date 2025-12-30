@@ -7,10 +7,14 @@ export const selectSearchIndex = () => {
     active: true,
     indexing: true,
     lastIndexedAt: true,
-    mediaIndexed: true,
     searchProviderId: true,
     embeddingModelId: true,
     config: true,
+    _count: {
+      select: {
+        items: true,
+      },
+    },
   } satisfies Prisma.SearchIndexSelect;
 };
 

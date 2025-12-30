@@ -1,13 +1,20 @@
-import { SupportedMimeType } from '@longpoint/types';
+import { type JsonObject, SupportedMimeType } from '@longpoint/types';
 import { IsValidAssetName } from '@longpoint/validations';
 import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export type CreateAssetParam = {
   name: string;
   mimeType: SupportedMimeType;
   storageUnitId?: string;
   collectionIds?: string[];
+  metadata?: JsonObject;
 };
 
 @ApiSchema({ name: 'CreateAsset' })
@@ -45,4 +52,17 @@ export class CreateAssetDto {
     type: [String],
   })
   collectionIds?: string[];
+
+  @IsObject()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description:
+      'Freeform metadata that can be populated manually or by classifiers',
+    example: {
+      category: 'podcast',
+    },
+    type: 'object',
+    additionalProperties: true,
+  })
+  metadata?: JsonObject;
 }

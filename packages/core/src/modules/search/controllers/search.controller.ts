@@ -7,27 +7,35 @@ import { SearchQueryDto, SearchResultsDto } from '../dtos';
 import { SearchIndexService } from '../services/search-index.service';
 
 @Controller('search')
-@ApiSdkTag(SdkTag.Search)
+@ApiSdkTag(SdkTag.Assets)
 @ApiBearerAuth()
 export class SearchController {
   constructor(private readonly searchIndexService: SearchIndexService) {}
 
-  @Post()
-  @RequirePermission(Permission.MEDIA_CONTAINER_READ)
+  @Post('assets')
+  @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
-    summary: 'Search media containers',
-    operationId: 'searchMedia',
+    summary: 'Query assets with the active search provider',
+    operationId: 'assets.search',
   })
   @ApiOkResponse({ type: SearchResultsDto })
   async search(@Body() body: SearchQueryDto): Promise<SearchResultsDto> {
     const activeIndex = await this.searchIndexService.getActiveIndex();
 
     if (!activeIndex) {
-      return new SearchResultsDto([]);
+      return new SearchResultsDto({
+        query: body,
+        items: [],
+        path: '/search/assets',
+      });
     }
 
-    const results = await activeIndex.query(body.query);
+    const results = await activeIndex.query(body);
 
-    return new SearchResultsDto(results);
+    return new SearchResultsDto({
+      query: body,
+      items: results,
+      path: '/search/assets',
+    });
   }
 }

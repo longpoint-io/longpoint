@@ -1,4 +1,4 @@
-import { llmFieldCapture, LongpointPluginConfig } from '@longpoint/devkit';
+import { llmClassifierInput, LongpointPluginConfig } from '@longpoint/devkit';
 import { OpenAIClassifier } from './openai-classifier.js';
 import { OpenAIPluginSettings, settings } from './settings.js';
 
@@ -13,7 +13,7 @@ export default {
         classifier: OpenAIClassifier,
         displayName: 'GPT-5 Nano',
         description: 'The smallest and fastest model in the GPT-5 family',
-        input: llmFieldCapture,
+        input: llmClassifierInput,
         maxFileSize: '50MB',
         supportedMimeTypes: [
           'image/jpg',

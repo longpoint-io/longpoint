@@ -8,4 +8,5 @@ export interface GeneratorConfig {
   version?: string;
   description?: string;
   outputDir?: string;
+  operationIdDelimiter?: string;
 }

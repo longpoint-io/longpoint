@@ -17,8 +17,7 @@ import { enumToTitleCase } from '@longpoint/utils/string';
 import { useAssetDetailsStore } from './asset-details-store';
 
 type AssetDetailsPanelProps = {
-  asset: components['schemas']['Asset'];
-  hasDerivatives: boolean;
+  asset: components['schemas']['AssetDetails'];
 };
 
 const getStatusBadgeVariant = (
@@ -37,13 +36,9 @@ const getStatusBadgeVariant = (
   }
 };
 
-export function AssetDetailsPanel({
-  asset,
-  hasDerivatives,
-}: AssetDetailsPanelProps) {
+export function AssetDetailsPanel({ asset }: AssetDetailsPanelProps) {
   const { selectedVariantId, setSelectedVariantId } = useAssetDetailsStore();
 
-  // Get the currently selected variant
   const selectedVariant =
     selectedVariantId === 'original'
       ? asset?.original

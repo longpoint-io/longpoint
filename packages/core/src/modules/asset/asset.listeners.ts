@@ -1,5 +1,5 @@
 import { JsonObject } from '@/shared/types/object.types';
-import { ClassifyResult, KeyAssetMetadataField } from '@longpoint/devkit';
+import { ClassifyResult } from '@longpoint/devkit';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   ClassifierEventKey,
@@ -28,6 +28,12 @@ export class MediaMetadataListeners {
         select: {
           id: true,
           metadata: true,
+          asset: {
+            select: {
+              id: true,
+              metadata: true,
+            },
+          },
         },
       });
 
@@ -38,35 +44,64 @@ export class MediaMetadataListeners {
         return;
       }
 
-      // separate key metadata fields from the rest of the result
       const result = payload.result as ClassifyResult;
-      const currentMetadata =
-        (variant.metadata as JsonObject | null) ?? ({} as JsonObject);
-      const mergedMetadata: JsonObject = {
-        ...currentMetadata,
-        ...Object.fromEntries(
-          Object.entries(payload.result as JsonObject).filter(
-            ([key]) =>
-              !Object.values(KeyAssetMetadataField).includes(
-                key as KeyAssetMetadataField
-              )
-          )
-        ),
-      };
+
+      // Prepare variant update data
+      const variantUpdateData: {
+        width?: number;
+        height?: number;
+        duration?: number;
+        metadata?: JsonObject;
+      } = {};
+
+      if (result.variant) {
+        if (result.variant.width !== undefined) {
+          variantUpdateData.width = result.variant.width;
+        }
+        if (result.variant.height !== undefined) {
+          variantUpdateData.height = result.variant.height;
+        }
+        if (result.variant.duration !== undefined) {
+          variantUpdateData.duration = result.variant.duration;
+        }
+        if (result.variant.metadata) {
+          const currentVariantMetadata =
+            (variant.metadata as JsonObject | null) ?? ({} as JsonObject);
+          variantUpdateData.metadata = {
+            ...currentVariantMetadata,
+            ...(result.variant.metadata as JsonObject),
+          };
+        }
+      }
+
+      // Prepare asset update data
+      const assetUpdateData: {
+        name?: string;
+        metadata?: JsonObject;
+      } = {};
+
+      if (result.asset) {
+        if (result.asset.name !== undefined) {
+          assetUpdateData.name = result.asset.name;
+        }
+        if (result.asset.metadata) {
+          const currentAssetMetadata =
+            (variant.asset.metadata as JsonObject | null) ?? ({} as JsonObject);
+          assetUpdateData.metadata = {
+            ...currentAssetMetadata,
+            ...(result.asset.metadata as JsonObject),
+          };
+        }
+      }
 
       await this.prismaService.assetVariant.update({
         where: { id: payload.assetVariantId },
         data: {
-          width: result.width,
-          height: result.height,
-          duration: result.duration,
-          metadata: mergedMetadata,
-          ...(result.assetName
+          ...variantUpdateData,
+          ...(Object.keys(assetUpdateData).length > 0
             ? {
                 asset: {
-                  update: {
-                    name: result.assetName,
-                  },
+                  update: assetUpdateData,
                 },
               }
             : {}),

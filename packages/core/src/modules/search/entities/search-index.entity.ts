@@ -3,7 +3,7 @@ import { AssetDto, AssetService } from '@/modules/asset';
 import { ConfigSchemaService, PrismaService } from '@/modules/common/services';
 import { ConfigValues } from '@longpoint/config-schema';
 import { Logger } from '@nestjs/common';
-import { SearchIndexDto } from '../dtos';
+import { SearchIndexDto, SearchQueryDto } from '../dtos';
 import { SearchProviderEntity } from './search-provider.entity';
 
 export interface SearchIndexEntityArgs {
@@ -11,7 +11,7 @@ export interface SearchIndexEntityArgs {
   active: boolean;
   indexing: boolean;
   name: string;
-  mediaIndexed: number;
+  assetsIndexed: number;
   configFromDb: ConfigValues;
   lastIndexedAt: Date | null;
   searchProvider: SearchProviderEntity;
@@ -25,7 +25,7 @@ export class SearchIndexEntity {
   private _active: boolean;
   private _indexing: boolean;
   private _name: string;
-  private _mediaIndexed: number;
+  private _assetsIndexed: number;
   private _lastIndexedAt: Date | null;
   private _configFromDb: ConfigValues;
   private readonly searchProvider: SearchProviderEntity;
@@ -38,7 +38,7 @@ export class SearchIndexEntity {
     this._active = args.active;
     this._indexing = args.indexing;
     this._name = args.name;
-    this._mediaIndexed = args.mediaIndexed;
+    this._assetsIndexed = args.assetsIndexed;
     this._configFromDb = args.configFromDb;
     this._lastIndexedAt = args.lastIndexedAt;
     this.searchProvider = args.searchProvider;
@@ -63,10 +63,14 @@ export class SearchIndexEntity {
    * @param queryText The search query text
    * @returns Array of AssetDto matching the query
    */
-  async query(queryText: string): Promise<AssetDto[]> {
+  async query(query: SearchQueryDto): Promise<AssetDto[]> {
     const indexConfigValues = await this.getIndexConfigValues();
-    const searchResults = await this.searchProvider.embedAndSearch(
-      queryText,
+    const searchResults = await this.searchProvider.search(
+      {
+        query: query.text,
+        pageSize: query.pageSize,
+        metadata: query.metadata,
+      },
       indexConfigValues
     );
 
@@ -74,13 +78,47 @@ export class SearchIndexEntity {
       return [];
     }
 
+    // Search results contain SearchIndexItem.id values, not asset IDs
+    const itemIds = searchResults.map((result) => result.id);
     const scoreMap = new Map<string, number>(
       searchResults.map((result) => [result.id, result.score])
     );
-    const assets = await this.assetService.listAssetsByIds(
-      Array.from(scoreMap.keys())
+
+    const indexItems = await this.prismaService.searchIndexItem.findMany({
+      where: {
+        id: { in: itemIds },
+        indexId: this.id,
+      },
+      select: {
+        id: true,
+        assetId: true,
+      },
+    });
+
+    const itemIdToAssetId = new Map(
+      indexItems
+        .filter((item) => item.assetId !== null)
+        .map((item) => [item.id, item.assetId!])
     );
-    assets.sort((a, b) => scoreMap.get(b.id)! - scoreMap.get(a.id)!);
+
+    const assetIds = Array.from(itemIdToAssetId.values());
+    if (assetIds.length === 0) {
+      return [];
+    }
+
+    const assets = await this.assetService.listAssetsByIds(assetIds);
+
+    const assetIdToScore = new Map<string, number>();
+    for (const [itemId, score] of scoreMap.entries()) {
+      const assetId = itemIdToAssetId.get(itemId);
+      if (assetId) {
+        assetIdToScore.set(assetId, score);
+      }
+    }
+
+    assets.sort(
+      (a, b) => assetIdToScore.get(b.id)! - assetIdToScore.get(a.id)!
+    );
 
     return assets.map((asset) => asset.toDto());
   }
@@ -101,69 +139,81 @@ export class SearchIndexEntity {
     });
 
     try {
-      // Step 1: Delete items with null assetId in batches
       await this.deleteNullAssetItems();
 
-      // Step 2: Find assets that need indexing (new ones and stale ones)
-      const newAssets = await this.prismaService.asset.findMany({
-        where: {
-          status: 'READY',
-          deletedAt: null,
-          searchIndexItems: {
-            none: {
-              indexId: this.id,
+      let iteration = 0;
+      const maxIterations = 5; // Prevent infinite loops
+
+      while (iteration < maxIterations) {
+        // Find assets that need indexing (new ones and stale ones)
+        const newAssets = await this.prismaService.asset.findMany({
+          where: {
+            status: 'READY',
+            deletedAt: null,
+            searchIndexItems: {
+              none: {
+                indexId: this.id,
+              },
             },
           },
-        },
-        select: {
-          id: true,
-        },
-      });
+          select: {
+            id: true,
+          },
+        });
 
-      const staleItems = await this.prismaService.searchIndexItem.findMany({
-        where: {
-          indexId: this.id,
-          status: SearchIndexItemStatus.STALE,
-          assetId: { not: null },
-        },
-        select: {
-          assetId: true,
-        },
-      });
+        const staleItems = await this.prismaService.searchIndexItem.findMany({
+          where: {
+            indexId: this.id,
+            status: SearchIndexItemStatus.STALE,
+            assetId: { not: null },
+          },
+          select: {
+            assetId: true,
+          },
+        });
 
-      const staleAssetIds = staleItems
-        .map((item) => item.assetId)
-        .filter((id): id is string => id !== null);
+        const staleAssetIds = staleItems
+          .map((item) => item.assetId)
+          .filter((id): id is string => id !== null);
 
-      const assetsToIndex = [...newAssets.map((a) => a.id), ...staleAssetIds];
+        const assetsToIndex = [...newAssets.map((a) => a.id), ...staleAssetIds];
 
-      if (assetsToIndex.length === 0) {
-        this.logger.log('No assets to index');
-      } else {
-        this.logger.log(
-          `Indexing ${assetsToIndex.length} assets in batches (${newAssets.length} new, ${staleAssetIds.length} stale)`
+        if (assetsToIndex.length === 0) {
+          // No more assets to index, we're done
+          break;
+        }
+
+        this.logger.debug(
+          `Indexing ${assetsToIndex.length} assets in batches (${
+            newAssets.length
+          } new, ${staleAssetIds.length} stale) [iteration ${iteration + 1}]`
         );
         await this.indexAssetsBatch(assetsToIndex);
+
+        iteration++;
       }
 
-      const totalIndexed = await this.prismaService.searchIndexItem.count({
-        where: {
-          indexId: this.id,
-          status: 'INDEXED',
-        },
-      });
+      if (iteration >= maxIterations) {
+        this.logger.warn(
+          `Reached max iterations (${maxIterations}) during sync - there may be more assets to index`
+        );
+      }
 
       const updatedIndex = await this.prismaService.searchIndex.update({
         where: { id: this.id },
         data: {
           indexing: false,
           lastIndexedAt: new Date(),
-          mediaIndexed: totalIndexed,
         },
       });
 
       this._lastIndexedAt = updatedIndex.lastIndexedAt;
-      this._mediaIndexed = updatedIndex.mediaIndexed;
+      this._assetsIndexed = await this.prismaService.searchIndexItem.count({
+        where: {
+          indexId: this.id,
+          status: SearchIndexItemStatus.INDEXED,
+        },
+      });
       this._indexing = updatedIndex.indexing;
     } catch (error) {
       // Ensure indexing flag is cleared even on error
@@ -211,7 +261,7 @@ export class SearchIndexEntity {
           assetId: null,
         },
         select: {
-          externalId: true,
+          id: true,
         },
         take: batchSize,
         skip: offset,
@@ -222,15 +272,15 @@ export class SearchIndexEntity {
         break;
       }
 
-      const externalIds = nullItems.map((item) => item.externalId);
-      this.logger.log(
-        `Deleting batch of ${externalIds.length} external IDs with null assetId`
+      const itemIds = nullItems.map((item) => item.id);
+      this.logger.debug(
+        `Removing batch of ${itemIds.length} item IDs from search index`
       );
 
       // Delete from vector store first, then from database
       try {
         const indexConfigValues = await this.getIndexConfigValues();
-        await this.searchProvider.delete(externalIds, indexConfigValues);
+        await this.searchProvider.delete(itemIds, indexConfigValues);
       } catch (error) {
         this.logger.warn(
           `Failed to delete null items from search provider: ${
@@ -242,7 +292,7 @@ export class SearchIndexEntity {
 
       await this.prismaService.searchIndexItem.deleteMany({
         where: {
-          externalId: { in: externalIds },
+          id: { in: itemIds },
         },
       });
 
@@ -285,18 +335,15 @@ export class SearchIndexEntity {
    * @param assetIds Array of asset IDs to process
    */
   private async processBatch(assetIds: string[]): Promise<void> {
-    // Mark new items as INDEXING
     await this.prismaService.searchIndexItem.createMany({
       data: assetIds.map((assetId) => ({
         indexId: this.id,
         assetId,
         status: SearchIndexItemStatus.INDEXING,
-        externalId: assetId,
       })),
       skipDuplicates: true,
     });
 
-    // Update existing items (including STALE ones) to INDEXING status
     await this.prismaService.searchIndexItem.updateMany({
       where: {
         indexId: this.id,
@@ -309,7 +356,7 @@ export class SearchIndexEntity {
 
     const assets = await this.assetService.listAssetsByIds(assetIds);
 
-    // Considered stale items if their assets do not exist
+    // Consider items stale if their assets do not exist
     const foundAssetIds = new Set(assets.map((a) => a.id));
     const missingAssetIds = assetIds.filter((id) => !foundAssetIds.has(id));
     if (missingAssetIds.length > 0) {
@@ -350,7 +397,6 @@ export class SearchIndexEntity {
       return;
     }
 
-    // Get the search index item IDs for the found assets
     const indexItems = await this.prismaService.searchIndexItem.findMany({
       where: {
         indexId: this.id,
@@ -358,33 +404,31 @@ export class SearchIndexEntity {
       },
       select: {
         id: true,
-        externalId: true,
         assetId: true,
       },
     });
 
-    // Create a map from asset ID to search index item external ID
     const assetIdToItemId = new Map(
-      indexItems.map((item) => [item.assetId, item.externalId])
+      indexItems.map((item) => [item.assetId, item.id])
     );
 
     try {
       const documents = assets.map((asset) => {
-        const externalId = assetIdToItemId.get(asset.id);
-        if (!externalId) {
+        const itemId = assetIdToItemId.get(asset.id);
+        if (!itemId) {
           throw new Error(
-            `Search index item external ID not found for asset ${asset.id}`
+            `Search index item ID not found for asset ${asset.id}`
           );
         }
         return {
-          id: externalId, // Use search index item external ID as the vector document ID
-          text: asset.toEmbeddingText(),
+          id: itemId,
+          ...asset.toSearchDocument(),
         };
       });
 
       // if (!this.embeddingModel) {
       const indexConfigValues = await this.getIndexConfigValues();
-      await this.searchProvider.embedAndUpsert(documents, indexConfigValues);
+      await this.searchProvider.upsert(documents, indexConfigValues);
       // } else {
       // TODO: Handle after embedding model is implemented
       // }
@@ -400,20 +444,16 @@ export class SearchIndexEntity {
         },
       });
     } catch (error) {
-      // Get item IDs for cleanup
-      const externalIdsToDelete = indexItems.map((item) => item.externalId);
+      const itemIdsToDelete = indexItems.map((item) => item.id);
 
-      // Delete from vector store first
-      if (externalIdsToDelete.length > 0) {
+      // Delete from index first
+      if (itemIdsToDelete.length > 0) {
         try {
           const indexConfigValues = await this.getIndexConfigValues();
-          await this.searchProvider.delete(
-            externalIdsToDelete,
-            indexConfigValues
-          );
+          await this.searchProvider.delete(itemIdsToDelete, indexConfigValues);
         } catch (deleteError) {
           this.logger.warn(
-            `Failed to delete external IDs from search provider during error cleanup: ${
+            `Failed to delete item IDs from search provider during error cleanup: ${
               deleteError instanceof Error
                 ? deleteError.message
                 : 'Unknown error'
@@ -434,17 +474,14 @@ export class SearchIndexEntity {
   }
 
   async toDto(): Promise<SearchIndexDto> {
-    const indexConfigValues = await this.getIndexConfigValues();
     return new SearchIndexDto({
       id: this.id,
       active: this._active,
       indexing: this._indexing,
       name: this._name,
-      config: this._configFromDb
-        ? await this.searchProvider.processIndexConfigFromDb(this._configFromDb)
-        : null,
+      config: await this.getIndexConfigValues(),
       searchProvider: this.searchProvider.toReferenceDto(),
-      assetsIndexed: this._mediaIndexed,
+      assetsIndexed: this._assetsIndexed,
       lastIndexedAt: this._lastIndexedAt,
     });
   }
@@ -457,8 +494,8 @@ export class SearchIndexEntity {
     return this._indexing;
   }
 
-  get mediaIndexed(): number {
-    return this._mediaIndexed;
+  get assetsIndexed(): number {
+    return this._assetsIndexed;
   }
 
   get lastIndexedAt(): Date | null {

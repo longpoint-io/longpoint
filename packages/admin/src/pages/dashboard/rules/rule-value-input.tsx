@@ -53,7 +53,7 @@ export function ValueInput({
             {needsArrayValue ? (
               <div className="space-y-2">
                 <Input
-                  placeholder="Enter values separated by commas"
+                  placeholder="a, b, c"
                   value={
                     Array.isArray(field.value) ? field.value.join(', ') : ''
                   }
@@ -254,7 +254,7 @@ export function ValueInput({
           {needsArrayValue ? (
             <div className="space-y-2">
               <Input
-                placeholder="Enter values separated by commas"
+                placeholder="a, b, c"
                 value={Array.isArray(field.value) ? field.value.join(', ') : ''}
                 onChange={(e) => {
                   const values = e.target.value

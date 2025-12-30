@@ -112,6 +112,27 @@ export class OpenAPIParser {
       return refName ? `components['schemas']['${refName}']` : 'any';
     }
 
+    // Handle oneOf (union types)
+    if (schema.oneOf && schema.oneOf.length > 0) {
+      const types = schema.oneOf
+        .map((item) => {
+          if (item.$ref) {
+            const refName = item.$ref.split('/').pop();
+            return refName ? `components['schemas']['${refName}']` : null;
+          }
+          if (item.type === 'array' && item.items) {
+            const itemType = this.getTypeFromSchema(item.items);
+            return `${itemType}[]`;
+          }
+          if (item.type) {
+            return this.getTypeFromSchema({ type: item.type } as OpenAPISchema);
+          }
+          return null;
+        })
+        .filter((type): type is string => type !== null);
+      return types.length > 0 ? types.join(' | ') : 'any';
+    }
+
     // Handle allOf (composition)
     if (schema.allOf && schema.allOf.length > 0) {
       const refs = schema.allOf
@@ -124,7 +145,17 @@ export class OpenAPIParser {
     // Handle primitive types
     if (schema.type === 'string') {
       if (schema.enum) {
-        return schema.enum.map((val) => `'${val}'`).join(' | ');
+        let enumValues: any[] = [];
+        if (Array.isArray(schema.enum)) {
+          enumValues = schema.enum;
+        } else if (typeof schema.enum === 'object' && schema.enum !== null) {
+          enumValues = Object.values(schema.enum).filter(
+            (val) => typeof val === 'string' || typeof val === 'number'
+          );
+        }
+        if (enumValues.length > 0) {
+          return enumValues.map((val) => `'${val}'`).join(' | ');
+        }
       }
       return 'string';
     }
@@ -144,18 +175,51 @@ export class OpenAPIParser {
 
     // Handle object types
     if (schema.type === 'object' || schema.properties) {
-      if (!schema.properties) return 'Record<string, any>';
+      // Handle additionalProperties with nested properties
+      if (
+        schema.additionalProperties &&
+        typeof schema.additionalProperties === 'object' &&
+        schema.additionalProperties.properties
+      ) {
+        const additionalProps = schema.additionalProperties as OpenAPISchema;
+        const properties = Object.entries(additionalProps.properties!)
+          .map(([key, propSchema]) => {
+            const isRequired = additionalProps.required?.includes(key) || false;
+            const optional = isRequired ? '' : '?';
+            const type = this.getTypeFromSchema(propSchema);
+            return `  ${key}${optional}: ${type};`;
+          })
+          .join('\n');
 
-      const properties = Object.entries(schema.properties)
-        .map(([key, propSchema]) => {
-          const isRequired = schema.required?.includes(key) || false;
-          const optional = isRequired ? '' : '?';
-          const type = this.getTypeFromSchema(propSchema);
-          return `  ${key}${optional}: ${type};`;
-        })
-        .join('\n');
+        return `{\n${properties}\n}`;
+      }
 
-      return `{\n${properties}\n}`;
+      // Handle regular properties
+      if (schema.properties) {
+        const properties = Object.entries(schema.properties)
+          .map(([key, propSchema]) => {
+            const isRequired = schema.required?.includes(key) || false;
+            const optional = isRequired ? '' : '?';
+            const type = this.getTypeFromSchema(propSchema);
+            return `  ${key}${optional}: ${type};`;
+          })
+          .join('\n');
+
+        return `{\n${properties}\n}`;
+      }
+
+      // Handle additionalProperties as a type (Record<string, T>)
+      if (schema.additionalProperties) {
+        if (typeof schema.additionalProperties === 'boolean') {
+          return 'Record<string, any>';
+        }
+        const valueType = this.getTypeFromSchema(
+          schema.additionalProperties as OpenAPISchema
+        );
+        return `Record<string, ${valueType}>`;
+      }
+
+      return 'Record<string, any>';
     }
 
     return 'any';

@@ -6,7 +6,7 @@ import {
 } from '@/database';
 import { type SelectedAsset } from '@/modules/asset/asset.selectors';
 import { CollectionReferenceDto } from '@/modules/collection';
-import { SupportedMimeType } from '@longpoint/types';
+import { JsonObject, SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { AssetVariantDto } from './asset-variant.dto';
 
@@ -35,6 +35,7 @@ export class AssetReferenceDto {
 export type AssetParams = AssetReferenceParams &
   Pick<SelectedAsset, 'type' | 'status' | 'createdAt' | 'updatedAt'> & {
     thumbnails: AssetVariantDto[];
+    metadata?: JsonObject | null;
   };
 
 @ApiSchema({ name: 'Asset' })
@@ -71,6 +72,18 @@ export class AssetDto extends AssetReferenceDto {
   })
   updatedAt: Date;
 
+  @ApiProperty({
+    description:
+      'Freeform metadata that can be populated manually or by classifiers',
+    example: {
+      conversationId: 'conv_123',
+    },
+    type: 'object',
+    additionalProperties: true,
+    nullable: true,
+  })
+  metadata: JsonObject | null;
+
   constructor(data: AssetParams) {
     super(data);
     this.type = data.type;
@@ -78,6 +91,7 @@ export class AssetDto extends AssetReferenceDto {
     this.thumbnails = data.thumbnails;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
+    this.metadata = data.metadata ?? null;
   }
 }
 

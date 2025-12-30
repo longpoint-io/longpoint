@@ -100,7 +100,7 @@ export function CreateSearchIndexDialog({
 
   const createMutation = useMutation({
     mutationFn: async (data: CreateSearchIndexFormData) => {
-      return client.search.createSearchIndex({
+      return client.search.createIndex({
         name: data.name,
         searchProviderId: data.searchProviderId,
         active: data.active,
