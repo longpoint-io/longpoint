@@ -40,8 +40,8 @@ export class CollectionController {
   @RequirePermission(Permission.COLLECTIONS_CREATE)
   @ApiOperation({
     summary: 'Create a collection',
-    operationId: 'createCollection',
-    description: 'Creates a new collection for organizing media containers.',
+    operationId: 'collections.create',
+    description: 'Creates a new collection for grouping assets.',
   })
   @ApiCreatedResponse({
     description: 'The collection was created successfully',
@@ -56,7 +56,7 @@ export class CollectionController {
   @RequirePermission(Permission.COLLECTIONS_READ)
   @ApiOperation({
     summary: 'List collections',
-    operationId: 'listCollections',
+    operationId: 'collections.list',
   })
   @ApiOkResponse({ type: ListCollectionsResponseDto })
   async listCollections(@Query() query: ListCollectionsQueryDto) {
@@ -69,92 +69,92 @@ export class CollectionController {
     });
   }
 
-  @Get(':id')
+  @Get(':collectionId')
   @RequirePermission(Permission.COLLECTIONS_READ)
   @ApiOperation({
     summary: 'Get a collection',
-    operationId: 'getCollection',
+    operationId: 'collections.get',
   })
   @ApiOkResponse({ type: CollectionDetailsDto })
   @ApiCollectionNotFoundResponse()
-  async getCollection(@Param('id') id: string) {
+  async getCollection(@Param('collectionId') collectionId: string) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
-      id
+      collectionId
     );
     return collection.toDetailsDto();
   }
 
-  @Patch(':id')
+  @Patch(':collectionId')
   @RequirePermission(Permission.COLLECTIONS_UPDATE)
   @ApiOperation({
     summary: 'Update a collection',
-    operationId: 'updateCollection',
+    operationId: 'collections.update',
   })
   @ApiOkResponse({ type: CollectionDetailsDto })
   @ApiCollectionNotFoundResponse()
   async updateCollection(
-    @Param('id') id: string,
+    @Param('collectionId') collectionId: string,
     @Body() body: UpdateCollectionDto
   ) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
-      id
+      collectionId
     );
     await collection.update(body);
     return collection.toDetailsDto();
   }
 
-  @Delete(':id')
+  @Delete(':collectionId')
   @RequirePermission(Permission.COLLECTIONS_DELETE)
   @ApiOperation({
     summary: 'Delete a collection',
-    operationId: 'deleteCollection',
+    operationId: 'collections.delete',
     description:
       'Soft deletes a collection by default. Pass permanently=true in body to permanently delete.',
   })
   @ApiOkResponse({ description: 'The collection was deleted' })
-  async deleteCollection(@Param('id') id: string) {
+  async deleteCollection(@Param('collectionId') collectionId: string) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
-      id
+      collectionId
     );
     await collection.delete();
   }
 
-  @Post(':id/assets')
+  @Post(':collectionId/assets')
   @RequirePermission(Permission.COLLECTIONS_UPDATE)
   @ApiOperation({
     summary: 'Add assets to a collection',
-    operationId: 'addAssetsToCollection',
+    operationId: 'collections.addAssets',
   })
   @ApiOkResponse({
     description: 'The assets were added to the collection',
   })
   @ApiCollectionNotFoundResponse()
   async addAssetsToCollection(
-    @Param('id') id: string,
+    @Param('collectionId') collectionId: string,
     @Body() body: AddAssetsToCollectionDto
   ) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
-      id
+      collectionId
     );
     await collection.addAssets(body.assetIds);
   }
 
-  @Delete(':id/assets')
+  @Delete(':collectionId/assets')
   @RequirePermission(Permission.COLLECTIONS_UPDATE)
   @ApiOperation({
     summary: 'Remove assets from a collection',
-    operationId: 'removeAssetsFromCollection',
+    operationId: 'collections.removeAssets',
   })
   @ApiOkResponse({
     description: 'The assets were removed from the collection',
   })
   @ApiCollectionNotFoundResponse()
   async removeAssetsFromCollection(
-    @Param('id') id: string,
+    @Param('collectionId') collectionId: string,
     @Body() body: RemoveAssetsFromCollectionDto
   ) {
     const collection = await this.collectionService.getCollectionByIdOrThrow(
-      id
+      collectionId
     );
     await collection.removeAssets(body.assetIds);
   }

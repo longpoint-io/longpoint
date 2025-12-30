@@ -162,7 +162,7 @@ class AssetsClient {
     /**
    * List assets
    */
-    async listAssets(options?: { cursor?: string; pageSize?: number; collectionIds?: string[] }): Promise<components['schemas']['ListAssetsResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number; collectionIds?: string[] }): Promise<components['schemas']['ListAssetsResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -192,7 +192,7 @@ class AssetsClient {
    *
    * Creates an empty asset that is ready to receive an upload.
    */
-    async createAsset(data: components['schemas']['CreateAsset']): Promise<components['schemas']['CreateAssetResponse']> {
+    async create(data: components['schemas']['CreateAsset']): Promise<components['schemas']['CreateAssetResponse']> {
         const url = `assets`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -201,7 +201,7 @@ class AssetsClient {
     /**
    * Get an asset
    */
-    async getAsset(assetId: string): Promise<components['schemas']['AssetDetails']> {
+    async get(assetId: string): Promise<components['schemas']['AssetDetails']> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -210,7 +210,7 @@ class AssetsClient {
     /**
    * Update an asset
    */
-    async updateAsset(assetId: string, data: components['schemas']['UpdateAsset']): Promise<components['schemas']['AssetDetails']> {
+    async update(assetId: string, data: components['schemas']['UpdateAsset']): Promise<components['schemas']['AssetDetails']> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -221,7 +221,7 @@ class AssetsClient {
    *
    * All associated variants will be deleted.
    */
-    async deleteAsset(assetId: string, data: components['schemas']['DeleteAsset']): Promise<void> {
+    async delete(assetId: string, data: components['schemas']['DeleteAsset']): Promise<void> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
@@ -237,7 +237,7 @@ class AssetsClient {
   }
 
     /**
-   * Search assets with the active search provider
+   * Query assets with the active search provider
    */
     async search(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
         const url = `search/assets`;
@@ -247,6 +247,8 @@ class AssetsClient {
 
     /**
    * Upload an asset variant
+   *
+   * The variant is determined by the token provided in the query string.
    */
     async upload(assetId: string, options?: { token?: string }): Promise<void> {
         const params = new URLSearchParams();
@@ -391,9 +393,9 @@ class CollectionsClient {
     /**
    * Create a collection
    *
-   * Creates a new collection for organizing media containers.
+   * Creates a new collection for grouping assets.
    */
-    async createCollection(data: components['schemas']['CreateCollection']): Promise<components['schemas']['Collection']> {
+    async create(data: components['schemas']['CreateCollection']): Promise<components['schemas']['Collection']> {
         const url = `collections`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -402,7 +404,7 @@ class CollectionsClient {
     /**
    * List collections
    */
-    async listCollections(options?: { cursor?: string; pageSize?: number; sort?: 'updatedAt:desc' | 'name:asc' | 'name:desc' }): Promise<components['schemas']['ListCollectionsResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number; sort?: 'updatedAt:desc' | 'name:asc' | 'name:desc' }): Promise<components['schemas']['ListCollectionsResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -424,8 +426,8 @@ class CollectionsClient {
     /**
    * Get a collection
    */
-    async getCollection(id: string): Promise<components['schemas']['CollectionDetails']> {
-        const url = `collections/${encodeURIComponent(String(id))}`;
+    async get(collectionId: string): Promise<components['schemas']['CollectionDetails']> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -433,8 +435,8 @@ class CollectionsClient {
     /**
    * Update a collection
    */
-    async updateCollection(id: string, data: components['schemas']['UpdateCollection']): Promise<components['schemas']['CollectionDetails']> {
-        const url = `collections/${encodeURIComponent(String(id))}`;
+    async update(collectionId: string, data: components['schemas']['UpdateCollection']): Promise<components['schemas']['CollectionDetails']> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
@@ -444,8 +446,8 @@ class CollectionsClient {
    *
    * Soft deletes a collection by default. Pass permanently=true in body to permanently delete.
    */
-    async deleteCollection(id: string): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}`;
+    async delete(collectionId: string): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
   }
@@ -453,8 +455,8 @@ class CollectionsClient {
     /**
    * Add assets to a collection
    */
-    async addAssetsToCollection(id: string, data: components['schemas']['AddAssetsToCollection']): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}/assets`;
+    async addAssets(collectionId: string, data: components['schemas']['AddAssetsToCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}/assets`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
@@ -462,8 +464,8 @@ class CollectionsClient {
     /**
    * Remove assets from a collection
    */
-    async removeAssetsFromCollection(id: string, data: components['schemas']['RemoveAssetsFromCollection']): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}/assets`;
+    async removeAssets(collectionId: string, data: components['schemas']['RemoveAssetsFromCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}/assets`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
   }

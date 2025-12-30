@@ -24,10 +24,10 @@ import { AddToCollectionCombobox } from './add-to-collection-combobox';
 import { SelectTransformerTemplate } from './select-transformer-template';
 
 type AssetDetailsHeaderProps = {
-  asset: components['schemas']['Asset'];
+  asset: components['schemas']['AssetDetails'];
   canUpdate: boolean;
   canDelete: boolean;
-  selectedVariant: components['schemas']['Asset']['original'] | undefined;
+  selectedVariant: components['schemas']['AssetVariant'] | undefined;
   onRename: () => void;
   onDelete: () => void;
   onDownload: () => void;

@@ -29,13 +29,13 @@ export interface paths {
             cookie?: never;
         };
         /** List assets */
-        get: operations["listAssets"];
+        get: operations["assets.list"];
         put?: never;
         /**
          * Create an asset
          * @description Creates an empty asset that is ready to receive an upload.
          */
-        post: operations["createAsset"];
+        post: operations["assets.create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -50,18 +50,18 @@ export interface paths {
             cookie?: never;
         };
         /** Get an asset */
-        get: operations["getAsset"];
+        get: operations["assets.get"];
         put?: never;
         post?: never;
         /**
          * Delete an asset
          * @description All associated variants will be deleted.
          */
-        delete: operations["deleteAsset"];
+        delete: operations["assets.delete"];
         options?: never;
         head?: never;
         /** Update an asset */
-        patch: operations["updateAsset"];
+        patch: operations["assets.update"];
         trace?: never;
     };
     "/assets/{assetId}/upload": {
@@ -72,8 +72,11 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Upload an asset variant */
-        put: operations["upload"];
+        /**
+         * Upload an asset variant
+         * @description The variant is determined by the token provided in the query string.
+         */
+        put: operations["assets.upload"];
         post?: never;
         delete?: never;
         options?: never;
@@ -146,20 +149,20 @@ export interface paths {
             cookie?: never;
         };
         /** List collections */
-        get: operations["listCollections"];
+        get: operations["collections.list"];
         put?: never;
         /**
          * Create a collection
-         * @description Creates a new collection for organizing media containers.
+         * @description Creates a new collection for grouping assets.
          */
-        post: operations["createCollection"];
+        post: operations["collections.create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/collections/{id}": {
+    "/collections/{collectionId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -167,21 +170,21 @@ export interface paths {
             cookie?: never;
         };
         /** Get a collection */
-        get: operations["getCollection"];
+        get: operations["collections.get"];
         put?: never;
         post?: never;
         /**
          * Delete a collection
          * @description Soft deletes a collection by default. Pass permanently=true in body to permanently delete.
          */
-        delete: operations["deleteCollection"];
+        delete: operations["collections.delete"];
         options?: never;
         head?: never;
         /** Update a collection */
-        patch: operations["updateCollection"];
+        patch: operations["collections.update"];
         trace?: never;
     };
-    "/collections/{id}/assets": {
+    "/collections/{collectionId}/assets": {
         parameters: {
             query?: never;
             header?: never;
@@ -191,9 +194,9 @@ export interface paths {
         get?: never;
         put?: never;
         /** Add assets to a collection */
-        post: operations["addAssetsToCollection"];
+        post: operations["collections.addAssets"];
         /** Remove assets from a collection */
-        delete: operations["removeAssetsFromCollection"];
+        delete: operations["collections.removeAssets"];
         options?: never;
         head?: never;
         patch?: never;
@@ -333,7 +336,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Search assets with the active search provider */
+        /** Query assets with the active search provider */
         post: operations["assets.search"];
         delete?: never;
         options?: never;
@@ -2513,7 +2516,7 @@ export interface operations {
             };
         };
     };
-    listAssets: {
+    "assets.list": {
         parameters: {
             query?: {
                 /** @description Filter assets by collection IDs */
@@ -2539,7 +2542,7 @@ export interface operations {
             };
         };
     };
-    createAsset: {
+    "assets.create": {
         parameters: {
             query?: never;
             header?: never;
@@ -2563,7 +2566,7 @@ export interface operations {
             };
         };
     };
-    getAsset: {
+    "assets.get": {
         parameters: {
             query?: never;
             header?: never;
@@ -2604,7 +2607,7 @@ export interface operations {
             };
         };
     };
-    deleteAsset: {
+    "assets.delete": {
         parameters: {
             query?: never;
             header?: never;
@@ -2628,7 +2631,7 @@ export interface operations {
             };
         };
     };
-    updateAsset: {
+    "assets.update": {
         parameters: {
             query?: never;
             header?: never;
@@ -2693,7 +2696,7 @@ export interface operations {
             };
         };
     };
-    upload: {
+    "assets.upload": {
         parameters: {
             query: {
                 /** @description The token used to upload the asset */
@@ -2929,7 +2932,7 @@ export interface operations {
             };
         };
     };
-    listCollections: {
+    "collections.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -2955,7 +2958,7 @@ export interface operations {
             };
         };
     };
-    createCollection: {
+    "collections.create": {
         parameters: {
             query?: never;
             header?: never;
@@ -2979,12 +2982,12 @@ export interface operations {
             };
         };
     };
-    getCollection: {
+    "collections.get": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3020,12 +3023,12 @@ export interface operations {
             };
         };
     };
-    deleteCollection: {
+    "collections.delete": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3040,12 +3043,12 @@ export interface operations {
             };
         };
     };
-    updateCollection: {
+    "collections.update": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3085,12 +3088,12 @@ export interface operations {
             };
         };
     };
-    addAssetsToCollection: {
+    "collections.addAssets": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3129,12 +3132,12 @@ export interface operations {
             };
         };
     };
-    removeAssetsFromCollection: {
+    "collections.removeAssets": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };

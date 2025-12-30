@@ -45,7 +45,7 @@ export function AssetDetails() {
     error,
   } = useQuery({
     queryKey: ['assets', id],
-    queryFn: () => client.assets.getAsset(id!),
+    queryFn: () => client.assets.get(id!),
     enabled: !!id,
   });
 
@@ -68,7 +68,7 @@ export function AssetDetails() {
 
   const deleteMutation = useMutation({
     mutationFn: (permanently: boolean) =>
-      client.assets.deleteAsset(id!, { permanently }),
+      client.assets.delete(id!, { permanently }),
     onSuccess: () => {
       toast.success('Asset deleted');
       queryClient.invalidateQueries({ queryKey: ['assets'] });
@@ -88,7 +88,7 @@ export function AssetDetails() {
 
   const renameMutation = useMutation({
     mutationFn: (data: { name: string }) =>
-      client.assets.updateAsset(id!, { name: data.name }),
+      client.assets.update(id!, { name: data.name }),
     onSuccess: () => {
       toast.success('Media renamed successfully');
       queryClient.invalidateQueries({ queryKey: ['assets', id] });
@@ -107,7 +107,7 @@ export function AssetDetails() {
 
   const updateCollectionsMutation = useMutation({
     mutationFn: (collectionIds: string[]) => {
-      return client.assets.updateAsset(id!, { collectionIds });
+      return client.assets.update(id!, { collectionIds });
     },
     onSuccess: () => {
       toast.success('Collections updated successfully');
@@ -187,9 +187,6 @@ export function AssetDetails() {
   };
 
   const isVideo = media?.type === 'VIDEO';
-  const hasDerivatives = Boolean(
-    media?.derivatives && media.derivatives.length > 0
-  );
 
   if (isLoading) {
     return (

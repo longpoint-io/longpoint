@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 
 type AddToCollectionComboboxProps = {
   client: Longpoint;
-  asset: components['schemas']['Asset'] | undefined;
+  asset: components['schemas']['AssetDetails'] | undefined;
   onApply: (collectionIds: string[]) => void;
   onClose: () => void;
 };
@@ -89,7 +89,7 @@ export function AddToCollectionCombobox({
     let cancelled = false;
     setIsLoading(true);
     client.collections
-      .listCollections({ pageSize: 100 })
+      .list({ pageSize: 100 })
       .then((response) => {
         if (!cancelled) {
           setCollections(response.items || []);

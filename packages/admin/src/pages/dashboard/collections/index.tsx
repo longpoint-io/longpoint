@@ -26,7 +26,7 @@ export function Collections() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['collections'],
-    queryFn: () => client.collections.listCollections(),
+    queryFn: () => client.collections.list(),
   });
 
   if (isLoading) {
