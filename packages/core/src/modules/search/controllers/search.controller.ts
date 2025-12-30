@@ -7,16 +7,16 @@ import { SearchQueryDto, SearchResultsDto } from '../dtos';
 import { SearchIndexService } from '../services/search-index.service';
 
 @Controller('search')
-@ApiSdkTag(SdkTag.Search)
+@ApiSdkTag(SdkTag.Assets)
 @ApiBearerAuth()
 export class SearchController {
   constructor(private readonly searchIndexService: SearchIndexService) {}
 
-  @Post()
+  @Post('assets')
   @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
-    summary: 'Search assets',
-    operationId: 'searchAssets',
+    summary: 'Search assets with the active search provider',
+    operationId: 'assets.search',
   })
   @ApiOkResponse({ type: SearchResultsDto })
   async search(@Body() body: SearchQueryDto): Promise<SearchResultsDto> {
@@ -26,7 +26,7 @@ export class SearchController {
       return new SearchResultsDto({
         query: body,
         items: [],
-        path: '/search',
+        path: '/search/assets',
       });
     }
 
@@ -35,7 +35,7 @@ export class SearchController {
     return new SearchResultsDto({
       query: body,
       items: results,
-      path: '/search',
+      path: '/search/assets',
     });
   }
 }

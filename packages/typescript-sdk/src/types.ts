@@ -324,7 +324,7 @@ export interface paths {
         patch: operations["updateRule"];
         trace?: never;
     };
-    "/search": {
+    "/search/assets": {
         parameters: {
             query?: never;
             header?: never;
@@ -333,8 +333,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Search assets */
-        post: operations["searchAssets"];
+        /** Search assets with the active search provider */
+        post: operations["assets.search"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3658,7 +3658,7 @@ export interface operations {
             };
         };
     };
-    searchAssets: {
+    "assets.search": {
         parameters: {
             query?: never;
             header?: never;

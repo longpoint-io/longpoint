@@ -13,7 +13,10 @@ export class TypeScriptGenerator extends LanguageGenerator {
   ): Promise<GeneratedFiles> {
     const parser = new OpenAPIParser(spec);
     const operations = parser.parseOperations();
-    const generator = new TypeScriptClientGenerator(operations);
+    const generator = new TypeScriptClientGenerator(
+      operations,
+      config.operationIdDelimiter || '.'
+    );
     const typeGenerator = new TypeScriptTypeGenerator();
 
     // Generate types from the OpenAPI spec
@@ -31,9 +34,11 @@ export class TypeScriptGenerator extends LanguageGenerator {
 
 class TypeScriptClientGenerator {
   private operations: ParsedOperation[];
+  private operationIdDelimiter: string;
 
-  constructor(operations: ParsedOperation[]) {
+  constructor(operations: ParsedOperation[], operationIdDelimiter = '.') {
     this.operations = operations;
+    this.operationIdDelimiter = operationIdDelimiter;
   }
 
   generateClient(): string {
@@ -201,10 +206,16 @@ export type * from './types';
     const grouped: Record<string, ParsedOperation[]> = {};
 
     for (const op of this.operations) {
-      if (!grouped[op.tag]) {
-        grouped[op.tag] = [];
+      // Split operationId by delimiter if it contains one
+      const parts = op.operationId.split(this.operationIdDelimiter);
+      
+      // Use first part as namespace if delimiter exists, otherwise use tag
+      const namespace = parts.length > 1 ? parts[0] : op.tag;
+      
+      if (!grouped[namespace]) {
+        grouped[namespace] = [];
       }
-      grouped[op.tag].push(op);
+      grouped[namespace].push(op);
     }
 
     return grouped;
@@ -256,7 +267,14 @@ export type * from './types';
   }
 
   private generateMethod(operation: ParsedOperation): string {
-    const methodName = this.camelCase(operation.operationId);
+    // Split operationId by delimiter if it contains one
+    const parts = operation.operationId.split(this.operationIdDelimiter);
+    
+    // Use remaining parts as method name, or full operationId if no delimiter
+    const methodName = parts.length > 1 
+      ? this.camelCase(parts.slice(1).join(this.operationIdDelimiter))
+      : this.camelCase(operation.operationId);
+    
     const params = this.generateMethodParams(operation);
     const docString = this.generateDocString(operation);
     const methodBody = this.generateMethodBody(operation);

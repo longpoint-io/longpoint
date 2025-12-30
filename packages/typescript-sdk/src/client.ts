@@ -237,6 +237,15 @@ class AssetsClient {
   }
 
     /**
+   * Search assets with the active search provider
+   */
+    async search(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
+        const url = `search/assets`;
+        const response = await this.httpClient.post(url, data);
+        return response.data;
+  }
+
+    /**
    * Upload an asset variant
    */
     async upload(assetId: string, options?: { token?: string }): Promise<void> {
@@ -756,15 +765,6 @@ class TransformersClient {
 
 class SearchClient {
   constructor(private httpClient: AxiosInstance) {}
-
-    /**
-   * Search assets
-   */
-    async searchAssets(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
-        const url = `search`;
-        const response = await this.httpClient.post(url, data);
-        return response.data;
-  }
 
     /**
    * Create a search index
