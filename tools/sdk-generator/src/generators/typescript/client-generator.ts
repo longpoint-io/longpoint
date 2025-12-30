@@ -208,10 +208,10 @@ export type * from './types';
     for (const op of this.operations) {
       // Split operationId by delimiter if it contains one
       const parts = op.operationId.split(this.operationIdDelimiter);
-      
+
       // Use first part as namespace if delimiter exists, otherwise use tag
       const namespace = parts.length > 1 ? parts[0] : op.tag;
-      
+
       if (!grouped[namespace]) {
         grouped[namespace] = [];
       }
@@ -269,12 +269,13 @@ export type * from './types';
   private generateMethod(operation: ParsedOperation): string {
     // Split operationId by delimiter if it contains one
     const parts = operation.operationId.split(this.operationIdDelimiter);
-    
+
     // Use remaining parts as method name, or full operationId if no delimiter
-    const methodName = parts.length > 1 
-      ? this.camelCase(parts.slice(1).join(this.operationIdDelimiter))
-      : this.camelCase(operation.operationId);
-    
+    const methodName =
+      parts.length > 1
+        ? this.camelCase(parts.slice(1).join(this.operationIdDelimiter))
+        : this.camelCase(operation.operationId);
+
     const params = this.generateMethodParams(operation);
     const docString = this.generateDocString(operation);
     const methodBody = this.generateMethodBody(operation);
