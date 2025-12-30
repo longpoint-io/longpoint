@@ -78,13 +78,47 @@ export class SearchIndexEntity {
       return [];
     }
 
+    // Search results contain SearchIndexItem.id values, not asset IDs
+    const itemIds = searchResults.map((result) => result.id);
     const scoreMap = new Map<string, number>(
       searchResults.map((result) => [result.id, result.score])
     );
-    const assets = await this.assetService.listAssetsByIds(
-      Array.from(scoreMap.keys())
+
+    const indexItems = await this.prismaService.searchIndexItem.findMany({
+      where: {
+        id: { in: itemIds },
+        indexId: this.id,
+      },
+      select: {
+        id: true,
+        assetId: true,
+      },
+    });
+
+    const itemIdToAssetId = new Map(
+      indexItems
+        .filter((item) => item.assetId !== null)
+        .map((item) => [item.id, item.assetId!])
     );
-    assets.sort((a, b) => scoreMap.get(b.id)! - scoreMap.get(a.id)!);
+
+    const assetIds = Array.from(itemIdToAssetId.values());
+    if (assetIds.length === 0) {
+      return [];
+    }
+
+    const assets = await this.assetService.listAssetsByIds(assetIds);
+
+    const assetIdToScore = new Map<string, number>();
+    for (const [itemId, score] of scoreMap.entries()) {
+      const assetId = itemIdToAssetId.get(itemId);
+      if (assetId) {
+        assetIdToScore.set(assetId, score);
+      }
+    }
+
+    assets.sort(
+      (a, b) => assetIdToScore.get(b.id)! - assetIdToScore.get(a.id)!
+    );
 
     return assets.map((asset) => asset.toDto());
   }
@@ -165,24 +199,21 @@ export class SearchIndexEntity {
         );
       }
 
-      const totalIndexed = await this.prismaService.searchIndexItem.count({
-        where: {
-          indexId: this.id,
-          status: 'INDEXED',
-        },
-      });
-
       const updatedIndex = await this.prismaService.searchIndex.update({
         where: { id: this.id },
         data: {
           indexing: false,
           lastIndexedAt: new Date(),
-          assetsIndexed: totalIndexed,
         },
       });
 
       this._lastIndexedAt = updatedIndex.lastIndexedAt;
-      this._assetsIndexed = updatedIndex.assetsIndexed;
+      this._assetsIndexed = await this.prismaService.searchIndexItem.count({
+        where: {
+          indexId: this.id,
+          status: SearchIndexItemStatus.INDEXED,
+        },
+      });
       this._indexing = updatedIndex.indexing;
     } catch (error) {
       // Ensure indexing flag is cleared even on error
@@ -230,7 +261,7 @@ export class SearchIndexEntity {
           assetId: null,
         },
         select: {
-          externalId: true,
+          id: true,
         },
         take: batchSize,
         skip: offset,
@@ -241,15 +272,15 @@ export class SearchIndexEntity {
         break;
       }
 
-      const externalIds = nullItems.map((item) => item.externalId);
+      const itemIds = nullItems.map((item) => item.id);
       this.logger.debug(
-        `Removing batch of ${externalIds.length} external IDs from search index`
+        `Removing batch of ${itemIds.length} item IDs from search index`
       );
 
       // Delete from vector store first, then from database
       try {
         const indexConfigValues = await this.getIndexConfigValues();
-        await this.searchProvider.delete(externalIds, indexConfigValues);
+        await this.searchProvider.delete(itemIds, indexConfigValues);
       } catch (error) {
         this.logger.warn(
           `Failed to delete null items from search provider: ${
@@ -261,7 +292,7 @@ export class SearchIndexEntity {
 
       await this.prismaService.searchIndexItem.deleteMany({
         where: {
-          externalId: { in: externalIds },
+          id: { in: itemIds },
         },
       });
 
@@ -304,18 +335,15 @@ export class SearchIndexEntity {
    * @param assetIds Array of asset IDs to process
    */
   private async processBatch(assetIds: string[]): Promise<void> {
-    // Mark new items as INDEXING
     await this.prismaService.searchIndexItem.createMany({
       data: assetIds.map((assetId) => ({
         indexId: this.id,
         assetId,
         status: SearchIndexItemStatus.INDEXING,
-        externalId: assetId,
       })),
       skipDuplicates: true,
     });
 
-    // Update existing items (including STALE ones) to INDEXING status
     await this.prismaService.searchIndexItem.updateMany({
       where: {
         indexId: this.id,
@@ -328,7 +356,7 @@ export class SearchIndexEntity {
 
     const assets = await this.assetService.listAssetsByIds(assetIds);
 
-    // Considered stale items if their assets do not exist
+    // Consider items stale if their assets do not exist
     const foundAssetIds = new Set(assets.map((a) => a.id));
     const missingAssetIds = assetIds.filter((id) => !foundAssetIds.has(id));
     if (missingAssetIds.length > 0) {
@@ -369,7 +397,6 @@ export class SearchIndexEntity {
       return;
     }
 
-    // Get the search index item IDs for the found assets
     const indexItems = await this.prismaService.searchIndexItem.findMany({
       where: {
         indexId: this.id,
@@ -377,26 +404,24 @@ export class SearchIndexEntity {
       },
       select: {
         id: true,
-        externalId: true,
         assetId: true,
       },
     });
 
-    // Create a map from asset ID to search index item external ID
     const assetIdToItemId = new Map(
-      indexItems.map((item) => [item.assetId, item.externalId])
+      indexItems.map((item) => [item.assetId, item.id])
     );
 
     try {
       const documents = assets.map((asset) => {
-        const externalId = assetIdToItemId.get(asset.id);
-        if (!externalId) {
+        const itemId = assetIdToItemId.get(asset.id);
+        if (!itemId) {
           throw new Error(
-            `Search index item external ID not found for asset ${asset.id}`
+            `Search index item ID not found for asset ${asset.id}`
           );
         }
         return {
-          id: externalId, // Use search index item external ID as the vector document ID
+          id: itemId,
           ...asset.toSearchDocument(),
         };
       });
@@ -419,19 +444,16 @@ export class SearchIndexEntity {
         },
       });
     } catch (error) {
-      const externalIdsToDelete = indexItems.map((item) => item.externalId);
+      const itemIdsToDelete = indexItems.map((item) => item.id);
 
       // Delete from index first
-      if (externalIdsToDelete.length > 0) {
+      if (itemIdsToDelete.length > 0) {
         try {
           const indexConfigValues = await this.getIndexConfigValues();
-          await this.searchProvider.delete(
-            externalIdsToDelete,
-            indexConfigValues
-          );
+          await this.searchProvider.delete(itemIdsToDelete, indexConfigValues);
         } catch (deleteError) {
           this.logger.warn(
-            `Failed to delete external IDs from search provider during error cleanup: ${
+            `Failed to delete item IDs from search provider during error cleanup: ${
               deleteError instanceof Error
                 ? deleteError.message
                 : 'Unknown error'

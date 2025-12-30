@@ -3,10 +3,8 @@ model SearchIndex {
   name             String    @unique
   active           Boolean   @default(true)
   indexing         Boolean   @default(false)
-  assetsIndexed    Int       @default(0)
   /// Fully qualified model ID of the embedding model to use for this index. `null` implies the search provider is capable of embedding documents without an external model.
   embeddingModelId String?
-  /// Search provider ID
   searchProviderId String
   /// Provider-specific configuration
   config           Json?
@@ -21,14 +19,10 @@ model SearchIndex {
 }
 
 model SearchIndexItem {
-  id         String                @id @default(cuid(2))
-  /// Direct storage of the embedding vector
-  // embedding    Unsupported("vector")?
-  status     SearchIndexItemStatus @default(INDEXING)
-  /// External ID of the document in the vector database
-  externalId String                @unique
-  createdAt  DateTime              @default(now())
-  updatedAt  DateTime              @updatedAt
+  id        String                @id @default(cuid(2))
+  status    SearchIndexItemStatus @default(INDEXING)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
 
   indexId String
   index   SearchIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
@@ -38,7 +32,6 @@ model SearchIndexItem {
   @@unique([indexId, assetId])
   @@index([indexId])
   @@index([status])
-  @@index([assetId])
 }
 
 enum SearchIndexItemStatus {
