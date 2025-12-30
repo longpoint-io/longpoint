@@ -92,7 +92,7 @@ class ClassifiersClient {
     /**
    * List installed classifiers
    */
-    async listClassifiers(): Promise<components['schemas']['Classifier'][]> {
+    async list(): Promise<components['schemas']['Classifier'][]> {
         const url = `classifiers`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -101,7 +101,7 @@ class ClassifiersClient {
     /**
    * Create a classifier template
    */
-    async createClassifierTemplate(data: components['schemas']['CreateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
+    async createTemplate(data: components['schemas']['CreateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
         const url = `classifier-templates`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -112,7 +112,7 @@ class ClassifiersClient {
    *
    * Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").
    */
-    async listClassifierTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListClassifierTemplatesResponse']> {
+    async listTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListClassifierTemplatesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -131,7 +131,7 @@ class ClassifiersClient {
     /**
    * Get a classifier template
    */
-    async getClassifierTemplate(templateId: string): Promise<components['schemas']['ClassifierTemplate']> {
+    async getTemplate(templateId: string): Promise<components['schemas']['ClassifierTemplate']> {
         const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -140,7 +140,7 @@ class ClassifiersClient {
     /**
    * Update a classifier template
    */
-    async updateClassifierTemplate(templateId: string, data: components['schemas']['UpdateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
+    async updateTemplate(templateId: string, data: components['schemas']['UpdateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
         const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -149,7 +149,7 @@ class ClassifiersClient {
     /**
    * Delete a classifier template
    */
-    async deleteClassifierTemplate(templateId: string): Promise<void> {
+    async deleteTemplate(templateId: string): Promise<void> {
         const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;

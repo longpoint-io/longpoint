@@ -48,7 +48,7 @@ export function CreateClassifier() {
 
   const { data: classifiers, isLoading: classifiersLoading } = useQuery({
     queryKey: ['classifiers'],
-    queryFn: () => client.classifiers.listClassifiers(),
+    queryFn: () => client.classifiers.list(),
   });
 
   const selectedClassifier = classifiers?.find(
@@ -98,7 +98,7 @@ export function CreateClassifier() {
     if (!isValid) return;
 
     try {
-      const result = await client.classifiers.createClassifierTemplate({
+      const result = await client.classifiers.createTemplate({
         name: data.name,
         description: data.description ?? null,
         input: values?.modelInput,

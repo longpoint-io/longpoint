@@ -95,10 +95,10 @@ export interface paths {
          * List classifier templates
          * @description Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").
          */
-        get: operations["listClassifierTemplates"];
+        get: operations["classifiers.listTemplates"];
         put?: never;
         /** Create a classifier template */
-        post: operations["createClassifierTemplate"];
+        post: operations["classifiers.createTemplate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -113,15 +113,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a classifier template */
-        get: operations["getClassifierTemplate"];
+        get: operations["classifiers.getTemplate"];
         put?: never;
         post?: never;
         /** Delete a classifier template */
-        delete: operations["deleteClassifierTemplate"];
+        delete: operations["classifiers.deleteTemplate"];
         options?: never;
         head?: never;
         /** Update a classifier template */
-        patch: operations["updateClassifierTemplate"];
+        patch: operations["classifiers.updateTemplate"];
         trace?: never;
     };
     "/classifiers": {
@@ -132,7 +132,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed classifiers */
-        get: operations["listClassifiers"];
+        get: operations["classifiers.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2739,7 +2739,7 @@ export interface operations {
             };
         };
     };
-    listClassifierTemplates: {
+    "classifiers.listTemplates": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -2764,7 +2764,7 @@ export interface operations {
             };
         };
     };
-    createClassifierTemplate: {
+    "classifiers.createTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2787,7 +2787,7 @@ export interface operations {
             };
         };
     };
-    getClassifierTemplate: {
+    "classifiers.getTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2828,7 +2828,7 @@ export interface operations {
             };
         };
     };
-    deleteClassifierTemplate: {
+    "classifiers.deleteTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2868,7 +2868,7 @@ export interface operations {
             };
         };
     };
-    updateClassifierTemplate: {
+    "classifiers.updateTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2913,7 +2913,7 @@ export interface operations {
             };
         };
     };
-    listClassifiers: {
+    "classifiers.list": {
         parameters: {
             query?: never;
             header?: never;
