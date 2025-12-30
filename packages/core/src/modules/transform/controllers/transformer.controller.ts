@@ -19,7 +19,7 @@ export class TransformerController {
   @RequirePermission(Permission.TRANSFORMER_TEMPLATES_READ)
   @ApiOperation({
     summary: 'List installed transformers',
-    operationId: 'listTransformers',
+    operationId: 'transformers.list',
   })
   @ApiOkResponse({ type: ListTransformersResponseDto })
   async listTransformers(@Query() query: PaginationQueryDto) {
@@ -35,7 +35,7 @@ export class TransformerController {
   @RequirePermission(Permission.TRANSFORMER_TEMPLATES_READ)
   @ApiOperation({
     summary: 'Get a transformer',
-    operationId: 'getTransformer',
+    operationId: 'transformers.get',
   })
   @ApiOkResponse({ type: TransformerDetailsDto })
   @ApiTransformerNotFoundResponse()

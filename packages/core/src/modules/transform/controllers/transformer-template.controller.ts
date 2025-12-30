@@ -41,7 +41,7 @@ export class TransformerTemplateController {
   @ApiOperation({
     summary: 'Create a transformer template',
     description: 'Define a template for transforming assets.',
-    operationId: 'createTransformerTemplate',
+    operationId: 'transformers.createTemplate',
   })
   @ApiCreatedResponse({ type: TransformerTemplateDto })
   async createTransformerTemplate(@Body() body: CreateTransformerTemplateDto) {
@@ -54,7 +54,7 @@ export class TransformerTemplateController {
   @RequirePermission(Permission.TRANSFORMER_TEMPLATES_READ)
   @ApiOperation({
     summary: 'Get a transformer template',
-    operationId: 'getTransformerTemplate',
+    operationId: 'transformers.getTemplate',
   })
   @ApiOkResponse({ type: TransformerTemplateDto })
   @ApiTransformerTemplateNotFoundResponse()
@@ -70,7 +70,7 @@ export class TransformerTemplateController {
   @RequirePermission(Permission.TRANSFORMER_TEMPLATES_READ)
   @ApiOperation({
     summary: 'List transformer templates',
-    operationId: 'listTransformerTemplates',
+    operationId: 'transformers.listTemplates',
   })
   @ApiOkResponse({ type: ListTransformerTemplatesResponseDto })
   async listTransformerTemplates(
@@ -89,7 +89,7 @@ export class TransformerTemplateController {
   @RequirePermission(Permission.TRANSFORMER_TEMPLATES_UPDATE)
   @ApiOperation({
     summary: 'Update a transformer template',
-    operationId: 'updateTransformerTemplate',
+    operationId: 'transformers.updateTemplate',
   })
   @ApiOkResponse({ type: TransformerTemplateDto })
   @ApiTransformerTemplateNotFoundResponse()
@@ -109,7 +109,7 @@ export class TransformerTemplateController {
   @RequirePermission(Permission.TRANSFORMER_TEMPLATES_DELETE)
   @ApiOperation({
     summary: 'Delete a transformer template',
-    operationId: 'deleteTransformerTemplate',
+    operationId: 'transformers.deleteTemplate',
   })
   @ApiOkResponse({ description: 'The transformer template was deleted' })
   @ApiTransformerTemplateNotFoundResponse()
@@ -127,7 +127,7 @@ export class TransformerTemplateController {
     summary: 'Generate a new asset variant with a transformer',
     description:
       'Creates a new derivative variant by applying the transformer template to a source variant.',
-    operationId: 'transformAssetVariant',
+    operationId: 'transformers.transformAssetVariant',
   })
   @ApiOkResponse({
     description: 'The variant generation has been initiated',

@@ -673,7 +673,7 @@ class TransformersClient {
    *
    * Define a template for transforming assets.
    */
-    async createTransformerTemplate(data: components['schemas']['CreateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
+    async createTemplate(data: components['schemas']['CreateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
         const url = `transformer-templates`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -682,7 +682,7 @@ class TransformersClient {
     /**
    * List transformer templates
    */
-    async listTransformerTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformerTemplatesResponse']> {
+    async listTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformerTemplatesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -701,7 +701,7 @@ class TransformersClient {
     /**
    * Get a transformer template
    */
-    async getTransformerTemplate(templateId: string): Promise<components['schemas']['TransformerTemplate']> {
+    async getTemplate(templateId: string): Promise<components['schemas']['TransformerTemplate']> {
         const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -710,7 +710,7 @@ class TransformersClient {
     /**
    * Update a transformer template
    */
-    async updateTransformerTemplate(templateId: string, data: components['schemas']['UpdateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
+    async updateTemplate(templateId: string, data: components['schemas']['UpdateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
         const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -719,7 +719,7 @@ class TransformersClient {
     /**
    * Delete a transformer template
    */
-    async deleteTransformerTemplate(templateId: string): Promise<void> {
+    async deleteTemplate(templateId: string): Promise<void> {
         const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -739,7 +739,7 @@ class TransformersClient {
     /**
    * List installed transformers
    */
-    async listTransformers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformersResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformersResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -758,7 +758,7 @@ class TransformersClient {
     /**
    * Get a transformer
    */
-    async getTransformer(transformerId: string): Promise<components['schemas']['TransformerDetails']> {
+    async get(transformerId: string): Promise<components['schemas']['TransformerDetails']> {
         const url = `transformers/${encodeURIComponent(String(transformerId))}`;
         const response = await this.httpClient.get(url);
         return response.data;

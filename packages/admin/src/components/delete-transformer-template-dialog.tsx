@@ -32,7 +32,7 @@ export function DeleteTransformerTemplateDialog({
   const navigate = useNavigate();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.transformers.deleteTransformerTemplate(templateId),
+    mutationFn: () => client.transformers.deleteTemplate(templateId),
     onSuccess: () => {
       toast.success('Transformer template deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['transformer-templates'] });

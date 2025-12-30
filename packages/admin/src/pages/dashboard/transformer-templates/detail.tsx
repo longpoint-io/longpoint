@@ -32,7 +32,7 @@ export function TransformerTemplateDetail() {
     error,
   } = useQuery({
     queryKey: ['transformer-template', templateId],
-    queryFn: () => client.transformers.getTransformerTemplate(templateId!),
+    queryFn: () => client.transformers.getTemplate(templateId!),
     enabled: !!templateId,
   });
 

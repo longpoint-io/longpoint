@@ -35,7 +35,7 @@ export function SelectTransformerTemplate({
     let cancelled = false;
     setIsLoading(true);
     client.transformers
-      .listTransformerTemplates({ pageSize: 100 })
+      .listTemplates({ pageSize: 100 })
       .then((response) => {
         if (!cancelled) {
           setTemplates(response.items || []);

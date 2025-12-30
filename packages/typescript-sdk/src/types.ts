@@ -563,13 +563,13 @@ export interface paths {
             cookie?: never;
         };
         /** List transformer templates */
-        get: operations["listTransformerTemplates"];
+        get: operations["transformers.listTemplates"];
         put?: never;
         /**
          * Create a transformer template
          * @description Define a template for transforming assets.
          */
-        post: operations["createTransformerTemplate"];
+        post: operations["transformers.createTemplate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -584,15 +584,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a transformer template */
-        get: operations["getTransformerTemplate"];
+        get: operations["transformers.getTemplate"];
         put?: never;
         post?: never;
         /** Delete a transformer template */
-        delete: operations["deleteTransformerTemplate"];
+        delete: operations["transformers.deleteTemplate"];
         options?: never;
         head?: never;
         /** Update a transformer template */
-        patch: operations["updateTransformerTemplate"];
+        patch: operations["transformers.updateTemplate"];
         trace?: never;
     };
     "/transformer-templates/{templateId}/run": {
@@ -608,7 +608,7 @@ export interface paths {
          * Generate a new asset variant with a transformer
          * @description Creates a new derivative variant by applying the transformer template to a source variant.
          */
-        post: operations["transformAssetVariant"];
+        post: operations["transformers.transformAssetVariant"];
         delete?: never;
         options?: never;
         head?: never;
@@ -623,7 +623,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed transformers */
-        get: operations["listTransformers"];
+        get: operations["transformers.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -640,7 +640,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get a transformer */
-        get: operations["getTransformer"];
+        get: operations["transformers.get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4254,7 +4254,7 @@ export interface operations {
             };
         };
     };
-    listTransformerTemplates: {
+    "transformers.listTemplates": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -4278,7 +4278,7 @@ export interface operations {
             };
         };
     };
-    createTransformerTemplate: {
+    "transformers.createTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4301,7 +4301,7 @@ export interface operations {
             };
         };
     };
-    getTransformerTemplate: {
+    "transformers.getTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4342,7 +4342,7 @@ export interface operations {
             };
         };
     };
-    deleteTransformerTemplate: {
+    "transformers.deleteTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4382,7 +4382,7 @@ export interface operations {
             };
         };
     };
-    updateTransformerTemplate: {
+    "transformers.updateTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4427,7 +4427,7 @@ export interface operations {
             };
         };
     };
-    transformAssetVariant: {
+    "transformers.transformAssetVariant": {
         parameters: {
             query?: never;
             header?: never;
@@ -4471,7 +4471,7 @@ export interface operations {
             };
         };
     };
-    listTransformers: {
+    "transformers.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -4495,7 +4495,7 @@ export interface operations {
             };
         };
     };
-    getTransformer: {
+    "transformers.get": {
         parameters: {
             query?: never;
             header?: never;
