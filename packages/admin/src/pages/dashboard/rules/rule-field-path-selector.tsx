@@ -75,10 +75,8 @@ export function FieldPathSelector({
       setMetadataPath('');
     } else {
       setMetadataPath('');
-      if (onChange) {
-        onChange(fieldPath);
-      }
     }
+    // onChange is called in onValueChange handler to ensure consistent behavior
   };
 
   if (!schema) {
@@ -109,7 +107,11 @@ export function FieldPathSelector({
                 onValueChange={(val) => {
                   handleFieldChange(val);
                   field.onChange(val);
-                  if (onChange) {
+                  if (
+                    val !== 'variant.metadata' &&
+                    val !== 'asset.metadata' &&
+                    onChange
+                  ) {
                     onChange(val);
                   }
                 }}
