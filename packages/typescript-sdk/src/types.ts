@@ -421,10 +421,10 @@ export interface paths {
             cookie?: never;
         };
         /** List storage configs */
-        get: operations["listStorageConfigs"];
+        get: operations["storage.listConfigs"];
         put?: never;
         /** Create a storage provider config */
-        post: operations["createStorageConfig"];
+        post: operations["storage.createConfig"];
         delete?: never;
         options?: never;
         head?: never;
@@ -439,15 +439,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a storage config */
-        get: operations["getStorageConfig"];
+        get: operations["storage.getConfig"];
         put?: never;
         post?: never;
         /** Delete a storage config */
-        delete: operations["deleteStorageConfig"];
+        delete: operations["storage.deleteConfig"];
         options?: never;
         head?: never;
         /** Update a storage config */
-        patch: operations["updateStorageConfig"];
+        patch: operations["storage.updateConfig"];
         trace?: never;
     };
     "/storage/providers": {
@@ -458,7 +458,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed storage providers */
-        get: operations["listStorageProviders"];
+        get: operations["storage.listProviders"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3789,7 +3789,7 @@ export interface operations {
             };
         };
     };
-    listStorageConfigs: {
+    "storage.listConfigs": {
         parameters: {
             query: {
                 providerId: string;
@@ -3810,7 +3810,7 @@ export interface operations {
             };
         };
     };
-    createStorageConfig: {
+    "storage.createConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3833,7 +3833,7 @@ export interface operations {
             };
         };
     };
-    getStorageConfig: {
+    "storage.getConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3874,7 +3874,7 @@ export interface operations {
             };
         };
     };
-    deleteStorageConfig: {
+    "storage.deleteConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3934,7 +3934,7 @@ export interface operations {
             };
         };
     };
-    updateStorageConfig: {
+    "storage.updateConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3979,7 +3979,7 @@ export interface operations {
             };
         };
     };
-    listStorageProviders: {
+    "storage.listProviders": {
         parameters: {
             query?: never;
             header?: never;

@@ -328,7 +328,7 @@ class StorageClient {
     /**
    * List installed storage providers
    */
-    async listStorageProviders(): Promise<components['schemas']['StorageProvider'][]> {
+    async listProviders(): Promise<components['schemas']['StorageProvider'][]> {
         const url = `storage/providers`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -337,7 +337,7 @@ class StorageClient {
     /**
    * Create a storage provider config
    */
-    async createStorageConfig(data: components['schemas']['CreateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
+    async createConfig(data: components['schemas']['CreateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -346,7 +346,7 @@ class StorageClient {
     /**
    * List storage configs
    */
-    async listStorageConfigs(options?: { providerId?: string }): Promise<components['schemas']['StorageConfig'][]> {
+    async listConfigs(options?: { providerId?: string }): Promise<components['schemas']['StorageConfig'][]> {
         const params = new URLSearchParams();
         if (options) {
           if (options.providerId !== undefined) {
@@ -362,7 +362,7 @@ class StorageClient {
     /**
    * Get a storage config
    */
-    async getStorageConfig(id: string): Promise<components['schemas']['StorageConfigDetails']> {
+    async getConfig(id: string): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -371,7 +371,7 @@ class StorageClient {
     /**
    * Update a storage config
    */
-    async updateStorageConfig(id: string, data: components['schemas']['UpdateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
+    async updateConfig(id: string, data: components['schemas']['UpdateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -380,7 +380,7 @@ class StorageClient {
     /**
    * Delete a storage config
    */
-    async deleteStorageConfig(id: string): Promise<void> {
+    async deleteConfig(id: string): Promise<void> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.delete(url);
         return response.data;

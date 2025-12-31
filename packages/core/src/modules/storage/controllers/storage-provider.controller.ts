@@ -19,7 +19,7 @@ export class StorageProviderController {
   @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'List installed storage providers',
-    operationId: 'listStorageProviders',
+    operationId: 'storage.listProviders',
   })
   @ApiOkResponse({ type: [StorageProviderDto] })
   async listStorageProviders() {

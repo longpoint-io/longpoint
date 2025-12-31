@@ -32,7 +32,7 @@ export function DeleteStorageProviderConfigDialog({
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.storage.deleteStorageConfig(configId),
+    mutationFn: () => client.storage.deleteConfig(configId),
     onSuccess: () => {
       toast.success('Storage provider config deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['storage-provider-configs'] });

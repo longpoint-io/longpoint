@@ -56,7 +56,7 @@ export function CreateStorageProviderConfigDialog({
 
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ['storage-providers'],
-    queryFn: () => client.storage.listStorageProviders(),
+    queryFn: () => client.storage.listProviders(),
     enabled: open,
   });
 
@@ -103,7 +103,7 @@ export function CreateStorageProviderConfigDialog({
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return client.storage.createStorageConfig({
+      return client.storage.createConfig({
         name: data.name,
         providerId: data.providerId,
         config: data.config as any,

@@ -41,7 +41,7 @@ export class StorageConfigController {
   @RequirePermission(Permission.STORAGE_UNITS_CREATE)
   @ApiOperation({
     summary: 'Create a storage provider config',
-    operationId: 'createStorageConfig',
+    operationId: 'storage.createConfig',
   })
   @ApiCreatedResponse({ type: StorageConfigDetailsDto })
   async createStorageConfig(@Body() body: CreateStorageConfigDto) {
@@ -53,7 +53,7 @@ export class StorageConfigController {
   @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'List storage configs',
-    operationId: 'listStorageConfigs',
+    operationId: 'storage.listConfigs',
   })
   @ApiOkResponse({ type: [StorageConfigDto] })
   async listStorageConfigs(@Query('providerId') providerId?: string) {
@@ -67,7 +67,7 @@ export class StorageConfigController {
   @RequirePermission(Permission.STORAGE_UNITS_READ)
   @ApiOperation({
     summary: 'Get a storage config',
-    operationId: 'getStorageConfig',
+    operationId: 'storage.getConfig',
   })
   @ApiOkResponse({ type: StorageConfigDetailsDto })
   @ApiStorageProviderConfigNotFoundResponse()
@@ -82,7 +82,7 @@ export class StorageConfigController {
   @RequirePermission(Permission.STORAGE_UNITS_UPDATE)
   @ApiOperation({
     summary: 'Update a storage config',
-    operationId: 'updateStorageConfig',
+    operationId: 'storage.updateConfig',
   })
   @ApiOkResponse({ type: StorageConfigDetailsDto })
   @ApiStorageProviderConfigNotFoundResponse()
@@ -101,7 +101,7 @@ export class StorageConfigController {
   @RequirePermission(Permission.STORAGE_UNITS_DELETE)
   @ApiOperation({
     summary: 'Delete a storage config',
-    operationId: 'deleteStorageConfig',
+    operationId: 'storage.deleteConfig',
   })
   @ApiOkResponse({ description: 'The storage config was deleted' })
   @ApiStorageProviderConfigNotFoundResponse()

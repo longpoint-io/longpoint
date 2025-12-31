@@ -75,7 +75,7 @@ export function StorageProviderConfigDetail() {
     error,
   } = useQuery({
     queryKey: ['storage-provider-config', configId],
-    queryFn: () => client.storage.getStorageConfig(configId!),
+    queryFn: () => client.storage.getConfig(configId!),
     enabled: !!configId,
   });
 

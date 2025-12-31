@@ -60,7 +60,7 @@ export function CreateStorageUnitDialog({
 
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ['storage-providers'],
-    queryFn: () => client.storage.listStorageProviders(),
+    queryFn: () => client.storage.listProviders(),
     enabled: open,
   });
 
@@ -87,7 +87,7 @@ export function CreateStorageUnitDialog({
     queryKey: ['storage-provider-configs', selectedProviderId],
     queryFn: () =>
       selectedProviderId
-        ? client.storage.listStorageConfigs({
+        ? client.storage.listConfigs({
             providerId: selectedProviderId,
           })
         : Promise.resolve([]),
@@ -147,7 +147,7 @@ export function CreateStorageUnitDialog({
           isDefault: data.isDefault ?? false,
         });
       } else {
-        const config = await client.storage.createStorageConfig({
+        const config = await client.storage.createConfig({
           name: data.newConfigName || `${data.name} Config`,
           providerId: data.provider,
           config: data.config as any,

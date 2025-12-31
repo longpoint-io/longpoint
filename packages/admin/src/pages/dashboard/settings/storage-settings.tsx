@@ -29,7 +29,7 @@ export function StorageSettings() {
     error: configsError,
   } = useQuery({
     queryKey: ['storage-provider-configs'],
-    queryFn: () => client.storage.listStorageConfigs(),
+    queryFn: () => client.storage.listConfigs(),
   });
 
   const configsList = configs || [];

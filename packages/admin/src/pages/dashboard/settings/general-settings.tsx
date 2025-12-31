@@ -114,7 +114,7 @@ export function GeneralSettings() {
 
     try {
       // Create asset
-      const asset = await client.assets.createAsset({
+      const asset = await client.assets.create({
         mimeType: mimeType,
         name: file.name,
       });
@@ -130,7 +130,7 @@ export function GeneralSettings() {
 
       while (attempts < maxAttempts && !assetReady) {
         try {
-          const assetStatus = await client.assets.getAsset(asset.id);
+          const assetStatus = await client.assets.get(asset.id);
           if (assetStatus.status === 'READY') {
             assetReady = true;
             await updateMutation.mutateAsync({

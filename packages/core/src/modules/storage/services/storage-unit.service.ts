@@ -145,7 +145,7 @@ export class StorageUnitService {
       updatedAt: storageUnit.updatedAt,
       providerId,
       configFromDb,
-      pathPrefix,
+      pathPrefix: pathPrefix ?? '',
       storageProviderService: this.storageProviderService,
       prismaService: this.prismaService,
       storageUnitService: this,
