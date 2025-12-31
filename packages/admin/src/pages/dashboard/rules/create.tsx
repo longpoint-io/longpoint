@@ -32,7 +32,7 @@ export function CreateRule() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: RuleFormData) => client.rules.createRule(data),
+    mutationFn: (data: RuleFormData) => client.rules.create(data),
     onSuccess: (rule) => {
       toast.success('Rule created successfully');
       queryClient.invalidateQueries({ queryKey: ['rules'] });

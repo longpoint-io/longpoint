@@ -32,7 +32,7 @@ export function DeleteRuleDialog({
   const navigate = useNavigate();
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.rules.deleteRule(ruleId),
+    mutationFn: () => client.rules.delete(ruleId),
     onSuccess: () => {
       toast.success('Rule deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['rules'] });
@@ -87,6 +87,3 @@ export function DeleteRuleDialog({
     </Dialog>
   );
 }
-
-
-

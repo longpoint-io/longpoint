@@ -38,7 +38,7 @@ export class RuleController {
   @RequirePermission(Permission.RULES_CREATE)
   @ApiOperation({
     summary: 'Create a rule',
-    operationId: 'createRule',
+    operationId: 'rules.create',
   })
   @ApiCreatedResponse({ type: RuleDto })
   async createRule(@Body() body: CreateRuleDto) {
@@ -50,7 +50,7 @@ export class RuleController {
   @RequirePermission(Permission.RULES_READ)
   @ApiOperation({
     summary: 'Get a rule',
-    operationId: 'getRule',
+    operationId: 'rules.get',
   })
   @ApiOkResponse({ type: RuleDetailsDto })
   @ApiRuleNotFoundResponse()
@@ -63,7 +63,7 @@ export class RuleController {
   @RequirePermission(Permission.RULES_READ)
   @ApiOperation({
     summary: 'List rules',
-    operationId: 'listRules',
+    operationId: 'rules.list',
   })
   @ApiOkResponse({
     type: ListRulesResponseDto,
@@ -81,7 +81,7 @@ export class RuleController {
   @RequirePermission(Permission.RULES_UPDATE)
   @ApiOperation({
     summary: 'Update a rule',
-    operationId: 'updateRule',
+    operationId: 'rules.update',
   })
   @ApiOkResponse({ type: RuleDto })
   @ApiRuleNotFoundResponse()
@@ -98,7 +98,7 @@ export class RuleController {
   @RequirePermission(Permission.RULES_DELETE)
   @ApiOperation({
     summary: 'Delete a rule',
-    operationId: 'deleteRule',
+    operationId: 'rules.delete',
   })
   @ApiOkResponse({ description: 'The rule was deleted' })
   @ApiRuleNotFoundResponse()

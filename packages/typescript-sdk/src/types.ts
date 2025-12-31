@@ -298,10 +298,10 @@ export interface paths {
             cookie?: never;
         };
         /** List rules */
-        get: operations["listRules"];
+        get: operations["rules.list"];
         put?: never;
         /** Create a rule */
-        post: operations["createRule"];
+        post: operations["rules.create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -316,15 +316,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a rule */
-        get: operations["getRule"];
+        get: operations["rules.get"];
         put?: never;
         post?: never;
         /** Delete a rule */
-        delete: operations["deleteRule"];
+        delete: operations["rules.delete"];
         options?: never;
         head?: never;
         /** Update a rule */
-        patch: operations["updateRule"];
+        patch: operations["rules.update"];
         trace?: never;
     };
     "/search/assets": {
@@ -3488,7 +3488,7 @@ export interface operations {
             };
         };
     };
-    listRules: {
+    "rules.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -3512,7 +3512,7 @@ export interface operations {
             };
         };
     };
-    createRule: {
+    "rules.create": {
         parameters: {
             query?: never;
             header?: never;
@@ -3535,7 +3535,7 @@ export interface operations {
             };
         };
     };
-    getRule: {
+    "rules.get": {
         parameters: {
             query?: never;
             header?: never;
@@ -3576,7 +3576,7 @@ export interface operations {
             };
         };
     };
-    deleteRule: {
+    "rules.delete": {
         parameters: {
             query?: never;
             header?: never;
@@ -3616,7 +3616,7 @@ export interface operations {
             };
         };
     };
-    updateRule: {
+    "rules.update": {
         parameters: {
             query?: never;
             header?: never;

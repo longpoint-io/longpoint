@@ -23,7 +23,7 @@ export function Rules() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['rules'],
-    queryFn: () => client.rules.listRules(),
+    queryFn: () => client.rules.list(),
   });
 
   if (isLoading) {

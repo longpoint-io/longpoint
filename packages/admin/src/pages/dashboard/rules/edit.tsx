@@ -31,7 +31,7 @@ export function EditRule() {
     error: ruleError,
   } = useQuery({
     queryKey: ['rule', ruleId],
-    queryFn: () => client.rules.getRule(ruleId!),
+    queryFn: () => client.rules.get(ruleId!),
     enabled: !!ruleId,
   });
 
@@ -64,7 +64,7 @@ export function EditRule() {
   }, [rule, form]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: RuleFormData) => client.rules.updateRule(ruleId!, data),
+    mutationFn: (data: RuleFormData) => client.rules.update(ruleId!, data),
     onSuccess: () => {
       toast.success('Rule updated successfully');
       queryClient.invalidateQueries({ queryKey: ['rules'] });

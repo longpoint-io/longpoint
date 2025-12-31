@@ -612,7 +612,7 @@ class RulesClient {
     /**
    * Create a rule
    */
-    async createRule(data: components['schemas']['CreateRule']): Promise<components['schemas']['Rule']> {
+    async create(data: components['schemas']['CreateRule']): Promise<components['schemas']['Rule']> {
         const url = `rules`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -621,7 +621,7 @@ class RulesClient {
     /**
    * List rules
    */
-    async listRules(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListRulesResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListRulesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -640,7 +640,7 @@ class RulesClient {
     /**
    * Get a rule
    */
-    async getRule(ruleId: string): Promise<components['schemas']['RuleDetails']> {
+    async get(ruleId: string): Promise<components['schemas']['RuleDetails']> {
         const url = `rules/${encodeURIComponent(String(ruleId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -649,7 +649,7 @@ class RulesClient {
     /**
    * Update a rule
    */
-    async updateRule(ruleId: string, data: components['schemas']['UpdateRule']): Promise<components['schemas']['Rule']> {
+    async update(ruleId: string, data: components['schemas']['UpdateRule']): Promise<components['schemas']['Rule']> {
         const url = `rules/${encodeURIComponent(String(ruleId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -658,7 +658,7 @@ class RulesClient {
     /**
    * Delete a rule
    */
-    async deleteRule(ruleId: string): Promise<void> {
+    async delete(ruleId: string): Promise<void> {
         const url = `rules/${encodeURIComponent(String(ruleId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
