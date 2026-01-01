@@ -246,10 +246,10 @@ class AssetsClient {
   }
 
     /**
-   * Delete an asset variant
+   * Delete one or more asset variants
    */
-    async deleteVariant(variantId: string, data: components['schemas']['DeleteAssetVariant']): Promise<void> {
-        const url = `asset-variants/${encodeURIComponent(String(variantId))}`;
+    async deleteVariants(data: components['schemas']['DeleteAssetVariants']): Promise<void> {
+        const url = `asset-variants`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
   }

@@ -3,6 +3,13 @@ import { VariantGrid } from '@/components/variant-grid';
 import { VariantTable } from '@/components/variant-table';
 import { type VariantWithType } from '@/components/variant-table-row';
 import type { components } from '@longpoint/sdk';
+import { Button } from '@longpoint/ui/components/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@longpoint/ui/components/dropdown-menu';
 import {
   Empty,
   EmptyDescription,
@@ -10,12 +17,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@longpoint/ui/components/empty';
-import { ImageIcon } from 'lucide-react';
+import { ChevronDown, ImageIcon, ListXIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useAssetDetailsStore } from './asset-details-store';
+import { DeleteVariantsDialog } from './delete-variants-dialog';
 
 type VariantsTabProps = {
-  asset: components['schemas']['Asset'];
+  asset: components['schemas']['AssetDetails'];
 };
 
 const VARIANTS_VIEW_TYPE_STORAGE_KEY = 'variants-view-type';
@@ -28,6 +36,10 @@ export function VariantsTab({ asset }: VariantsTabProps) {
       | 'grid'
       | 'table';
   });
+  const [selectedVariantIds, setSelectedVariantIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(VARIANTS_VIEW_TYPE_STORAGE_KEY, viewType);
@@ -98,20 +110,73 @@ export function VariantsTab({ asset }: VariantsTabProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {variants.length} {variants.length === 1 ? 'variant' : 'variants'}
-        </p>
-        <ViewToggle
-          value={viewType}
-          onValueChange={setViewType}
-          storageKey={VARIANTS_VIEW_TYPE_STORAGE_KEY}
-        />
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground">
+            {variants.length} {variants.length === 1 ? 'variant' : 'variants'}
+          </p>
+          {selectedVariantIds.size > 0 && (
+            <span className="text-sm text-muted-foreground">
+              • {selectedVariantIds.size} selected
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {selectedVariantIds.size > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Actions
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setSelectedVariantIds(new Set())}
+                >
+                  <ListXIcon />
+                  Clear Selection
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete{' '}
+                  {selectedVariantIds.size === 1 ? 'variant' : 'variants'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <ViewToggle
+            value={viewType}
+            onValueChange={setViewType}
+            storageKey={VARIANTS_VIEW_TYPE_STORAGE_KEY}
+          />
+        </div>
       </div>
       {viewType === 'grid' ? (
-        <VariantGrid items={variants} onVariantClick={handleVariantClick} />
+        <VariantGrid
+          items={variants}
+          onVariantClick={handleVariantClick}
+          multiSelect={true}
+          selectedIds={selectedVariantIds}
+          onSelectionChange={setSelectedVariantIds}
+        />
       ) : (
-        <VariantTable items={variants} onVariantClick={handleVariantClick} />
+        <VariantTable
+          items={variants}
+          onVariantClick={handleVariantClick}
+          multiSelect={true}
+          selectedIds={selectedVariantIds}
+          onSelectionChange={setSelectedVariantIds}
+        />
       )}
+      <DeleteVariantsDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        variantIds={Array.from(selectedVariantIds)}
+        assetId={asset.id}
+      />
     </div>
   );
 }

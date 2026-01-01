@@ -4,7 +4,11 @@ import { Permission } from '@longpoint/types';
 import { Body, Controller, Delete, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ApiAssetVariantNotFoundResponse } from '../asset.errors';
-import { AssetVariantDto, UpdateAssetVariantDto } from '../dtos';
+import {
+  AssetVariantDto,
+  DeleteAssetVariantsDto,
+  UpdateAssetVariantDto,
+} from '../dtos';
 import { AssetService } from '../services/asset.service';
 
 @Controller('asset-variants')
@@ -32,18 +36,15 @@ export class AssetVariantController {
     return variant.toDto();
   }
 
-  @Delete(':variantId')
+  @Delete()
   @RequirePermission(Permission.ASSETS_DELETE)
   @ApiOperation({
-    summary: 'Delete an asset variant',
-    operationId: 'assets.deleteVariant',
+    summary: 'Delete one or more asset variants',
+    operationId: 'assets.deleteVariants',
   })
-  @ApiOkResponse({ description: 'The asset variant was deleted' })
+  @ApiOkResponse({ description: 'The asset variants were deleted' })
   @ApiAssetVariantNotFoundResponse()
-  async deleteVariant(@Param('variantId') variantId: string) {
-    const variant = await this.assetService.getAssetVariantByIdOrThrow(
-      variantId
-    );
-    await variant.delete();
+  async deleteVariants(@Body() body: DeleteAssetVariantsDto) {
+    await this.assetService.deleteAssetVariants(body.variantIds);
   }
 }

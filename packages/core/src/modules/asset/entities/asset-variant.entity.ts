@@ -130,14 +130,13 @@ export class AssetVariantEntity implements Serializable {
   async delete(): Promise<void> {
     try {
       const provider = await this.storageUnit.getProvider();
-      await provider.deleteDirectory(
-        getAssetVariantPath({
-          id: this.id,
-          assetId: this.assetId,
-          storageUnitId: this.storageUnit.id,
-          prefix: this.storageUnit.pathPrefix,
-        })
-      );
+      const p = getAssetVariantPath({
+        id: this.id,
+        assetId: this.assetId,
+        storageUnitId: this.storageUnit.id,
+        prefix: this.storageUnit.pathPrefix,
+      });
+      await provider.deleteDirectory(p);
       await this.prismaService.assetVariant.delete({
         where: { id: this.id },
       });

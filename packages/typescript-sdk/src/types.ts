@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/asset-variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete one or more asset variants */
+        delete: operations["assets.deleteVariants"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/asset-variants/{variantId}": {
         parameters: {
             query?: never;
@@ -31,8 +48,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete an asset variant */
-        delete: operations["assets.deleteVariant"];
+        delete?: never;
         options?: never;
         head?: never;
         /** Update an asset variant */
@@ -1485,13 +1501,15 @@ export interface components {
              */
             permanently: boolean;
         };
-        DeleteAssetVariant: {
+        DeleteAssetVariants: {
             /**
-             * @description Whether to permanently delete the asset variant
-             * @default false
-             * @example false
+             * @description The IDs of the asset variants to delete
+             * @example [
+             *       "r2qwyd76nvd98cu6ewg8ync2",
+             *       "mbjq36xe6397dsi6x9nq4ghc"
+             *     ]
              */
-            permanently: boolean;
+            variantIds: string[];
         };
         GenerateAssetLink: {
             /**
@@ -2564,22 +2582,20 @@ export interface operations {
             };
         };
     };
-    "assets.deleteVariant": {
+    "assets.deleteVariants": {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                variantId: string;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DeleteAssetVariant"];
+                "application/json": components["schemas"]["DeleteAssetVariants"];
             };
         };
         responses: {
-            /** @description The asset variant was deleted */
+            /** @description The asset variants were deleted */
             200: {
                 headers: {
                     [name: string]: unknown;
