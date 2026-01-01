@@ -4,6 +4,8 @@ import {
   AssetEventKey,
   type AssetDeletedEventPayload,
   type AssetReadyEventPayload,
+  type AssetVariantDeletedEventPayload,
+  type AssetVariantUpdatedEventPayload,
 } from '../asset';
 import {
   ClassifierEventKey,
@@ -36,6 +38,16 @@ export class SearchListeners implements OnModuleDestroy {
 
   @HandleEvent(AssetEventKey.ASSET_READY)
   async handleAssetReady(payload: AssetReadyEventPayload) {
+    await this.indexExecutor.requestRun();
+  }
+
+  @HandleEvent(AssetEventKey.ASSET_VARIANT_UPDATED)
+  async handleAssetVariantUpdated(payload: AssetVariantUpdatedEventPayload) {
+    await this.indexExecutor.requestRun();
+  }
+
+  @HandleEvent(AssetEventKey.ASSET_VARIANT_DELETED)
+  async handleAssetVariantDeleted(payload: AssetVariantDeletedEventPayload) {
     await this.indexExecutor.requestRun();
   }
 

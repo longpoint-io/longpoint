@@ -21,6 +21,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/asset-variants/{variantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an asset variant */
+        delete: operations["assets.deleteVariant"];
+        options?: never;
+        head?: never;
+        /** Update an asset variant */
+        patch: operations["assets.updateVariant"];
+        trace?: never;
+    };
     "/assets": {
         parameters: {
             query?: never;
@@ -1467,6 +1485,14 @@ export interface components {
              */
             permanently: boolean;
         };
+        DeleteAssetVariant: {
+            /**
+             * @description Whether to permanently delete the asset variant
+             * @default false
+             * @example false
+             */
+            permanently: boolean;
+        };
         GenerateAssetLink: {
             /**
              * @description The ID of the asset
@@ -2233,6 +2259,28 @@ export interface components {
              */
             name?: string;
         };
+        UpdateAssetVariant: {
+            /**
+             * @description The display name of the asset variant
+             * @example Original
+             */
+            displayName?: string | null;
+            /**
+             * @description Freeform metadata that can be populated by classifiers or manually edited
+             * @example {
+             *       "my-classifier": {
+             *         "tags": [
+             *           "person",
+             *           "car",
+             *           "tree"
+             *         ]
+             *       }
+             *     }
+             */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
         UpdateClassifierTemplate: {
             /**
              * @description The ID of the classifier to use for the classifier template
@@ -2511,6 +2559,95 @@ export interface operations {
                 content: {
                     "application/json": {
                         [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    "assets.deleteVariant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                variantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAssetVariant"];
+            };
+        };
+        responses: {
+            /** @description The asset variant was deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Asset variant not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Asset variant with id vhsqjb87mm16c32817qh1wa8 not found"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
+                    };
+                };
+            };
+        };
+    };
+    "assets.updateVariant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                variantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAssetVariant"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetVariant"];
+                };
+            };
+            /** @description Asset variant not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "errorCode": "RESOURCE_NOT_FOUND",
+                     *       "messages": [
+                     *         "Asset variant with id vhsqjb87mm16c32817qh1wa8 not found"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": {
+                        errorCode?: string;
+                        messages?: string[];
                     };
                 };
             };

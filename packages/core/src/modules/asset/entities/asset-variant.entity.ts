@@ -1,4 +1,9 @@
-import { AssetVariant, AssetVariantStatus, AssetVariantType } from '@/database';
+import {
+  AssetVariant,
+  AssetVariantStatus,
+  AssetVariantType,
+  Prisma,
+} from '@/database';
 import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
 import { UrlSigningService } from '@/modules/file-delivery';
@@ -85,6 +90,8 @@ export class AssetVariantEntity implements Serializable {
           mimeType: data.mimeType,
           width: data.width,
           height: data.height,
+          displayName: data.displayName,
+          metadata: data.metadata as Prisma.InputJsonValue,
         },
       });
       this._status = updated.status;
@@ -94,6 +101,7 @@ export class AssetVariantEntity implements Serializable {
       this._height = updated.height;
       this._size = updated.size;
       this._duration = updated.duration;
+      this._displayName = updated.displayName;
       this._metadata = updated.metadata as JsonObject | null;
 
       if (data.status === 'READY') {
@@ -108,6 +116,31 @@ export class AssetVariantEntity implements Serializable {
           assetId: this.assetId,
         });
       }
+    } catch (e) {
+      if (PrismaService.isNotFoundError(e)) {
+        throw new AssetVariantNotFound(this.id);
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Permanently deletes the asset variant.
+   */
+  async delete(): Promise<void> {
+    try {
+      const provider = await this.storageUnit.getProvider();
+      await provider.deleteDirectory(
+        getAssetVariantPath({
+          id: this.id,
+          assetId: this.assetId,
+          storageUnitId: this.storageUnit.id,
+          prefix: this.storageUnit.pathPrefix,
+        })
+      );
+      await this.prismaService.assetVariant.delete({
+        where: { id: this.id },
+      });
     } catch (e) {
       if (PrismaService.isNotFoundError(e)) {
         throw new AssetVariantNotFound(this.id);
