@@ -657,13 +657,13 @@ export interface paths {
             cookie?: never;
         };
         /** List user registrations */
-        get: operations["listUserRegistrations"];
+        get: operations["users.listRegistrations"];
         put?: never;
         /**
          * Create a user registration
          * @description Creates a registration token that an external user can use to complete their signup.
          */
-        post: operations["createUserRegistration"];
+        post: operations["users.register"];
         delete?: never;
         options?: never;
         head?: never;
@@ -678,7 +678,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get a user registration */
-        get: operations["getUserRegistration"];
+        get: operations["users.getRegistration"];
         put?: never;
         post?: never;
         delete?: never;
@@ -701,7 +701,7 @@ export interface paths {
          * Revoke a user registration
          * @description Invalidates the registration token, preventing a user from signing up with it.
          */
-        delete: operations["revokeUserRegistration"];
+        delete: operations["users.revokeRegistration"];
         options?: never;
         head?: never;
         patch?: never;
@@ -715,7 +715,7 @@ export interface paths {
             cookie?: never;
         };
         /** List users */
-        get: operations["listUsers"];
+        get: operations["users.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -732,15 +732,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a user */
-        get: operations["getUser"];
+        get: operations["users.get"];
         put?: never;
         post?: never;
         /** Delete a user */
-        delete: operations["deleteUser"];
+        delete: operations["users.delete"];
         options?: never;
         head?: never;
         /** Update a user */
-        patch: operations["updateUser"];
+        patch: operations["users.update"];
         trace?: never;
     };
 }
@@ -4536,7 +4536,7 @@ export interface operations {
             };
         };
     };
-    listUserRegistrations: {
+    "users.listRegistrations": {
         parameters: {
             query?: never;
             header?: never;
@@ -4555,7 +4555,7 @@ export interface operations {
             };
         };
     };
-    createUserRegistration: {
+    "users.register": {
         parameters: {
             query?: never;
             header?: never;
@@ -4578,7 +4578,7 @@ export interface operations {
             };
         };
     };
-    getUserRegistration: {
+    "users.getRegistration": {
         parameters: {
             query?: never;
             header?: never;
@@ -4619,7 +4619,7 @@ export interface operations {
             };
         };
     };
-    revokeUserRegistration: {
+    "users.revokeRegistration": {
         parameters: {
             query?: never;
             header?: never;
@@ -4659,7 +4659,7 @@ export interface operations {
             };
         };
     };
-    listUsers: {
+    "users.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -4683,7 +4683,7 @@ export interface operations {
             };
         };
     };
-    getUser: {
+    "users.get": {
         parameters: {
             query?: never;
             header?: never;
@@ -4724,7 +4724,7 @@ export interface operations {
             };
         };
     };
-    deleteUser: {
+    "users.delete": {
         parameters: {
             query?: never;
             header?: never;
@@ -4764,7 +4764,7 @@ export interface operations {
             };
         };
     };
-    updateUser: {
+    "users.update": {
         parameters: {
             query?: never;
             header?: never;

@@ -58,7 +58,7 @@ export function CreateRegistrationDialog({
 
   const createMutation = useMutation({
     mutationFn: (data: CreateRegistrationFormData) =>
-      client.users.createUserRegistration({
+      client.users.register({
         email: data.email,
         roleIds: data.roleIds,
       }),
