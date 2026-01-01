@@ -34,7 +34,7 @@ export function Assets() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['assets'],
     queryFn: async () => {
-      const results = await client.assets.listAssets({ pageSize: 100 });
+      const results = await client.assets.list({ pageSize: 100 });
       const links = await client.assets.generateLinks({
         assets: results.items.map((item) => ({
           assetId: item.id,

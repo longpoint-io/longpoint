@@ -56,13 +56,13 @@ export function Registrations() {
     error,
   } = useQuery({
     queryKey: ['user-registrations'],
-    queryFn: () => client.users.listUserRegistrations(),
+    queryFn: () => client.users.listRegistrations(),
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => {
       if (!selectedRegistration) throw new Error('No registration selected');
-      return client.users.revokeUserRegistration(selectedRegistration.id);
+      return client.users.revokeRegistration(selectedRegistration.id);
     },
     onSuccess: () => {
       toast.success('Registration revoked successfully');

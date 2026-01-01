@@ -16,7 +16,7 @@ export class ClassifierController {
   @RequirePermission(Permission.CLASSIFIERS_READ)
   @ApiOperation({
     summary: 'List installed classifiers',
-    operationId: 'listClassifiers',
+    operationId: 'classifiers.list',
   })
   @ApiOkResponse({ type: [ClassifierDto] })
   async listClassifiers() {

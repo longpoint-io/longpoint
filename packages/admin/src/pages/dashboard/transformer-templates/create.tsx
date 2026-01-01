@@ -44,13 +44,13 @@ export function CreateTransformerTemplate() {
 
   const { data: transformers, isLoading: transformersLoading } = useQuery({
     queryKey: ['transformers'],
-    queryFn: () => client.transformers.listTransformers(),
+    queryFn: () => client.transformers.list(),
   });
 
   const { data: transformerDetails, isLoading: transformerDetailsLoading } =
     useQuery({
       queryKey: ['transformer', selectedTransformerId],
-      queryFn: () => client.transformers.getTransformer(selectedTransformerId!),
+      queryFn: () => client.transformers.get(selectedTransformerId!),
       enabled: !!selectedTransformerId,
     });
   const inputSchema = transformerDetails?.inputSchema;
@@ -122,9 +122,7 @@ export function CreateTransformerTemplate() {
         payload.input = values.input;
       }
 
-      const result = await client.transformers.createTransformerTemplate(
-        payload
-      );
+      const result = await client.transformers.createTemplate(payload);
 
       toast.success('Transformer template created successfully');
       navigate(`/transformer/templates/${result.id}`);

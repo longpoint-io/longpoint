@@ -56,7 +56,7 @@ export function EditStorageUnitDialog({
 
   const { data: providers } = useQuery({
     queryKey: ['storage-providers'],
-    queryFn: () => client.storage.listStorageProviders(),
+    queryFn: () => client.storage.listProviders(),
     enabled: open,
   });
 
@@ -166,7 +166,6 @@ export function EditStorageUnitDialog({
                 </Field>
               )}
             />
-
 
             <Controller
               name="isDefault"

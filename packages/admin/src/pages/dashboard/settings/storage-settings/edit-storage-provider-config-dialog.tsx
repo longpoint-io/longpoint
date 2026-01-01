@@ -58,13 +58,13 @@ export function EditStorageProviderConfigDialog({
 
   const { data: config, isLoading } = useQuery({
     queryKey: ['storage-provider-config', configId],
-    queryFn: () => client.storage.getStorageConfig(configId),
+    queryFn: () => client.storage.getConfig(configId),
     enabled: open && !!configId,
   });
 
   const { data: providers } = useQuery({
     queryKey: ['storage-providers'],
-    queryFn: () => client.storage.listStorageProviders(),
+    queryFn: () => client.storage.listProviders(),
   });
 
   const selectedProvider = providers?.find(
@@ -102,7 +102,7 @@ export function EditStorageProviderConfigDialog({
 
   const updateMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return client.storage.updateStorageConfig(configId, {
+      return client.storage.updateConfig(configId, {
         name: data.name,
         config: data.config as any,
       });

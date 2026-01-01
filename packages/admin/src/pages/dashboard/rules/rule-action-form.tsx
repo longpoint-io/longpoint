@@ -34,14 +34,14 @@ export function RuleActionForm({ control, name }: RuleActionFormProps) {
   const { data: classifierTemplates, isLoading: classifiersLoading } = useQuery(
     {
       queryKey: ['classifier-templates'],
-      queryFn: () => client.classifiers.listClassifierTemplates(),
+      queryFn: () => client.classifiers.listTemplates(),
     }
   );
 
   const { data: transformerTemplates, isLoading: transformsLoading } = useQuery(
     {
       queryKey: ['transformer-templates'],
-      queryFn: () => client.transformers.listTransformerTemplates(),
+      queryFn: () => client.transformers.listTemplates(),
     }
   );
 

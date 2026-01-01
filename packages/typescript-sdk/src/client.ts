@@ -92,7 +92,7 @@ class ClassifiersClient {
     /**
    * List installed classifiers
    */
-    async listClassifiers(): Promise<components['schemas']['Classifier'][]> {
+    async list(): Promise<components['schemas']['Classifier'][]> {
         const url = `classifiers`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -101,7 +101,7 @@ class ClassifiersClient {
     /**
    * Create a classifier template
    */
-    async createClassifierTemplate(data: components['schemas']['CreateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
+    async createTemplate(data: components['schemas']['CreateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
         const url = `classifier-templates`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -112,7 +112,7 @@ class ClassifiersClient {
    *
    * Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").
    */
-    async listClassifierTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListClassifierTemplatesResponse']> {
+    async listTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListClassifierTemplatesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -131,7 +131,7 @@ class ClassifiersClient {
     /**
    * Get a classifier template
    */
-    async getClassifierTemplate(templateId: string): Promise<components['schemas']['ClassifierTemplate']> {
+    async getTemplate(templateId: string): Promise<components['schemas']['ClassifierTemplate']> {
         const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -140,7 +140,7 @@ class ClassifiersClient {
     /**
    * Update a classifier template
    */
-    async updateClassifierTemplate(templateId: string, data: components['schemas']['UpdateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
+    async updateTemplate(templateId: string, data: components['schemas']['UpdateClassifierTemplate']): Promise<components['schemas']['ClassifierTemplate']> {
         const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -149,7 +149,7 @@ class ClassifiersClient {
     /**
    * Delete a classifier template
    */
-    async deleteClassifierTemplate(templateId: string): Promise<void> {
+    async deleteTemplate(templateId: string): Promise<void> {
         const url = `classifier-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -162,7 +162,7 @@ class AssetsClient {
     /**
    * List assets
    */
-    async listAssets(options?: { cursor?: string; pageSize?: number; collectionIds?: string[] }): Promise<components['schemas']['ListAssetsResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number; collectionIds?: string[] }): Promise<components['schemas']['ListAssetsResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -192,7 +192,7 @@ class AssetsClient {
    *
    * Creates an empty asset that is ready to receive an upload.
    */
-    async createAsset(data: components['schemas']['CreateAsset']): Promise<components['schemas']['CreateAssetResponse']> {
+    async create(data: components['schemas']['CreateAsset']): Promise<components['schemas']['CreateAssetResponse']> {
         const url = `assets`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -201,7 +201,7 @@ class AssetsClient {
     /**
    * Get an asset
    */
-    async getAsset(assetId: string): Promise<components['schemas']['AssetDetails']> {
+    async get(assetId: string): Promise<components['schemas']['AssetDetails']> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -210,7 +210,7 @@ class AssetsClient {
     /**
    * Update an asset
    */
-    async updateAsset(assetId: string, data: components['schemas']['UpdateAsset']): Promise<components['schemas']['AssetDetails']> {
+    async update(assetId: string, data: components['schemas']['UpdateAsset']): Promise<components['schemas']['AssetDetails']> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -221,7 +221,7 @@ class AssetsClient {
    *
    * All associated variants will be deleted.
    */
-    async deleteAsset(assetId: string, data: components['schemas']['DeleteAsset']): Promise<void> {
+    async delete(assetId: string, data: components['schemas']['DeleteAsset']): Promise<void> {
         const url = `assets/${encodeURIComponent(String(assetId))}`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
@@ -237,7 +237,7 @@ class AssetsClient {
   }
 
     /**
-   * Search assets with the active search provider
+   * Query assets with the active search provider
    */
     async search(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
         const url = `search/assets`;
@@ -247,6 +247,8 @@ class AssetsClient {
 
     /**
    * Upload an asset variant
+   *
+   * The variant is determined by the token provided in the query string.
    */
     async upload(assetId: string, options?: { token?: string }): Promise<void> {
         const params = new URLSearchParams();
@@ -326,7 +328,7 @@ class StorageClient {
     /**
    * List installed storage providers
    */
-    async listStorageProviders(): Promise<components['schemas']['StorageProvider'][]> {
+    async listProviders(): Promise<components['schemas']['StorageProvider'][]> {
         const url = `storage/providers`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -335,7 +337,7 @@ class StorageClient {
     /**
    * Create a storage provider config
    */
-    async createStorageConfig(data: components['schemas']['CreateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
+    async createConfig(data: components['schemas']['CreateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -344,7 +346,7 @@ class StorageClient {
     /**
    * List storage configs
    */
-    async listStorageConfigs(options?: { providerId?: string }): Promise<components['schemas']['StorageConfig'][]> {
+    async listConfigs(options?: { providerId?: string }): Promise<components['schemas']['StorageConfig'][]> {
         const params = new URLSearchParams();
         if (options) {
           if (options.providerId !== undefined) {
@@ -360,7 +362,7 @@ class StorageClient {
     /**
    * Get a storage config
    */
-    async getStorageConfig(id: string): Promise<components['schemas']['StorageConfigDetails']> {
+    async getConfig(id: string): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -369,7 +371,7 @@ class StorageClient {
     /**
    * Update a storage config
    */
-    async updateStorageConfig(id: string, data: components['schemas']['UpdateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
+    async updateConfig(id: string, data: components['schemas']['UpdateStorageConfig']): Promise<components['schemas']['StorageConfigDetails']> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -378,7 +380,7 @@ class StorageClient {
     /**
    * Delete a storage config
    */
-    async deleteStorageConfig(id: string): Promise<void> {
+    async deleteConfig(id: string): Promise<void> {
         const url = `storage/configs/${encodeURIComponent(String(id))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -391,9 +393,9 @@ class CollectionsClient {
     /**
    * Create a collection
    *
-   * Creates a new collection for organizing media containers.
+   * Creates a new collection for grouping assets.
    */
-    async createCollection(data: components['schemas']['CreateCollection']): Promise<components['schemas']['Collection']> {
+    async create(data: components['schemas']['CreateCollection']): Promise<components['schemas']['Collection']> {
         const url = `collections`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -402,7 +404,7 @@ class CollectionsClient {
     /**
    * List collections
    */
-    async listCollections(options?: { cursor?: string; pageSize?: number; sort?: 'updatedAt:desc' | 'name:asc' | 'name:desc' }): Promise<components['schemas']['ListCollectionsResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number; sort?: 'updatedAt:desc' | 'name:asc' | 'name:desc' }): Promise<components['schemas']['ListCollectionsResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -424,8 +426,8 @@ class CollectionsClient {
     /**
    * Get a collection
    */
-    async getCollection(id: string): Promise<components['schemas']['CollectionDetails']> {
-        const url = `collections/${encodeURIComponent(String(id))}`;
+    async get(collectionId: string): Promise<components['schemas']['CollectionDetails']> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
   }
@@ -433,8 +435,8 @@ class CollectionsClient {
     /**
    * Update a collection
    */
-    async updateCollection(id: string, data: components['schemas']['UpdateCollection']): Promise<components['schemas']['CollectionDetails']> {
-        const url = `collections/${encodeURIComponent(String(id))}`;
+    async update(collectionId: string, data: components['schemas']['UpdateCollection']): Promise<components['schemas']['CollectionDetails']> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
   }
@@ -444,8 +446,8 @@ class CollectionsClient {
    *
    * Soft deletes a collection by default. Pass permanently=true in body to permanently delete.
    */
-    async deleteCollection(id: string): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}`;
+    async delete(collectionId: string): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
   }
@@ -453,8 +455,8 @@ class CollectionsClient {
     /**
    * Add assets to a collection
    */
-    async addAssetsToCollection(id: string, data: components['schemas']['AddAssetsToCollection']): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}/assets`;
+    async addAssets(collectionId: string, data: components['schemas']['AddAssetsToCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}/assets`;
         const response = await this.httpClient.post(url, data);
         return response.data;
   }
@@ -462,8 +464,8 @@ class CollectionsClient {
     /**
    * Remove assets from a collection
    */
-    async removeAssetsFromCollection(id: string, data: components['schemas']['RemoveAssetsFromCollection']): Promise<void> {
-        const url = `collections/${encodeURIComponent(String(id))}/assets`;
+    async removeAssets(collectionId: string, data: components['schemas']['RemoveAssetsFromCollection']): Promise<void> {
+        const url = `collections/${encodeURIComponent(String(collectionId))}/assets`;
         const response = await this.httpClient.delete(url, { data });
         return response.data;
   }
@@ -520,7 +522,7 @@ class UsersClient {
     /**
    * List users
    */
-    async listUsers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListUsersResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListUsersResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -539,7 +541,7 @@ class UsersClient {
     /**
    * Get a user
    */
-    async getUser(userId: string): Promise<components['schemas']['User']> {
+    async get(userId: string): Promise<components['schemas']['User']> {
         const url = `users/${encodeURIComponent(String(userId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -548,7 +550,7 @@ class UsersClient {
     /**
    * Update a user
    */
-    async updateUser(userId: string, data: components['schemas']['UpdateUser']): Promise<components['schemas']['User']> {
+    async update(userId: string, data: components['schemas']['UpdateUser']): Promise<components['schemas']['User']> {
         const url = `users/${encodeURIComponent(String(userId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -557,7 +559,7 @@ class UsersClient {
     /**
    * Delete a user
    */
-    async deleteUser(userId: string): Promise<void> {
+    async delete(userId: string): Promise<void> {
         const url = `users/${encodeURIComponent(String(userId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -568,7 +570,7 @@ class UsersClient {
    *
    * Creates a registration token that an external user can use to complete their signup.
    */
-    async createUserRegistration(data: components['schemas']['CreateUserRegistration']): Promise<components['schemas']['CreateUserRegistrationResponse']> {
+    async register(data: components['schemas']['CreateUserRegistration']): Promise<components['schemas']['CreateUserRegistrationResponse']> {
         const url = `user-registrations`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -577,7 +579,7 @@ class UsersClient {
     /**
    * List user registrations
    */
-    async listUserRegistrations(): Promise<components['schemas']['UserRegistration'][]> {
+    async listRegistrations(): Promise<components['schemas']['UserRegistration'][]> {
         const url = `user-registrations`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -588,7 +590,7 @@ class UsersClient {
    *
    * Invalidates the registration token, preventing a user from signing up with it.
    */
-    async revokeUserRegistration(userRegistrationId: string): Promise<void> {
+    async revokeRegistration(userRegistrationId: string): Promise<void> {
         const url = `user-registrations/${encodeURIComponent(String(userRegistrationId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -597,7 +599,7 @@ class UsersClient {
     /**
    * Get a user registration
    */
-    async getUserRegistration(token: string): Promise<components['schemas']['UserRegistration']> {
+    async getRegistration(token: string): Promise<components['schemas']['UserRegistration']> {
         const url = `user-registrations/${encodeURIComponent(String(token))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -610,7 +612,7 @@ class RulesClient {
     /**
    * Create a rule
    */
-    async createRule(data: components['schemas']['CreateRule']): Promise<components['schemas']['Rule']> {
+    async create(data: components['schemas']['CreateRule']): Promise<components['schemas']['Rule']> {
         const url = `rules`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -619,7 +621,7 @@ class RulesClient {
     /**
    * List rules
    */
-    async listRules(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListRulesResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListRulesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -638,7 +640,7 @@ class RulesClient {
     /**
    * Get a rule
    */
-    async getRule(ruleId: string): Promise<components['schemas']['RuleDetails']> {
+    async get(ruleId: string): Promise<components['schemas']['RuleDetails']> {
         const url = `rules/${encodeURIComponent(String(ruleId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -647,7 +649,7 @@ class RulesClient {
     /**
    * Update a rule
    */
-    async updateRule(ruleId: string, data: components['schemas']['UpdateRule']): Promise<components['schemas']['Rule']> {
+    async update(ruleId: string, data: components['schemas']['UpdateRule']): Promise<components['schemas']['Rule']> {
         const url = `rules/${encodeURIComponent(String(ruleId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -656,7 +658,7 @@ class RulesClient {
     /**
    * Delete a rule
    */
-    async deleteRule(ruleId: string): Promise<void> {
+    async delete(ruleId: string): Promise<void> {
         const url = `rules/${encodeURIComponent(String(ruleId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -671,7 +673,7 @@ class TransformersClient {
    *
    * Define a template for transforming assets.
    */
-    async createTransformerTemplate(data: components['schemas']['CreateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
+    async createTemplate(data: components['schemas']['CreateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
         const url = `transformer-templates`;
         const response = await this.httpClient.post(url, data);
         return response.data;
@@ -680,7 +682,7 @@ class TransformersClient {
     /**
    * List transformer templates
    */
-    async listTransformerTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformerTemplatesResponse']> {
+    async listTemplates(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformerTemplatesResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -699,7 +701,7 @@ class TransformersClient {
     /**
    * Get a transformer template
    */
-    async getTransformerTemplate(templateId: string): Promise<components['schemas']['TransformerTemplate']> {
+    async getTemplate(templateId: string): Promise<components['schemas']['TransformerTemplate']> {
         const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.get(url);
         return response.data;
@@ -708,7 +710,7 @@ class TransformersClient {
     /**
    * Update a transformer template
    */
-    async updateTransformerTemplate(templateId: string, data: components['schemas']['UpdateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
+    async updateTemplate(templateId: string, data: components['schemas']['UpdateTransformerTemplate']): Promise<components['schemas']['TransformerTemplate']> {
         const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.patch(url, data);
         return response.data;
@@ -717,7 +719,7 @@ class TransformersClient {
     /**
    * Delete a transformer template
    */
-    async deleteTransformerTemplate(templateId: string): Promise<void> {
+    async deleteTemplate(templateId: string): Promise<void> {
         const url = `transformer-templates/${encodeURIComponent(String(templateId))}`;
         const response = await this.httpClient.delete(url);
         return response.data;
@@ -737,7 +739,7 @@ class TransformersClient {
     /**
    * List installed transformers
    */
-    async listTransformers(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformersResponse']> {
+    async list(options?: { cursor?: string; pageSize?: number }): Promise<components['schemas']['ListTransformersResponse']> {
         const params = new URLSearchParams();
         if (options) {
           if (options.cursor !== undefined) {
@@ -756,7 +758,7 @@ class TransformersClient {
     /**
    * Get a transformer
    */
-    async getTransformer(transformerId: string): Promise<components['schemas']['TransformerDetails']> {
+    async get(transformerId: string): Promise<components['schemas']['TransformerDetails']> {
         const url = `transformers/${encodeURIComponent(String(transformerId))}`;
         const response = await this.httpClient.get(url);
         return response.data;

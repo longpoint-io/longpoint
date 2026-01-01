@@ -38,7 +38,7 @@ export function SearchBar() {
       <Input
         ref={inputRef}
         type="search"
-        placeholder="Search media... (⌘K)"
+        placeholder="Search assets... (⌘K)"
         className="pl-9 pr-4"
         onKeyDown={handleKeyDown}
       />

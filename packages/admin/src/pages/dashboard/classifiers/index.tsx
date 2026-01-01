@@ -23,7 +23,7 @@ export function Classifiers() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['classifier-templates'],
-    queryFn: () => client.classifiers.listClassifierTemplates(),
+    queryFn: () => client.classifiers.listTemplates(),
   });
 
   if (isLoading) {

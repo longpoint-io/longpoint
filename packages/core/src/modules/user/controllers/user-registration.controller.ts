@@ -21,7 +21,7 @@ export class UserRegistrationController {
     summary: 'Create a user registration',
     description:
       'Creates a registration token that an external user can use to complete their signup.',
-    operationId: 'createUserRegistration',
+    operationId: 'users.register',
   })
   @ApiOkResponse({ type: CreateUserRegistrationResponseDto })
   @ApiBearerAuth()
@@ -36,7 +36,7 @@ export class UserRegistrationController {
   @RequirePermission(Permission.USERS_READ)
   @ApiOperation({
     summary: 'List user registrations',
-    operationId: 'listUserRegistrations',
+    operationId: 'users.listRegistrations',
   })
   @ApiOkResponse({ type: [UserRegistrationDto] })
   @ApiBearerAuth()
@@ -54,7 +54,7 @@ export class UserRegistrationController {
     summary: 'Revoke a user registration',
     description:
       'Invalidates the registration token, preventing a user from signing up with it.',
-    operationId: 'revokeUserRegistration',
+    operationId: 'users.revokeRegistration',
   })
   @ApiOkResponse({ description: 'The user registration was revoked' })
   @ApiUserRegistrationNotFoundResponse()
@@ -70,7 +70,7 @@ export class UserRegistrationController {
   @Get(':token')
   @ApiOperation({
     summary: 'Get a user registration',
-    operationId: 'getUserRegistration',
+    operationId: 'users.getRegistration',
   })
   @ApiOkResponse({ type: UserRegistrationDto })
   @ApiUserRegistrationNotFoundResponse()

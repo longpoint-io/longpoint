@@ -42,7 +42,7 @@ export class AssetController {
   @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
     summary: 'List assets',
-    operationId: 'listAssets',
+    operationId: 'assets.list',
   })
   @ApiOkResponse({ type: ListAssetsResponseDto })
   async listAssets(@Query() query: ListAssetsQueryDto) {
@@ -58,7 +58,7 @@ export class AssetController {
   @RequirePermission(Permission.ASSETS_CREATE)
   @ApiOperation({
     summary: 'Create an asset',
-    operationId: 'createAsset',
+    operationId: 'assets.create',
     description: 'Creates an empty asset that is ready to receive an upload.',
   })
   @ApiCreatedResponse({
@@ -82,7 +82,7 @@ export class AssetController {
   @RequirePermission(Permission.ASSETS_READ)
   @ApiOperation({
     summary: 'Get an asset',
-    operationId: 'getAsset',
+    operationId: 'assets.get',
   })
   @ApiOkResponse({ type: AssetDetailsDto })
   @ApiAssetNotFoundResponse()
@@ -95,7 +95,7 @@ export class AssetController {
   @RequirePermission(Permission.ASSETS_UPDATE)
   @ApiOperation({
     summary: 'Update an asset',
-    operationId: 'updateAsset',
+    operationId: 'assets.update',
   })
   @ApiOkResponse({ type: AssetDetailsDto })
   @ApiAssetNotFoundResponse()
@@ -113,7 +113,7 @@ export class AssetController {
   @RequirePermission(Permission.ASSETS_DELETE)
   @ApiOperation({
     summary: 'Delete an asset',
-    operationId: 'deleteAsset',
+    operationId: 'assets.delete',
     description: 'All associated variants will be deleted.',
   })
   @ApiOkResponse({ description: 'The asset was deleted' })

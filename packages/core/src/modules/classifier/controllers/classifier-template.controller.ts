@@ -39,7 +39,7 @@ export class ClassifierTemplateController {
   @RequirePermission(Permission.CLASSIFIERS_CREATE)
   @ApiOperation({
     summary: 'Create a classifier template',
-    operationId: 'createClassifierTemplate',
+    operationId: 'classifiers.createTemplate',
   })
   @ApiCreatedResponse({ type: ClassifierTemplateDto })
   async createClassifierTemplate(@Body() body: CreateClassifierTemplateDto) {
@@ -52,7 +52,7 @@ export class ClassifierTemplateController {
   @RequirePermission(Permission.CLASSIFIERS_READ)
   @ApiOperation({
     summary: 'Get a classifier template',
-    operationId: 'getClassifierTemplate',
+    operationId: 'classifiers.getTemplate',
   })
   @ApiOkResponse({ type: ClassifierTemplateDto })
   @ApiClassifierTemplateNotFoundResponse()
@@ -68,7 +68,7 @@ export class ClassifierTemplateController {
   @RequirePermission(Permission.CLASSIFIERS_READ)
   @ApiOperation({
     summary: 'List classifier templates',
-    operationId: 'listClassifierTemplates',
+    operationId: 'classifiers.listTemplates',
     description:
       'Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").',
   })
@@ -93,7 +93,7 @@ export class ClassifierTemplateController {
   @RequirePermission(Permission.CLASSIFIERS_UPDATE)
   @ApiOperation({
     summary: 'Update a classifier template',
-    operationId: 'updateClassifierTemplate',
+    operationId: 'classifiers.updateTemplate',
   })
   @ApiOkResponse({ type: ClassifierTemplateDto })
   @ApiClassifierTemplateNotFoundResponse()
@@ -113,7 +113,7 @@ export class ClassifierTemplateController {
   @RequirePermission(Permission.CLASSIFIERS_DELETE)
   @ApiOperation({
     summary: 'Delete a classifier template',
-    operationId: 'deleteClassifierTemplate',
+    operationId: 'classifiers.deleteTemplate',
   })
   @ApiOkResponse({ description: 'The classifier template was deleted' })
   @ApiClassifierTemplateNotFoundResponse()

@@ -26,7 +26,7 @@ export class UserController {
   @RequirePermission(Permission.USERS_READ)
   @ApiOperation({
     summary: 'List users',
-    operationId: 'listUsers',
+    operationId: 'users.list',
   })
   @ApiOkResponse({ type: ListUsersResponseDto })
   async listUsers(@Query() query: ListUsersQueryDto) {
@@ -42,7 +42,7 @@ export class UserController {
   @RequirePermission(Permission.USERS_READ)
   @ApiOperation({
     summary: 'Get a user',
-    operationId: 'getUser',
+    operationId: 'users.get',
   })
   @ApiOkResponse({ type: UserDto })
   @ApiUserNotFoundResponse()
@@ -55,7 +55,7 @@ export class UserController {
   @RequirePermission(Permission.USERS_UPDATE)
   @ApiOperation({
     summary: 'Update a user',
-    operationId: 'updateUser',
+    operationId: 'users.update',
   })
   @ApiOkResponse({ type: UserDto })
   @ApiUserNotFoundResponse()
@@ -72,7 +72,7 @@ export class UserController {
   @RequirePermission(Permission.USERS_DELETE)
   @ApiOperation({
     summary: 'Delete a user',
-    operationId: 'deleteUser',
+    operationId: 'users.delete',
   })
   @ApiOkResponse({ description: 'The user was deleted' })
   @ApiUserNotFoundResponse()

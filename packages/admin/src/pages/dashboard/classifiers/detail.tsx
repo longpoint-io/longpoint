@@ -38,8 +38,7 @@ export function ClassifierDetail() {
     error,
   } = useQuery({
     queryKey: ['classifier-template', classifierTemplateId],
-    queryFn: () =>
-      client.classifiers.getClassifierTemplate(classifierTemplateId!),
+    queryFn: () => client.classifiers.getTemplate(classifierTemplateId!),
     enabled: !!classifierTemplateId,
   });
 

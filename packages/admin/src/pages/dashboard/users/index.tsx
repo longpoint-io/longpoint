@@ -93,7 +93,7 @@ export function Users() {
   } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const response = await client.users.listUsers({ pageSize: 100 });
+      const response = await client.users.list({ pageSize: 100 });
       return response;
     },
   });
@@ -114,7 +114,7 @@ export function Users() {
   const updateMutation = useMutation({
     mutationFn: (data: UpdateUserFormData) => {
       if (!selectedUser) throw new Error('No user selected');
-      return client.users.updateUser(selectedUser.id, {
+      return client.users.update(selectedUser.id, {
         email: data.email,
         roleIds: data.roleIds,
       });
@@ -139,7 +139,7 @@ export function Users() {
   const deleteMutation = useMutation({
     mutationFn: () => {
       if (!selectedUser) throw new Error('No user selected');
-      return client.users.deleteUser(selectedUser.id);
+      return client.users.delete(selectedUser.id);
     },
     onSuccess: () => {
       toast.success('User deleted successfully');
@@ -159,7 +159,7 @@ export function Users() {
 
   const handleEdit = async (userId: string) => {
     try {
-      const user = await client.users.getUser(userId);
+      const user = await client.users.get(userId);
       setSelectedUser({
         id: user.id,
         name: user.name,

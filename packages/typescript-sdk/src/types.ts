@@ -29,13 +29,13 @@ export interface paths {
             cookie?: never;
         };
         /** List assets */
-        get: operations["listAssets"];
+        get: operations["assets.list"];
         put?: never;
         /**
          * Create an asset
          * @description Creates an empty asset that is ready to receive an upload.
          */
-        post: operations["createAsset"];
+        post: operations["assets.create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -50,18 +50,18 @@ export interface paths {
             cookie?: never;
         };
         /** Get an asset */
-        get: operations["getAsset"];
+        get: operations["assets.get"];
         put?: never;
         post?: never;
         /**
          * Delete an asset
          * @description All associated variants will be deleted.
          */
-        delete: operations["deleteAsset"];
+        delete: operations["assets.delete"];
         options?: never;
         head?: never;
         /** Update an asset */
-        patch: operations["updateAsset"];
+        patch: operations["assets.update"];
         trace?: never;
     };
     "/assets/{assetId}/upload": {
@@ -72,8 +72,11 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Upload an asset variant */
-        put: operations["upload"];
+        /**
+         * Upload an asset variant
+         * @description The variant is determined by the token provided in the query string.
+         */
+        put: operations["assets.upload"];
         post?: never;
         delete?: never;
         options?: never;
@@ -92,10 +95,10 @@ export interface paths {
          * List classifier templates
          * @description Returns both plugin-defined templates (type="plugin") and custom templates (type="custom").
          */
-        get: operations["listClassifierTemplates"];
+        get: operations["classifiers.listTemplates"];
         put?: never;
         /** Create a classifier template */
-        post: operations["createClassifierTemplate"];
+        post: operations["classifiers.createTemplate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -110,15 +113,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a classifier template */
-        get: operations["getClassifierTemplate"];
+        get: operations["classifiers.getTemplate"];
         put?: never;
         post?: never;
         /** Delete a classifier template */
-        delete: operations["deleteClassifierTemplate"];
+        delete: operations["classifiers.deleteTemplate"];
         options?: never;
         head?: never;
         /** Update a classifier template */
-        patch: operations["updateClassifierTemplate"];
+        patch: operations["classifiers.updateTemplate"];
         trace?: never;
     };
     "/classifiers": {
@@ -129,7 +132,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed classifiers */
-        get: operations["listClassifiers"];
+        get: operations["classifiers.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -146,20 +149,20 @@ export interface paths {
             cookie?: never;
         };
         /** List collections */
-        get: operations["listCollections"];
+        get: operations["collections.list"];
         put?: never;
         /**
          * Create a collection
-         * @description Creates a new collection for organizing media containers.
+         * @description Creates a new collection for grouping assets.
          */
-        post: operations["createCollection"];
+        post: operations["collections.create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/collections/{id}": {
+    "/collections/{collectionId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -167,21 +170,21 @@ export interface paths {
             cookie?: never;
         };
         /** Get a collection */
-        get: operations["getCollection"];
+        get: operations["collections.get"];
         put?: never;
         post?: never;
         /**
          * Delete a collection
          * @description Soft deletes a collection by default. Pass permanently=true in body to permanently delete.
          */
-        delete: operations["deleteCollection"];
+        delete: operations["collections.delete"];
         options?: never;
         head?: never;
         /** Update a collection */
-        patch: operations["updateCollection"];
+        patch: operations["collections.update"];
         trace?: never;
     };
-    "/collections/{id}/assets": {
+    "/collections/{collectionId}/assets": {
         parameters: {
             query?: never;
             header?: never;
@@ -191,9 +194,9 @@ export interface paths {
         get?: never;
         put?: never;
         /** Add assets to a collection */
-        post: operations["addAssetsToCollection"];
+        post: operations["collections.addAssets"];
         /** Remove assets from a collection */
-        delete: operations["removeAssetsFromCollection"];
+        delete: operations["collections.removeAssets"];
         options?: never;
         head?: never;
         patch?: never;
@@ -295,10 +298,10 @@ export interface paths {
             cookie?: never;
         };
         /** List rules */
-        get: operations["listRules"];
+        get: operations["rules.list"];
         put?: never;
         /** Create a rule */
-        post: operations["createRule"];
+        post: operations["rules.create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -313,15 +316,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a rule */
-        get: operations["getRule"];
+        get: operations["rules.get"];
         put?: never;
         post?: never;
         /** Delete a rule */
-        delete: operations["deleteRule"];
+        delete: operations["rules.delete"];
         options?: never;
         head?: never;
         /** Update a rule */
-        patch: operations["updateRule"];
+        patch: operations["rules.update"];
         trace?: never;
     };
     "/search/assets": {
@@ -333,7 +336,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Search assets with the active search provider */
+        /** Query assets with the active search provider */
         post: operations["assets.search"];
         delete?: never;
         options?: never;
@@ -418,10 +421,10 @@ export interface paths {
             cookie?: never;
         };
         /** List storage configs */
-        get: operations["listStorageConfigs"];
+        get: operations["storage.listConfigs"];
         put?: never;
         /** Create a storage provider config */
-        post: operations["createStorageConfig"];
+        post: operations["storage.createConfig"];
         delete?: never;
         options?: never;
         head?: never;
@@ -436,15 +439,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a storage config */
-        get: operations["getStorageConfig"];
+        get: operations["storage.getConfig"];
         put?: never;
         post?: never;
         /** Delete a storage config */
-        delete: operations["deleteStorageConfig"];
+        delete: operations["storage.deleteConfig"];
         options?: never;
         head?: never;
         /** Update a storage config */
-        patch: operations["updateStorageConfig"];
+        patch: operations["storage.updateConfig"];
         trace?: never;
     };
     "/storage/providers": {
@@ -455,7 +458,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed storage providers */
-        get: operations["listStorageProviders"];
+        get: operations["storage.listProviders"];
         put?: never;
         post?: never;
         delete?: never;
@@ -560,13 +563,13 @@ export interface paths {
             cookie?: never;
         };
         /** List transformer templates */
-        get: operations["listTransformerTemplates"];
+        get: operations["transformers.listTemplates"];
         put?: never;
         /**
          * Create a transformer template
          * @description Define a template for transforming assets.
          */
-        post: operations["createTransformerTemplate"];
+        post: operations["transformers.createTemplate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -581,15 +584,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a transformer template */
-        get: operations["getTransformerTemplate"];
+        get: operations["transformers.getTemplate"];
         put?: never;
         post?: never;
         /** Delete a transformer template */
-        delete: operations["deleteTransformerTemplate"];
+        delete: operations["transformers.deleteTemplate"];
         options?: never;
         head?: never;
         /** Update a transformer template */
-        patch: operations["updateTransformerTemplate"];
+        patch: operations["transformers.updateTemplate"];
         trace?: never;
     };
     "/transformer-templates/{templateId}/run": {
@@ -605,7 +608,7 @@ export interface paths {
          * Generate a new asset variant with a transformer
          * @description Creates a new derivative variant by applying the transformer template to a source variant.
          */
-        post: operations["transformAssetVariant"];
+        post: operations["transformers.transformAssetVariant"];
         delete?: never;
         options?: never;
         head?: never;
@@ -620,7 +623,7 @@ export interface paths {
             cookie?: never;
         };
         /** List installed transformers */
-        get: operations["listTransformers"];
+        get: operations["transformers.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -637,7 +640,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get a transformer */
-        get: operations["getTransformer"];
+        get: operations["transformers.get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -654,13 +657,13 @@ export interface paths {
             cookie?: never;
         };
         /** List user registrations */
-        get: operations["listUserRegistrations"];
+        get: operations["users.listRegistrations"];
         put?: never;
         /**
          * Create a user registration
          * @description Creates a registration token that an external user can use to complete their signup.
          */
-        post: operations["createUserRegistration"];
+        post: operations["users.register"];
         delete?: never;
         options?: never;
         head?: never;
@@ -675,7 +678,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get a user registration */
-        get: operations["getUserRegistration"];
+        get: operations["users.getRegistration"];
         put?: never;
         post?: never;
         delete?: never;
@@ -698,7 +701,7 @@ export interface paths {
          * Revoke a user registration
          * @description Invalidates the registration token, preventing a user from signing up with it.
          */
-        delete: operations["revokeUserRegistration"];
+        delete: operations["users.revokeRegistration"];
         options?: never;
         head?: never;
         patch?: never;
@@ -712,7 +715,7 @@ export interface paths {
             cookie?: never;
         };
         /** List users */
-        get: operations["listUsers"];
+        get: operations["users.list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -729,15 +732,15 @@ export interface paths {
             cookie?: never;
         };
         /** Get a user */
-        get: operations["getUser"];
+        get: operations["users.get"];
         put?: never;
         post?: never;
         /** Delete a user */
-        delete: operations["deleteUser"];
+        delete: operations["users.delete"];
         options?: never;
         head?: never;
         /** Update a user */
-        patch: operations["updateUser"];
+        patch: operations["users.update"];
         trace?: never;
     };
 }
@@ -2513,7 +2516,7 @@ export interface operations {
             };
         };
     };
-    listAssets: {
+    "assets.list": {
         parameters: {
             query?: {
                 /** @description Filter assets by collection IDs */
@@ -2539,7 +2542,7 @@ export interface operations {
             };
         };
     };
-    createAsset: {
+    "assets.create": {
         parameters: {
             query?: never;
             header?: never;
@@ -2563,7 +2566,7 @@ export interface operations {
             };
         };
     };
-    getAsset: {
+    "assets.get": {
         parameters: {
             query?: never;
             header?: never;
@@ -2604,7 +2607,7 @@ export interface operations {
             };
         };
     };
-    deleteAsset: {
+    "assets.delete": {
         parameters: {
             query?: never;
             header?: never;
@@ -2628,7 +2631,7 @@ export interface operations {
             };
         };
     };
-    updateAsset: {
+    "assets.update": {
         parameters: {
             query?: never;
             header?: never;
@@ -2693,7 +2696,7 @@ export interface operations {
             };
         };
     };
-    upload: {
+    "assets.upload": {
         parameters: {
             query: {
                 /** @description The token used to upload the asset */
@@ -2736,7 +2739,7 @@ export interface operations {
             };
         };
     };
-    listClassifierTemplates: {
+    "classifiers.listTemplates": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -2761,7 +2764,7 @@ export interface operations {
             };
         };
     };
-    createClassifierTemplate: {
+    "classifiers.createTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2784,7 +2787,7 @@ export interface operations {
             };
         };
     };
-    getClassifierTemplate: {
+    "classifiers.getTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2825,7 +2828,7 @@ export interface operations {
             };
         };
     };
-    deleteClassifierTemplate: {
+    "classifiers.deleteTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2865,7 +2868,7 @@ export interface operations {
             };
         };
     };
-    updateClassifierTemplate: {
+    "classifiers.updateTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -2910,7 +2913,7 @@ export interface operations {
             };
         };
     };
-    listClassifiers: {
+    "classifiers.list": {
         parameters: {
             query?: never;
             header?: never;
@@ -2929,7 +2932,7 @@ export interface operations {
             };
         };
     };
-    listCollections: {
+    "collections.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -2955,7 +2958,7 @@ export interface operations {
             };
         };
     };
-    createCollection: {
+    "collections.create": {
         parameters: {
             query?: never;
             header?: never;
@@ -2979,12 +2982,12 @@ export interface operations {
             };
         };
     };
-    getCollection: {
+    "collections.get": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3020,12 +3023,12 @@ export interface operations {
             };
         };
     };
-    deleteCollection: {
+    "collections.delete": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3040,12 +3043,12 @@ export interface operations {
             };
         };
     };
-    updateCollection: {
+    "collections.update": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3085,12 +3088,12 @@ export interface operations {
             };
         };
     };
-    addAssetsToCollection: {
+    "collections.addAssets": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3129,12 +3132,12 @@ export interface operations {
             };
         };
     };
-    removeAssetsFromCollection: {
+    "collections.removeAssets": {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                collectionId: string;
             };
             cookie?: never;
         };
@@ -3485,7 +3488,7 @@ export interface operations {
             };
         };
     };
-    listRules: {
+    "rules.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -3509,7 +3512,7 @@ export interface operations {
             };
         };
     };
-    createRule: {
+    "rules.create": {
         parameters: {
             query?: never;
             header?: never;
@@ -3532,7 +3535,7 @@ export interface operations {
             };
         };
     };
-    getRule: {
+    "rules.get": {
         parameters: {
             query?: never;
             header?: never;
@@ -3573,7 +3576,7 @@ export interface operations {
             };
         };
     };
-    deleteRule: {
+    "rules.delete": {
         parameters: {
             query?: never;
             header?: never;
@@ -3613,7 +3616,7 @@ export interface operations {
             };
         };
     };
-    updateRule: {
+    "rules.update": {
         parameters: {
             query?: never;
             header?: never;
@@ -3786,7 +3789,7 @@ export interface operations {
             };
         };
     };
-    listStorageConfigs: {
+    "storage.listConfigs": {
         parameters: {
             query: {
                 providerId: string;
@@ -3807,7 +3810,7 @@ export interface operations {
             };
         };
     };
-    createStorageConfig: {
+    "storage.createConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3830,7 +3833,7 @@ export interface operations {
             };
         };
     };
-    getStorageConfig: {
+    "storage.getConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3871,7 +3874,7 @@ export interface operations {
             };
         };
     };
-    deleteStorageConfig: {
+    "storage.deleteConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3931,7 +3934,7 @@ export interface operations {
             };
         };
     };
-    updateStorageConfig: {
+    "storage.updateConfig": {
         parameters: {
             query?: never;
             header?: never;
@@ -3976,7 +3979,7 @@ export interface operations {
             };
         };
     };
-    listStorageProviders: {
+    "storage.listProviders": {
         parameters: {
             query?: never;
             header?: never;
@@ -4251,7 +4254,7 @@ export interface operations {
             };
         };
     };
-    listTransformerTemplates: {
+    "transformers.listTemplates": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -4275,7 +4278,7 @@ export interface operations {
             };
         };
     };
-    createTransformerTemplate: {
+    "transformers.createTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4298,7 +4301,7 @@ export interface operations {
             };
         };
     };
-    getTransformerTemplate: {
+    "transformers.getTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4339,7 +4342,7 @@ export interface operations {
             };
         };
     };
-    deleteTransformerTemplate: {
+    "transformers.deleteTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4379,7 +4382,7 @@ export interface operations {
             };
         };
     };
-    updateTransformerTemplate: {
+    "transformers.updateTemplate": {
         parameters: {
             query?: never;
             header?: never;
@@ -4424,7 +4427,7 @@ export interface operations {
             };
         };
     };
-    transformAssetVariant: {
+    "transformers.transformAssetVariant": {
         parameters: {
             query?: never;
             header?: never;
@@ -4468,7 +4471,7 @@ export interface operations {
             };
         };
     };
-    listTransformers: {
+    "transformers.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -4492,7 +4495,7 @@ export interface operations {
             };
         };
     };
-    getTransformer: {
+    "transformers.get": {
         parameters: {
             query?: never;
             header?: never;
@@ -4533,7 +4536,7 @@ export interface operations {
             };
         };
     };
-    listUserRegistrations: {
+    "users.listRegistrations": {
         parameters: {
             query?: never;
             header?: never;
@@ -4552,7 +4555,7 @@ export interface operations {
             };
         };
     };
-    createUserRegistration: {
+    "users.register": {
         parameters: {
             query?: never;
             header?: never;
@@ -4575,7 +4578,7 @@ export interface operations {
             };
         };
     };
-    getUserRegistration: {
+    "users.getRegistration": {
         parameters: {
             query?: never;
             header?: never;
@@ -4616,7 +4619,7 @@ export interface operations {
             };
         };
     };
-    revokeUserRegistration: {
+    "users.revokeRegistration": {
         parameters: {
             query?: never;
             header?: never;
@@ -4656,7 +4659,7 @@ export interface operations {
             };
         };
     };
-    listUsers: {
+    "users.list": {
         parameters: {
             query?: {
                 /** @description The cursor to the next page */
@@ -4680,7 +4683,7 @@ export interface operations {
             };
         };
     };
-    getUser: {
+    "users.get": {
         parameters: {
             query?: never;
             header?: never;
@@ -4721,7 +4724,7 @@ export interface operations {
             };
         };
     };
-    deleteUser: {
+    "users.delete": {
         parameters: {
             query?: never;
             header?: never;
@@ -4761,7 +4764,7 @@ export interface operations {
             };
         };
     };
-    updateUser: {
+    "users.update": {
         parameters: {
             query?: never;
             header?: never;

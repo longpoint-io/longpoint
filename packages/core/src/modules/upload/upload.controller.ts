@@ -16,7 +16,9 @@ export class UploadController {
   @Public()
   @ApiOperation({
     summary: 'Upload an asset variant',
-    operationId: 'upload',
+    description:
+      'The variant is determined by the token provided in the query string.',
+    operationId: 'assets.upload',
   })
   @ApiOkResponse({ description: 'The variant was uploaded' })
   @ApiAssetNotFoundResponse()

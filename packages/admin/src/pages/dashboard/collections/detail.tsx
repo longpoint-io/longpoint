@@ -109,14 +109,14 @@ export function CollectionDetail() {
     error,
   } = useQuery({
     queryKey: ['collection', id],
-    queryFn: () => client.collections.getCollection(id!),
+    queryFn: () => client.collections.get(id!),
     enabled: !!id,
   });
 
   const { data: assetsData, isLoading: isLoadingAssets } = useQuery({
     queryKey: ['assets', 'collection', id],
     queryFn: async () => {
-      const results = await client.assets.listAssets({
+      const results = await client.assets.list({
         collectionIds: id ? [id] : undefined,
         pageSize: 100,
       });
@@ -142,7 +142,7 @@ export function CollectionDetail() {
   }, [collection, editDialogOpen, editForm]);
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.collections.deleteCollection(id!),
+    mutationFn: () => client.collections.delete(id!),
     onSuccess: () => {
       toast.success('Collection deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['collections'] });
@@ -161,7 +161,7 @@ export function CollectionDetail() {
 
   const updateMutation = useMutation({
     mutationFn: (data: EditFormData) =>
-      client.collections.updateCollection(id!, {
+      client.collections.update(id!, {
         name: data.name,
         description: data.description || undefined,
       }),
@@ -183,7 +183,7 @@ export function CollectionDetail() {
 
   const removeAssetsMutation = useMutation({
     mutationFn: (assetIds: string[]) =>
-      client.collections.removeAssetsFromCollection(id!, {
+      client.collections.removeAssets(id!, {
         assetIds,
       }),
     onSuccess: () => {
