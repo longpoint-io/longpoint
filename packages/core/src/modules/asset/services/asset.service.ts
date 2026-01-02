@@ -308,6 +308,20 @@ export class AssetService {
     return variant;
   }
 
+  /**
+   * Deletes one or more asset variants.
+   *
+   * @param variantIds - The unique identifiers of the variants to delete
+   */
+  async deleteAssetVariants(variantIds: string[]): Promise<void> {
+    await Promise.all(
+      variantIds.map(async (id) => {
+        const variant = await this.getAssetVariantByIdOrThrow(id);
+        await variant.delete();
+      })
+    );
+  }
+
   private async toAssetEntity(asset: SelectedAsset): Promise<AssetEntity> {
     const original = asset.variants.find(
       (v) => v.type === AssetVariantType.ORIGINAL

@@ -237,6 +237,24 @@ class AssetsClient {
   }
 
     /**
+   * Update an asset variant
+   */
+    async updateVariant(variantId: string, data: components['schemas']['UpdateAssetVariant']): Promise<components['schemas']['AssetVariant']> {
+        const url = `asset-variants/${encodeURIComponent(String(variantId))}`;
+        const response = await this.httpClient.patch(url, data);
+        return response.data;
+  }
+
+    /**
+   * Delete one or more asset variants
+   */
+    async deleteVariants(data: components['schemas']['DeleteAssetVariants']): Promise<void> {
+        const url = `asset-variants`;
+        const response = await this.httpClient.delete(url, { data });
+        return response.data;
+  }
+
+    /**
    * Query assets with the active search provider
    */
     async search(data: components['schemas']['SearchQuery']): Promise<components['schemas']['SearchResults']> {
