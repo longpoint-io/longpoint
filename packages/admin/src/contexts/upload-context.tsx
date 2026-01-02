@@ -78,7 +78,7 @@ export function UploadProvider({ children }: UploadProviderProps) {
 
         const uploadPromises = supportedFiles.map(async (file) => {
           try {
-            const asset = await client.assets.createAsset({
+            const asset = await client.assets.create({
               mimeType: file.type as SupportedMimeType,
               name: file.name,
               storageUnitId,

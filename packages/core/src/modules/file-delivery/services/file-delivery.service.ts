@@ -295,11 +295,9 @@ export class FileDeliveryService {
     query: SignedUrlParamsDto
   ) {
     try {
-      // Read the playlist content
       const playlistBuffer = await provider.getFileContents(playlistPath);
       let playlistContent = playlistBuffer.toString('utf-8');
 
-      // Process the playlist to inject signed URLs for segments
       const processedContent = this.processHlsPlaylist(
         playlistContent,
         assetVariantId,
@@ -307,7 +305,8 @@ export class FileDeliveryService {
       );
 
       res.setHeader('Content-Type', mimeType);
-      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      // HLS playlists should have short cache time to allow player to refresh and get updated signed URLs
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.send(Buffer.from(processedContent, 'utf-8'));
     } catch (error) {
       throw new FileNotFound(playlistPath);
@@ -326,22 +325,29 @@ export class FileDeliveryService {
     assetVariantId: string,
     playlistExpires?: number
   ): string {
+    const now = Math.floor(Date.now() / 1000);
     const expiresInSeconds = playlistExpires
-      ? Math.max(0, playlistExpires - Math.floor(Date.now() / 1000))
+      ? Math.max(0, playlistExpires - now)
       : undefined;
 
-    // Replace segment references with signed URLs
-    // This matches relative paths like "segments/segment_000.ts" or just "segment_000.ts"
-    return playlistContent.replace(
-      /^([^#\s\/].*\.ts)$/gm,
-      (match, segmentPath) => {
+    let segmentCount = 0;
+    // Replace segment path references with signed URLs
+    const result = playlistContent.replace(
+      /^(?!https?:\/\/)([^#\s\/].*\.ts)$/gm,
+      (_, segmentPath) => {
+        segmentCount++;
+        const trimmedPath = segmentPath.trim();
         const signedUrl = this.urlSigningService.generateSignedUrl(
           assetVariantId,
-          segmentPath.trim(),
+          trimmedPath,
           { expiresInSeconds }
         );
+
         return signedUrl;
       }
     );
+
+    // Ensure the result ends with a newline (HLS spec requirement)
+    return result.endsWith('\n') ? result : result + '\n';
   }
 }

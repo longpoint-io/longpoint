@@ -47,26 +47,66 @@ export default class Hls extends AssetTransformer {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'hls-'));
     const playlistPath = path.join(tempDir, 'playlist.m3u8');
 
-    // Track which files we've uploaded
+    // Track which files we've uploaded or are currently processing
     const uploadedFiles = new Set<string>();
+    const processingFiles = new Set<string>();
+    const uploadQueue: string[] = [];
+    let isProcessingQueue = false;
     let watcher: ReturnType<typeof watch> | null = null;
 
-    try {
-      // Set up file watcher to upload segments as they're created
-      watcher = watch(tempDir, async (eventType, filename) => {
-        if (!filename || uploadedFiles.has(filename)) return;
+    // Process upload queue sequentially to avoid race conditions
+    const processUploadQueue = async () => {
+      if (isProcessingQueue || uploadQueue.length === 0) return;
+      isProcessingQueue = true;
 
-        // Only process segment files (.ts), not the playlist
-        if (!filename.endsWith('.ts')) return;
+      while (uploadQueue.length > 0) {
+        const filename = uploadQueue.shift();
+        if (
+          !filename ||
+          uploadedFiles.has(filename) ||
+          processingFiles.has(filename)
+        ) {
+          continue;
+        }
 
+        processingFiles.add(filename);
         const filePath = path.join(tempDir, filename);
 
-        // Wait a moment to ensure FFmpeg finished writing
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
         try {
-          // Check if file exists and is readable
+          // Wait for file to be stable (not changing size)
+          let previousSize = -1;
+          let stableCount = 0;
+          const maxWaitTime = 5000; // Max 5 seconds
+          const startTime = Date.now();
+
+          while (stableCount < 3 && Date.now() - startTime < maxWaitTime) {
+            try {
+              const stats = await fs.stat(filePath);
+              if (stats.size === previousSize && stats.size > 0) {
+                stableCount++;
+              } else {
+                stableCount = 0;
+                previousSize = stats.size;
+              }
+              if (stableCount < 3) {
+                await new Promise((resolve) => setTimeout(resolve, 200));
+              }
+            } catch (error) {
+              // File doesn't exist yet or was deleted
+              if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+                await new Promise((resolve) => setTimeout(resolve, 200));
+                continue;
+              }
+              throw error;
+            }
+          }
+
+          // Final check that file exists and is readable
           await fs.access(filePath);
+          const finalStats = await fs.stat(filePath);
+          if (finalStats.size === 0) {
+            throw new Error('File is empty');
+          }
 
           // Stream segment to storage
           const relativePath = `segments/${filename}`;
@@ -76,10 +116,43 @@ export default class Hls extends AssetTransformer {
           uploadedFiles.add(filename);
 
           // Delete the temp file immediately after successful upload
-          await fs.unlink(filePath);
+          try {
+            await fs.unlink(filePath);
+          } catch (unlinkError) {
+            // File might already be deleted, that's okay
+            if ((unlinkError as NodeJS.ErrnoException).code !== 'ENOENT') {
+              console.warn(
+                `Failed to delete temp file ${filename}:`,
+                unlinkError
+              );
+            }
+          }
         } catch (error) {
           // Log error but don't delete - might need to retry
           console.error(`Failed to upload segment ${filename}:`, error);
+        } finally {
+          processingFiles.delete(filename);
+        }
+      }
+
+      isProcessingQueue = false;
+    };
+
+    try {
+      // Set up file watcher to queue segments for upload
+      watcher = watch(tempDir, (eventType, filename) => {
+        if (!filename || !filename.endsWith('.ts')) return;
+
+        if (uploadedFiles.has(filename) || processingFiles.has(filename))
+          return;
+
+        if (eventType !== 'rename') return;
+
+        if (!uploadQueue.includes(filename)) {
+          uploadQueue.push(filename);
+          processUploadQueue().catch((error) => {
+            console.error(`Error processing upload queue:`, error);
+          });
         }
       });
 
@@ -174,20 +247,60 @@ export default class Hls extends AssetTransformer {
         return new Error(errorMessage);
       });
 
-      // Wait a moment for any final files
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Wait for any final files to be written and for queue to finish processing
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Upload any remaining segment files
+      // Wait for upload queue to finish processing
+      while (isProcessingQueue || uploadQueue.length > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      // Upload any remaining segment files that weren't caught by the watcher
       const remainingFiles = await fs.readdir(tempDir);
       for (const file of remainingFiles) {
+        if (
+          file.endsWith('.ts') &&
+          !uploadedFiles.has(file) &&
+          !processingFiles.has(file)
+        ) {
+          if (!uploadQueue.includes(file)) {
+            uploadQueue.push(file);
+          }
+        }
+      }
+
+      // Process any remaining files in the queue
+      await processUploadQueue();
+
+      // Final pass: try to upload any files that still remain
+      const finalFiles = await fs.readdir(tempDir);
+      for (const file of finalFiles) {
         if (file.endsWith('.ts') && !uploadedFiles.has(file)) {
           const filePath = path.join(tempDir, file);
           try {
+            // Check file stability one more time
+            await fs.access(filePath);
+            const stats = await fs.stat(filePath);
+            if (stats.size === 0) {
+              console.warn(`Skipping empty segment ${file}`);
+              continue;
+            }
+
             const relativePath = `segments/${file}`;
             const fileStream = createReadStream(filePath);
             await outputVariant.fileOperations.write(relativePath, fileStream);
-            await fs.unlink(filePath); // Delete immediately
             uploadedFiles.add(file);
+
+            try {
+              await fs.unlink(filePath);
+            } catch (unlinkError) {
+              if ((unlinkError as NodeJS.ErrnoException).code !== 'ENOENT') {
+                console.warn(
+                  `Failed to delete temp file ${file}:`,
+                  unlinkError
+                );
+              }
+            }
           } catch (error) {
             console.error(`Failed to upload remaining segment ${file}:`, error);
           }
