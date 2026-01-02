@@ -157,7 +157,6 @@ export class AssetVariantEntity implements Serializable {
       getAssetVariantPath({
         id: this.id,
         assetId: this.assetId,
-        entryPoint: this.entryPoint,
         storageUnitId: this.storageUnit.id,
         prefix: this.storageUnit.pathPrefix,
       })

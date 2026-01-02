@@ -2,6 +2,7 @@ import { LongpointPluginConfig } from '@longpoint/devkit';
 import metadataExtractorContribution from './classifiers/metadata-extractor/index.js';
 import localStorageContribution from './storage/local/index.js';
 import animatedPreviewContribution from './transformers/animated-preview/index.js';
+import hlsContribution from './transformers/hls/index.js';
 import thumbnailGeneratorContribution from './transformers/thumbnail-generator/index.js';
 import videoTranscoderContribution from './transformers/video-transcoder/index.js';
 
@@ -14,6 +15,7 @@ export default {
       transcoder: videoTranscoderContribution,
       thumbnailGenerator: thumbnailGeneratorContribution,
       animatedPreview: animatedPreviewContribution,
+      hls: hlsContribution,
     },
     classifiers: {
       metadataExtractor: metadataExtractorContribution,
