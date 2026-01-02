@@ -195,14 +195,37 @@ export default class Hls extends AssetTransformer {
       }
 
       // Upload final playlist (after all segments are done)
+      // Need to update segment paths to include 'segments/' prefix
       try {
         await fs.access(playlistPath);
-        const playlistStream = createReadStream(playlistPath);
+
+        // Read the playlist content
+        let playlistContent = await fs.readFile(playlistPath, 'utf-8');
+
+        // Replace segment references to include 'segments/' prefix
+        // Match lines that are just segment filenames (not starting with # or http)
+        playlistContent = playlistContent.replace(
+          /^([^#\s].*\.ts)$/gm,
+          'segments/$1'
+        );
+
+        // Write the modified playlist to a temporary location
+        const modifiedPlaylistPath = path.join(
+          tempDir,
+          'playlist_modified.m3u8'
+        );
+        await fs.writeFile(modifiedPlaylistPath, playlistContent, 'utf-8');
+
+        // Upload the modified playlist
+        const playlistStream = createReadStream(modifiedPlaylistPath);
         await outputVariant.fileOperations.write(
           outputVariant.entryPoint,
           playlistStream
         );
+
+        // Clean up both playlist files
         await fs.unlink(playlistPath);
+        await fs.unlink(modifiedPlaylistPath).catch(() => {});
       } catch (error) {
         throw new Error(
           `Failed to upload playlist file: ${
