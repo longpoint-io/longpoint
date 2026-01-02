@@ -7,6 +7,7 @@ import {
   getAssetCachePath,
   getAssetVariantPath,
 } from '@/shared/utils/asset.utils';
+import { LongpointMimeType } from '@longpoint/devkit';
 import { ErrorCode } from '@longpoint/types';
 import { getMimeType } from '@longpoint/utils/media';
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
@@ -31,17 +32,15 @@ export class FileDeliveryService {
   async serveFile(req: Request, res: Response, query: SignedUrlParamsDto) {
     const requestPath = req.path.replace(/^\/v\/?/, '');
     const pathPrefix = this.configService.get('storage.pathPrefix');
-
     const pathParts = requestPath.split('/').filter(Boolean);
 
     // Path format: /v/{assetVariantId}/{entryPoint}
-    if (pathParts.length !== 2) {
+    if (pathParts.length < 2) {
       throw new InvalidFilePath(requestPath);
     }
 
     const assetVariantId = pathParts[0];
-    const entryPoint = pathParts[1];
-
+    const entryPoint = pathParts.slice(1).join('/');
     const pathForSignature = `${assetVariantId}/${entryPoint}`;
     this.urlSigningService.verifySignature(pathForSignature, query);
 
@@ -87,6 +86,22 @@ export class FileDeliveryService {
       query.fit !== undefined;
 
     if (!hasTransformParams) {
+      // Handle HLS playlists
+      if (
+        assetVariant.mimeType === LongpointMimeType.M3U8 &&
+        entryPoint.endsWith('.m3u8')
+      ) {
+        return this.serveHlsPlaylist(
+          req,
+          res,
+          assetVariantId,
+          variantEntryPointPath,
+          provider,
+          assetVariant.mimeType,
+          query
+        );
+      }
+
       try {
         const range = req.headers.range;
 
@@ -263,5 +278,70 @@ export class FileDeliveryService {
     buffer: Buffer
   ) {
     return provider.upload(cachePath, buffer);
+  }
+
+  /**
+   * Serves an HLS playlist with signed URLs for all segment references.
+   * Reads the playlist, replaces segment file references with signed URLs,
+   * and serves the modified playlist.
+   */
+  private async serveHlsPlaylist(
+    req: Request,
+    res: Response,
+    assetVariantId: string,
+    playlistPath: string,
+    provider: StorageProviderEntity,
+    mimeType: string,
+    query: SignedUrlParamsDto
+  ) {
+    try {
+      // Read the playlist content
+      const playlistBuffer = await provider.getFileContents(playlistPath);
+      let playlistContent = playlistBuffer.toString('utf-8');
+
+      // Process the playlist to inject signed URLs for segments
+      const processedContent = this.processHlsPlaylist(
+        playlistContent,
+        assetVariantId,
+        query.expires
+      );
+
+      res.setHeader('Content-Type', mimeType);
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      res.send(Buffer.from(processedContent, 'utf-8'));
+    } catch (error) {
+      throw new FileNotFound(playlistPath);
+    }
+  }
+
+  /**
+   * Processes an HLS playlist by replacing segment file references with signed URLs.
+   * @param playlistContent The raw playlist content
+   * @param assetVariantId The asset variant ID for generating signed URLs
+   * @param playlistExpires The expiration time from the playlist request (optional)
+   * @returns The processed playlist with signed segment URLs
+   */
+  private processHlsPlaylist(
+    playlistContent: string,
+    assetVariantId: string,
+    playlistExpires?: number
+  ): string {
+    const expiresInSeconds = playlistExpires
+      ? Math.max(0, playlistExpires - Math.floor(Date.now() / 1000))
+      : undefined;
+
+    // Replace segment references with signed URLs
+    // This matches relative paths like "segments/segment_000.ts" or just "segment_000.ts"
+    return playlistContent.replace(
+      /^([^#\s\/].*\.ts)$/gm,
+      (match, segmentPath) => {
+        const signedUrl = this.urlSigningService.generateSignedUrl(
+          assetVariantId,
+          segmentPath.trim(),
+          { expiresInSeconds }
+        );
+        return signedUrl;
+      }
+    );
   }
 }
