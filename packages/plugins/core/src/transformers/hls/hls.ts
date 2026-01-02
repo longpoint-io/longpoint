@@ -23,7 +23,7 @@ export default class Hls extends AssetTransformer {
     return {
       variants: [
         {
-          name: 'HLS Playlist',
+          name: args.input.name || 'HLS Playlist',
           entryPoint: 'playlist.m3u8',
           mimeType: LongpointMimeType.M3U8,
           type: 'DERIVATIVE',

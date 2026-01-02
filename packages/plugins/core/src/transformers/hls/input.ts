@@ -2,6 +2,13 @@ import { ConfigSchemaDefinition, ConfigValues } from '@longpoint/config-schema';
 import dimensionsInputSchema from '../../lib/dimensions.js';
 
 const hlsInputSchema = {
+  name: {
+    label: 'Name',
+    description: 'A name for the variant',
+    type: 'string',
+    placeholder: 'e.g. 720p Stream',
+    required: false,
+  },
   segmentDuration: {
     label: 'Segment Duration',
     description: 'Duration of each HLS segment in seconds',
