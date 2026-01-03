@@ -22,7 +22,7 @@ export class SegmentUploader {
 
   setupWatcher(): void {
     this.watcher = watch(this.tempDir, (eventType, filename) => {
-      if (!filename || !filename.endsWith('.ts')) return;
+      if (!filename || !this.isSegmentFile(filename)) return;
       if (
         this.uploadedFiles.has(filename) ||
         this.processingFiles.has(filename)
@@ -50,7 +50,7 @@ export class SegmentUploader {
     const files = await fs.readdir(this.tempDir);
     for (const file of files) {
       if (
-        file.endsWith('.ts') &&
+        this.isSegmentFile(file) &&
         !this.uploadedFiles.has(file) &&
         !this.processingFiles.has(file) &&
         !this.uploadQueue.includes(file)
@@ -64,7 +64,7 @@ export class SegmentUploader {
   async uploadRemainingSegments(): Promise<void> {
     const files = await fs.readdir(this.tempDir);
     for (const file of files) {
-      if (file.endsWith('.ts') && !this.uploadedFiles.has(file)) {
+      if (this.isSegmentFile(file) && !this.uploadedFiles.has(file)) {
         const filePath = path.join(this.tempDir, file);
         try {
           await fs.access(filePath);
@@ -168,5 +168,9 @@ export class SegmentUploader {
     if (finalStats.size === 0) {
       throw new Error('File is empty');
     }
+  }
+
+  private isSegmentFile(filename: string): boolean {
+    return filename.endsWith('.m4s');
   }
 }

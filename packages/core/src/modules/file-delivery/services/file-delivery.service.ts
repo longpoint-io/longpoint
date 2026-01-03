@@ -315,6 +315,7 @@ export class FileDeliveryService {
 
   /**
    * Processes an HLS playlist by replacing segment file references with signed URLs.
+   * Handles both fMP4 (.m4s segments + init.mp4) and legacy TS (.ts) segments.
    * @param playlistContent The raw playlist content
    * @param assetVariantId The asset variant ID for generating signed URLs
    * @param playlistExpires The expiration time from the playlist request (optional)
@@ -330,21 +331,32 @@ export class FileDeliveryService {
       ? Math.max(0, playlistExpires - now)
       : undefined;
 
-    let segmentCount = 0;
-    // Replace segment path references with signed URLs
-    const result = playlistContent.replace(
-      /^(?!https?:\/\/)([^#\s\/].*\.ts)$/gm,
-      (_, segmentPath) => {
-        segmentCount++;
-        const trimmedPath = segmentPath.trim();
-        const signedUrl = this.urlSigningService.generateSignedUrl(
-          assetVariantId,
-          trimmedPath,
-          { expiresInSeconds }
-        );
+    const signPath = (filePath: string) => {
+      return this.urlSigningService.generateSignedUrl(
+        assetVariantId,
+        filePath.trim(),
+        { expiresInSeconds }
+      );
+    };
 
-        return signedUrl;
-      }
+    let result = playlistContent;
+
+    // Sign the init segment in #EXT-X-MAP directive (fMP4)
+    result = result.replace(
+      /#EXT-X-MAP:URI="([^"]+)"/g,
+      (match, initPath) => `#EXT-X-MAP:URI="${signPath(initPath)}"`
+    );
+
+    // Replace fMP4 segment references (.m4s)
+    result = result.replace(
+      /^(?!https?:\/\/)([^#\s].*\.m4s)$/gm,
+      (_, segmentPath) => signPath(segmentPath)
+    );
+
+    // Replace legacy TS segment references (.ts) for backwards compatibility
+    result = result.replace(
+      /^(?!https?:\/\/)([^#\s].*\.ts)$/gm,
+      (_, segmentPath) => signPath(segmentPath)
     );
 
     // Ensure the result ends with a newline (HLS spec requirement)

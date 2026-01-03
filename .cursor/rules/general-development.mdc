@@ -20,3 +20,4 @@ alwaysApply: true
 * Avoid repetitive copy when possible (Heading: "Details", Subheading: "Details about the asset")
 * Avoid overly verbose comments. Try to comment when code is less self-documenting
 * Follow the entity/service pattern in the core package. Service orchestrates
+* Class method ordering: public -> protected -> private

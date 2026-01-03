@@ -119,7 +119,9 @@ export default class Hls extends AssetTransformer {
       .arg('-f', 'hls')
       .arg('-hls_time', String(segmentDuration))
       .arg('-hls_list_size', '0')
-      .arg('-hls_segment_filename', path.join(tempDir, 'segment_%03d.ts'))
+      .arg('-hls_segment_type', 'fmp4')
+      .arg('-hls_fmp4_init_filename', 'init.mp4')
+      .arg('-hls_segment_filename', path.join(tempDir, 'segment_%03d.m4s'))
       .arg(playlistPath);
 
     return ffmpeg;
@@ -216,9 +218,18 @@ export default class Hls extends AssetTransformer {
   ): Promise<void> {
     await fs.access(playlistPath);
 
+    // Upload init.mp4 (fMP4 initialization segment) at top level with playlist
+    const initPath = path.join(tempDir, 'init.mp4');
+    await fs.access(initPath);
+    const initStream = createReadStream(initPath);
+    await outputVariant.fileOperations.write('init.mp4', initStream);
+    await fs.unlink(initPath);
+
+    // Update playlist to reference segments in the segments/ directory
+    // (init.mp4 stays at top level, no path modification needed)
     let playlistContent = await fs.readFile(playlistPath, 'utf-8');
     playlistContent = playlistContent.replace(
-      /^([^#\s].*\.ts)$/gm,
+      /^([^#\s].*\.m4s)$/gm,
       'segments/$1'
     );
 
