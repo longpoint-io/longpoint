@@ -8,7 +8,6 @@ import { PrismaService } from '@/modules/common/services';
 import { EventPublisher } from '@/modules/event';
 import { UrlSigningService } from '@/modules/file-delivery';
 import { StorageUnitEntity } from '@/modules/storage/entities';
-import { Serializable } from '@/shared/types/swagger.types';
 import { getAssetVariantPath } from '@/shared/utils/asset.utils';
 import { FileOperations } from '@longpoint/devkit';
 import { JsonObject, SupportedMimeType } from '@longpoint/types';
@@ -16,8 +15,11 @@ import { forwardSlashJoin } from '@longpoint/utils/path';
 import { Readable } from 'stream';
 import { AssetVariantNotFound } from '../asset.errors';
 import { AssetEventKey } from '../asset.events';
-import { SelectedAssetVariant } from '../asset.selectors';
-import { AssetVariantDto } from '../dtos/containers/asset-variant.dto';
+import { selectAssetVariant, SelectedAssetVariant } from '../asset.selectors';
+import {
+  AssetVariantDto,
+  AssetVariantReferenceDto,
+} from '../dtos/containers/asset-variant.dto';
 
 export interface AssetVariantEntityArgs extends SelectedAssetVariant {
   urlSigningService: UrlSigningService;
@@ -40,7 +42,7 @@ export type UpdateAssetVariantArgs = Partial<
   >
 >;
 
-export class AssetVariantEntity implements Serializable {
+export class AssetVariantEntity {
   readonly id: string;
   readonly type: AssetVariantType;
   readonly assetId: string;
@@ -53,6 +55,8 @@ export class AssetVariantEntity implements Serializable {
   private _size: number | null;
   private _duration: number | null;
   private _metadata: JsonObject | null;
+  private _parentId: string | null;
+  private _childIds: string[] = [];
 
   private readonly urlSigningService: UrlSigningService;
   private readonly prismaService: PrismaService;
@@ -76,6 +80,8 @@ export class AssetVariantEntity implements Serializable {
     this.storageUnit = params.storageUnit;
     this.prismaService = params.prismaService;
     this.eventPublisher = params.eventPublisher;
+    this._parentId = params.parentId;
+    this._childIds = params.children.map((child) => child.id);
   }
 
   async update(data: UpdateAssetVariantArgs) {
@@ -149,6 +155,29 @@ export class AssetVariantEntity implements Serializable {
   }
 
   /**
+   * Gets the child asset variants of the current variant.
+   * @returns The child asset variants.
+   */
+  async getChildren(): Promise<AssetVariantEntity[]> {
+    const children = await this.prismaService.assetVariant.findMany({
+      where: {
+        parentId: this.id,
+      },
+      select: selectAssetVariant(),
+    });
+    return children.map(
+      (child) =>
+        new AssetVariantEntity({
+          ...child,
+          storageUnit: this.storageUnit,
+          urlSigningService: this.urlSigningService,
+          prismaService: this.prismaService,
+          eventPublisher: this.eventPublisher,
+        })
+    );
+  }
+
+  /**
    * Sync the size of the variant from the storage unit
    */
   async syncSize() {
@@ -195,6 +224,12 @@ export class AssetVariantEntity implements Serializable {
     };
   }
 
+  toReferenceDto(): AssetVariantReferenceDto {
+    return new AssetVariantReferenceDto({
+      id: this.id,
+    });
+  }
+
   toDto(): AssetVariantDto {
     return new AssetVariantDto({
       id: this.id,
@@ -210,6 +245,10 @@ export class AssetVariantEntity implements Serializable {
       entryPoint: this.entryPoint,
       mimeType: this.mimeType,
       url: this.url,
+      parentId: this._parentId,
+      children: this._childIds.map(
+        (childId) => new AssetVariantReferenceDto({ id: childId })
+      ),
     });
   }
 

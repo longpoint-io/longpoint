@@ -70,8 +70,11 @@ model AssetVariant {
 
   assetId        String
   asset          Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  uploadToken    UploadToken?
+  parentId       String?
+  parent         AssetVariant?   @relation(name: "ParentVariant", fields: [parentId], references: [id], onDelete: Cascade)
+  children       AssetVariant[]  @relation("ParentVariant")
   classifierRuns ClassifierRun[]
+  uploadToken    UploadToken?
 
   @@index([assetId, status])
 }

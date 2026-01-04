@@ -15,6 +15,12 @@ export const selectAsset = () => {
   } satisfies Prisma.AssetSelect;
 };
 
+export const selectAssetVariantReference = () => {
+  return {
+    id: true,
+  } satisfies Prisma.AssetVariantSelect;
+};
+
 export type SelectedAsset = Prisma.AssetGetPayload<{
   select: ReturnType<typeof selectAsset>;
 }>;
@@ -33,6 +39,10 @@ export const selectAssetVariant = () => {
     size: true,
     duration: true,
     metadata: true,
+    parentId: true,
+    children: {
+      select: selectAssetVariantReference(),
+    },
   } satisfies Prisma.AssetVariantSelect;
 };
 

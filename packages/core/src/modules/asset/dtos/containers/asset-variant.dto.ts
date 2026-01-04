@@ -4,19 +4,28 @@ import { JsonObject } from '@/shared/types/object.types';
 import { SupportedMimeType } from '@longpoint/types';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-export type AssetVariantParams = Omit<SelectedAssetVariant, 'assetId'> & {
-  aspectRatio: number | null;
-  url?: string;
-};
-
-@ApiSchema({ name: 'AssetVariant' })
-export class AssetVariantDto {
+export type AssetVariantReferenceParams = Pick<SelectedAssetVariant, 'id'>;
+@ApiSchema({ name: 'AssetVariantReference' })
+export class AssetVariantReferenceDto {
   @ApiProperty({
     description: 'The ID of the asset variant',
     example: 'r2qwyd76nvd98cu6ewg8ync2',
   })
   id: string;
 
+  constructor(data: AssetVariantReferenceParams) {
+    this.id = data.id;
+  }
+}
+
+export type AssetVariantParams = Omit<SelectedAssetVariant, 'assetId'> & {
+  aspectRatio: number | null;
+  url?: string;
+  children: AssetVariantReferenceDto[];
+};
+
+@ApiSchema({ name: 'AssetVariant' })
+export class AssetVariantDto extends AssetVariantReferenceDto {
   @ApiProperty({
     description: 'The asset variant type',
     example: AssetVariantType.ORIGINAL,
@@ -109,8 +118,22 @@ export class AssetVariantDto {
   })
   url: string | null;
 
+  @ApiProperty({
+    description: 'The ID of the parent asset variant',
+    example: 'r2qwyd76nvd98cu6ewg8ync2',
+    nullable: true,
+  })
+  parentId: string | null;
+
+  @ApiProperty({
+    description: 'Child asset variants',
+    type: [AssetVariantReferenceDto],
+    example: [new AssetVariantReferenceDto({ id: 'r2qwyd76nvd98cu6ewg8ync2' })],
+  })
+  children: AssetVariantReferenceDto[] = [];
+
   constructor(data: AssetVariantParams) {
-    this.id = data.id;
+    super(data);
     this.type = data.type;
     this.displayName = data.displayName;
     this.status = data.status;
@@ -122,5 +145,7 @@ export class AssetVariantDto {
     this.duration = data.duration;
     this.metadata = (data.metadata as JsonObject | null) ?? null;
     this.url = data.url ?? null;
+    this.parentId = data.parentId;
+    this.children = data.children;
   }
 }
