@@ -293,3 +293,46 @@ export class FFprobeCommand extends BaseCommand {
     return outputData;
   }
 }
+
+export interface VideoInfo {
+  width: number;
+  height: number;
+  duration?: number;
+  bitrate?: number;
+  codec?: string;
+}
+
+/**
+ * Probe a video source to get its dimensions and metadata.
+ */
+export async function probeVideoInfo(sourceUrl: string): Promise<VideoInfo> {
+  const ffprobe = new FFprobeCommand()
+    .arg('-v', 'quiet')
+    .arg('-print_format', 'json')
+    .arg('-show_streams')
+    .arg('-show_format')
+    .arg(sourceUrl);
+
+  const output = await ffprobe.executeAndReturnOutput();
+  const data = JSON.parse(output);
+
+  const videoStream = data.streams?.find(
+    (s: { codec_type: string }) => s.codec_type === 'video'
+  );
+
+  if (!videoStream) {
+    throw new Error('No video stream found in source');
+  }
+
+  return {
+    width: videoStream.width,
+    height: videoStream.height,
+    duration: data.format?.duration
+      ? parseFloat(data.format.duration)
+      : undefined,
+    bitrate: data.format?.bit_rate
+      ? parseInt(data.format.bit_rate, 10)
+      : undefined,
+    codec: videoStream.codec_name,
+  };
+}

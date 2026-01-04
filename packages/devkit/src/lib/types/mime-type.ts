@@ -11,7 +11,15 @@ export const LongpointMimeType = {
   MP4: 'video/mp4',
   WEBM: 'video/webm',
   MOV: 'video/quicktime',
-  M3U8: 'application/vnd.apple.mpegurl', // m3u8
+  MKV: 'video/x-matroska',
+  /**
+   * HLS playlist
+   */
+  M3U8: 'application/vnd.apple.mpegurl',
+  /**
+   * MPEG-DASH playlist
+   */
+  MPD: 'application/dash+xml',
   // OGV: 'video/ogg',
   // PLAIN_TEXT: 'text/plain',
   // HTML: 'text/html',

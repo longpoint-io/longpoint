@@ -1,6 +1,6 @@
 import { useClient } from '@/hooks/common/use-client';
+import { LongpointMimeType } from '@longpoint/devkit';
 import { useUpload, type UploadFile } from '@longpoint/react';
-import { SupportedMimeType } from '@longpoint/types';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
@@ -56,8 +56,8 @@ export function UploadProvider({ children }: UploadProviderProps) {
     async (files: File[], storageUnitId?: string): Promise<void> => {
       try {
         const supportedFiles = files.filter((file) => {
-          const mimeType = file.type as SupportedMimeType;
-          return Object.values(SupportedMimeType).includes(mimeType);
+          const mimeType = file.type as LongpointMimeType;
+          return Object.values(LongpointMimeType).includes(mimeType);
         });
 
         if (supportedFiles.length === 0) {
@@ -79,7 +79,7 @@ export function UploadProvider({ children }: UploadProviderProps) {
         const uploadPromises = supportedFiles.map(async (file) => {
           try {
             const asset = await client.assets.create({
-              mimeType: file.type as SupportedMimeType,
+              mimeType: file.type as LongpointMimeType,
               name: file.name,
               storageUnitId,
             });

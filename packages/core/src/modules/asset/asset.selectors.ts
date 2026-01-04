@@ -39,9 +39,19 @@ export const selectAssetVariant = () => {
     size: true,
     duration: true,
     metadata: true,
-    parentId: true,
+    parents: {
+      select: {
+        parent: {
+          select: selectAssetVariantReference(),
+        },
+      },
+    },
     children: {
-      select: selectAssetVariantReference(),
+      select: {
+        child: {
+          select: selectAssetVariantReference(),
+        },
+      },
     },
   } satisfies Prisma.AssetVariantSelect;
 };

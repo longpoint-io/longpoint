@@ -1,6 +1,6 @@
 import { useUploadContext } from '@/contexts/upload-context';
 import { useClient } from '@/hooks/common/use-client';
-import { SupportedMimeType } from '@longpoint/types';
+import { LongpointMimeType } from '@longpoint/devkit';
 import { Button } from '@longpoint/ui/components/button';
 import {
   Dialog,
@@ -20,6 +20,7 @@ import {
 } from '@longpoint/ui/components/select';
 import { cn } from '@longpoint/ui/utils';
 import { formatBytes } from '@longpoint/utils/format';
+import { mimeTypeToExtension } from '@longpoint/utils/media';
 import { useQuery } from '@tanstack/react-query';
 import {
   AlertCircleIcon,
@@ -175,7 +176,9 @@ export function UploadDialog() {
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept={Object.values(SupportedMimeType).join(',')}
+                accept={Object.values(LongpointMimeType)
+                  .map((t) => `.${mimeTypeToExtension(t)}`)
+                  .join(',')}
                 onChange={handleFileSelect}
                 className="hidden"
               />

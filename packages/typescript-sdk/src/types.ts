@@ -920,6 +920,15 @@ export interface components {
              */
             aspectRatio: number | null;
             /**
+             * @description Child asset variants
+             * @example [
+             *       {
+             *         "id": "r2qwyd76nvd98cu6ewg8ync2"
+             *       }
+             *     ]
+             */
+            children: components["schemas"]["AssetVariantReference"][];
+            /**
              * @description The display name of the asset variant
              * @example Original
              */
@@ -961,6 +970,11 @@ export interface components {
              */
             mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "video/mp4" | "video/webm" | "video/quicktime";
             /**
+             * @description The ID of the parent asset variant
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            parentId: Record<string, never> | null;
+            /**
              * @description The size of the asset variant in bytes
              * @example 100
              */
@@ -987,6 +1001,13 @@ export interface components {
              * @example 100
              */
             width: number | null;
+        };
+        AssetVariantReference: {
+            /**
+             * @description The ID of the asset variant
+             * @example r2qwyd76nvd98cu6ewg8ync2
+             */
+            id: string;
         };
         Classifier: {
             /** @description A brief description of the classifier */
@@ -1247,7 +1268,7 @@ export interface components {
              * @example image/jpeg
              * @enum {string}
              */
-            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "video/mp4" | "video/webm" | "video/quicktime";
+            mimeType: "image/jpg" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" | "video/mp4" | "video/webm" | "video/quicktime" | "video/x-matroska" | "application/vnd.apple.mpegurl" | "application/dash+xml";
             /**
              * @description A descriptive name for the underlying asset
              * @example Blissful Fields

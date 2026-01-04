@@ -68,15 +68,26 @@ model AssetVariant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  assetId        String
-  asset          Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  parentId       String?
-  parent         AssetVariant?   @relation(name: "ParentVariant", fields: [parentId], references: [id], onDelete: Cascade)
-  children       AssetVariant[]  @relation("ParentVariant")
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
   classifierRuns ClassifierRun[]
   uploadToken    UploadToken?
+  parents        AssetVariantParentChild[] @relation("Child")
+  children       AssetVariantParentChild[] @relation("Parent")
 
   @@index([assetId, status])
+}
+
+model AssetVariantParentChild {
+  parentId String
+  parent   AssetVariant @relation(name: "Parent", fields: [parentId], references: [id], onDelete: Cascade)
+  childId  String
+  child    AssetVariant @relation(name: "Child", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, childId])
+  @@index([parentId])
+  @@index([childId])
 }
 
 enum AssetVariantType {

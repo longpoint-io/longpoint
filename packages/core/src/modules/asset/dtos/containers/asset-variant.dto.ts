@@ -18,10 +18,14 @@ export class AssetVariantReferenceDto {
   }
 }
 
-export type AssetVariantParams = Omit<SelectedAssetVariant, 'assetId'> & {
+export type AssetVariantParams = Omit<
+  SelectedAssetVariant,
+  'assetId' | 'parents' | 'children'
+> & {
   aspectRatio: number | null;
   url?: string;
   children: AssetVariantReferenceDto[];
+  parents: AssetVariantReferenceDto[];
 };
 
 @ApiSchema({ name: 'AssetVariant' })
@@ -119,11 +123,11 @@ export class AssetVariantDto extends AssetVariantReferenceDto {
   url: string | null;
 
   @ApiProperty({
-    description: 'The ID of the parent asset variant',
-    example: 'r2qwyd76nvd98cu6ewg8ync2',
-    nullable: true,
+    description: 'Parent asset variants',
+    type: [AssetVariantReferenceDto],
+    example: [new AssetVariantReferenceDto({ id: 'r2qwyd76nvd98cu6ewg8ync2' })],
   })
-  parentId: string | null;
+  parents: AssetVariantReferenceDto[] = [];
 
   @ApiProperty({
     description: 'Child asset variants',
@@ -145,7 +149,7 @@ export class AssetVariantDto extends AssetVariantReferenceDto {
     this.duration = data.duration;
     this.metadata = (data.metadata as JsonObject | null) ?? null;
     this.url = data.url ?? null;
-    this.parentId = data.parentId;
+    this.parents = data.parents;
     this.children = data.children;
   }
 }

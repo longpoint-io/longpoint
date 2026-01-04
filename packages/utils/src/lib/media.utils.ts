@@ -1,3 +1,4 @@
+import { LongpointMimeType } from '@longpoint/devkit';
 import { SupportedMimeType } from '@longpoint/types';
 
 type AssetType = 'IMAGE' | 'VIDEO';
@@ -23,24 +24,26 @@ export function mimeTypeToAssetType(mimeType: string): AssetType {
  * @param mimeType The content type to convert
  * @returns The file extension
  */
-export function mimeTypeToExtension(mimeType: SupportedMimeType) {
+export function mimeTypeToExtension(mimeType: LongpointMimeType) {
   switch (mimeType) {
-    case SupportedMimeType.JPEG:
+    case LongpointMimeType.JPEG:
       return 'jpeg';
-    case SupportedMimeType.PNG:
+    case LongpointMimeType.PNG:
       return 'png';
-    case SupportedMimeType.GIF:
+    case LongpointMimeType.GIF:
       return 'gif';
     case SupportedMimeType.JPG:
       return 'jpg';
-    case SupportedMimeType.WEBP:
+    case LongpointMimeType.WEBP:
       return 'webp';
-    case SupportedMimeType.MP4:
+    case LongpointMimeType.MP4:
       return 'mp4';
-    case SupportedMimeType.WEBM:
+    case LongpointMimeType.WEBM:
       return 'webm';
-    case SupportedMimeType.MOV:
+    case LongpointMimeType.MOV:
       return 'mov';
+    case LongpointMimeType.MKV:
+      return 'mkv';
     default:
       return 'bin';
   }

@@ -55,7 +55,7 @@ export class AssetVariantEntity {
   private _size: number | null;
   private _duration: number | null;
   private _metadata: JsonObject | null;
-  private _parentId: string | null;
+  private _parentIds: string[] = [];
   private _childIds: string[] = [];
 
   private readonly urlSigningService: UrlSigningService;
@@ -80,8 +80,8 @@ export class AssetVariantEntity {
     this.storageUnit = params.storageUnit;
     this.prismaService = params.prismaService;
     this.eventPublisher = params.eventPublisher;
-    this._parentId = params.parentId;
-    this._childIds = params.children.map((child) => child.id);
+    this._parentIds = params.parents.map((relation) => relation.parent.id);
+    this._childIds = params.children.map((relation) => relation.child.id);
   }
 
   async update(data: UpdateAssetVariantArgs) {
@@ -161,7 +161,11 @@ export class AssetVariantEntity {
   async getChildren(): Promise<AssetVariantEntity[]> {
     const children = await this.prismaService.assetVariant.findMany({
       where: {
-        parentId: this.id,
+        parents: {
+          some: {
+            parentId: this.id,
+          },
+        },
       },
       select: selectAssetVariant(),
     });
@@ -245,7 +249,9 @@ export class AssetVariantEntity {
       entryPoint: this.entryPoint,
       mimeType: this.mimeType,
       url: this.url,
-      parentId: this._parentId,
+      parents: this._parentIds.map(
+        (parentId) => new AssetVariantReferenceDto({ id: parentId })
+      ),
       children: this._childIds.map(
         (childId) => new AssetVariantReferenceDto({ id: childId })
       ),

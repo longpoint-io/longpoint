@@ -42,7 +42,7 @@ export interface CreateAssetVariant {
   type: AssetVariantType;
   entryPoint: string;
   displayName?: string;
-  parentId?: string;
+  parentIds?: string[];
 }
 
 /**
@@ -268,7 +268,9 @@ export class AssetService {
         entryPoint: params.entryPoint,
         type: params.type,
         displayName: params.displayName,
-        parentId: params.parentId,
+        parents: {
+          create: params.parentIds?.map((parentId) => ({ parentId })) ?? [],
+        },
       },
       select: selectAssetVariant(),
     });

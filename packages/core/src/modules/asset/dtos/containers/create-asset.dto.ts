@@ -1,4 +1,5 @@
-import { type JsonObject, SupportedMimeType } from '@longpoint/types';
+import { LongpointMimeType } from '@longpoint/devkit';
+import { type JsonObject } from '@longpoint/types';
 import { IsValidAssetName } from '@longpoint/validations';
 import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import {
@@ -11,7 +12,7 @@ import {
 
 export type CreateAssetParam = {
   name: string;
-  mimeType: SupportedMimeType;
+  mimeType: LongpointMimeType;
   storageUnitId?: string;
   collectionIds?: string[];
   metadata?: JsonObject;
@@ -26,13 +27,13 @@ export class CreateAssetDto {
   })
   name!: string;
 
-  @IsEnum(SupportedMimeType)
+  @IsEnum(LongpointMimeType)
   @ApiProperty({
     description: 'The MIME type of the primary variant',
-    example: SupportedMimeType.JPEG,
-    enum: SupportedMimeType,
+    example: LongpointMimeType.JPEG,
+    enum: LongpointMimeType,
   })
-  mimeType!: SupportedMimeType;
+  mimeType!: LongpointMimeType;
 
   @IsString()
   @IsOptional()

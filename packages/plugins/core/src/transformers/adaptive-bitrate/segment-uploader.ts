@@ -2,12 +2,72 @@ import { TransformArgs } from '@longpoint/devkit';
 import { createReadStream, watch } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
-import { HlsInput } from './input.js';
+import { AdaptiveBitrateStreamInput } from './input.js';
 
-type OutputVariant = TransformArgs<HlsInput>['variants'][0];
+type OutputVariant = TransformArgs<AdaptiveBitrateStreamInput>['variants'][0];
 
-export class SegmentUploader {
-  private readonly tempDir: string;
+/**
+ * Handles uploading segments for multiple quality renditions.
+ * Each quality has its own subdirectory and corresponding variant.
+ */
+export class MultiQualitySegmentUploader {
+  private readonly uploaders: Map<string, QualityUploader> = new Map();
+
+  constructor(
+    tempDir: string,
+    qualityVariants: OutputVariant[],
+    qualityDirs: string[]
+  ) {
+    // Create an uploader for each quality
+    for (let i = 0; i < qualityDirs.length; i++) {
+      const qualityDir = qualityDirs[i];
+      const variant = qualityVariants[i];
+      const fullQualityDir = path.join(tempDir, qualityDir);
+      this.uploaders.set(
+        qualityDir,
+        new QualityUploader(fullQualityDir, variant)
+      );
+    }
+  }
+
+  setupWatchers(): void {
+    for (const uploader of this.uploaders.values()) {
+      uploader.setupWatcher();
+    }
+  }
+
+  async waitForCompletion(): Promise<void> {
+    await Promise.all(
+      Array.from(this.uploaders.values()).map((u) => u.waitForCompletion())
+    );
+  }
+
+  async queueRemainingSegments(): Promise<void> {
+    await Promise.all(
+      Array.from(this.uploaders.values()).map((u) => u.queueRemainingSegments())
+    );
+  }
+
+  async uploadRemainingSegments(): Promise<void> {
+    await Promise.all(
+      Array.from(this.uploaders.values()).map((u) =>
+        u.uploadRemainingSegments()
+      )
+    );
+  }
+
+  cleanup(): void {
+    for (const uploader of this.uploaders.values()) {
+      uploader.cleanup();
+    }
+  }
+}
+
+/**
+ * Handles uploading segments for a single quality rendition.
+ */
+class QualityUploader {
+  private readonly qualityDir: string;
   private readonly outputVariant: OutputVariant;
   private readonly uploadedFiles = new Set<string>();
   private readonly processingFiles = new Set<string>();
@@ -15,13 +75,13 @@ export class SegmentUploader {
   private isProcessingQueue = false;
   private watcher: ReturnType<typeof watch> | null = null;
 
-  constructor(tempDir: string, outputVariant: OutputVariant) {
-    this.tempDir = tempDir;
+  constructor(qualityDir: string, outputVariant: OutputVariant) {
+    this.qualityDir = qualityDir;
     this.outputVariant = outputVariant;
   }
 
   setupWatcher(): void {
-    this.watcher = watch(this.tempDir, (eventType, filename) => {
+    this.watcher = watch(this.qualityDir, (eventType, filename) => {
       if (!filename || !this.isSegmentFile(filename)) return;
       if (
         this.uploadedFiles.has(filename) ||
@@ -47,38 +107,46 @@ export class SegmentUploader {
   }
 
   async queueRemainingSegments(): Promise<void> {
-    const files = await fs.readdir(this.tempDir);
-    for (const file of files) {
-      if (
-        this.isSegmentFile(file) &&
-        !this.uploadedFiles.has(file) &&
-        !this.processingFiles.has(file) &&
-        !this.uploadQueue.includes(file)
-      ) {
-        this.uploadQueue.push(file);
+    try {
+      const files = await fs.readdir(this.qualityDir);
+      for (const file of files) {
+        if (
+          this.isSegmentFile(file) &&
+          !this.uploadedFiles.has(file) &&
+          !this.processingFiles.has(file) &&
+          !this.uploadQueue.includes(file)
+        ) {
+          this.uploadQueue.push(file);
+        }
       }
+      await this.processUploadQueue();
+    } catch {
+      // Directory may not exist yet
     }
-    await this.processUploadQueue();
   }
 
   async uploadRemainingSegments(): Promise<void> {
-    const files = await fs.readdir(this.tempDir);
-    for (const file of files) {
-      if (this.isSegmentFile(file) && !this.uploadedFiles.has(file)) {
-        const filePath = path.join(this.tempDir, file);
-        try {
-          await fs.access(filePath);
-          const stats = await fs.stat(filePath);
-          if (stats.size === 0) {
-            console.warn(`Skipping empty segment ${file}`);
-            continue;
-          }
+    try {
+      const files = await fs.readdir(this.qualityDir);
+      for (const file of files) {
+        if (this.isSegmentFile(file) && !this.uploadedFiles.has(file)) {
+          const filePath = path.join(this.qualityDir, file);
+          try {
+            await fs.access(filePath);
+            const stats = await fs.stat(filePath);
+            if (stats.size === 0) {
+              console.warn(`Skipping empty segment ${file}`);
+              continue;
+            }
 
-          await this.uploadSegmentFile(file);
-        } catch (error) {
-          console.error(`Failed to upload remaining segment ${file}:`, error);
+            await this.uploadSegmentFile(file);
+          } catch (error) {
+            console.error(`Failed to upload remaining segment ${file}:`, error);
+          }
         }
       }
+    } catch {
+      // Directory may not exist
     }
   }
 
@@ -116,7 +184,7 @@ export class SegmentUploader {
   }
 
   private async uploadSegmentFile(filename: string): Promise<void> {
-    const filePath = path.join(this.tempDir, filename);
+    const filePath = path.join(this.qualityDir, filename);
     await this.waitForFileStability(filePath);
 
     const relativePath = `segments/${filename}`;

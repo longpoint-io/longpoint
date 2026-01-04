@@ -1,0 +1,572 @@
+import {
+  AssetTransformer,
+  AssetTransformerArgs,
+  HandshakeArgs,
+  HandshakeResult,
+  LongpointMimeType,
+  TransformArgs,
+  TransformResult,
+} from '@longpoint/devkit';
+import { createReadStream } from 'fs';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+import {
+  FFmpegCommand,
+  parseFFmpegError,
+  probeVideoInfo,
+  VideoInfo,
+} from '../../lib/ffmpeg.js';
+import { AdaptiveBitrateStreamInput, QualityConfig } from './input.js';
+import { MultiQualitySegmentUploader } from './segment-uploader.js';
+
+interface ResolvedQuality {
+  name: string;
+  width?: number;
+  height?: number;
+  bitrate?: number;
+  codec: string;
+  isSource: boolean;
+}
+
+export default class AdaptiveBitrateStream extends AssetTransformer {
+  constructor(args: AssetTransformerArgs) {
+    super(args);
+  }
+
+  async handshake(
+    args: HandshakeArgs<AdaptiveBitrateStreamInput>
+  ): Promise<HandshakeResult> {
+    const {
+      includeSourceQuality = 'Fallback',
+      playlist = 'HLS+DASH',
+      qualities = [],
+    } = args.input;
+
+    if (!args.source.url) {
+      throw new Error('URL source is required for ABR stream generation');
+    }
+
+    // Probe source video dimensions
+    const sourceInfo = await probeVideoInfo(args.source.url);
+
+    // Resolve which qualities will be produced
+    const resolvedQualities = this.resolveQualities(
+      qualities,
+      sourceInfo,
+      includeSourceQuality
+    );
+
+    if (resolvedQualities.length === 0) {
+      throw new Error(
+        'No valid qualities could be determined. Check your quality settings and source video dimensions.'
+      );
+    }
+
+    const variants: HandshakeResult['variants'] = [];
+
+    // Add master playlist variants first (no parents - they are top-level)
+    const masterIndexes: number[] = [];
+    if (playlist.includes('HLS')) {
+      masterIndexes.push(variants.length);
+      variants.push({
+        name: `${args.input.name || 'ABR Stream'} (HLS)`,
+        entryPoint: 'playlist.m3u8',
+        mimeType: LongpointMimeType.M3U8,
+        type: 'DERIVATIVE',
+      });
+    }
+    if (playlist.includes('DASH')) {
+      masterIndexes.push(variants.length);
+      variants.push({
+        name: `${args.input.name || 'ABR Stream'} (DASH)`,
+        entryPoint: 'playlist.mpd',
+        mimeType: LongpointMimeType.MPD,
+        type: 'DERIVATIVE',
+      });
+    }
+
+    // Add quality rendition variants (children of master playlists)
+    for (const quality of resolvedQualities) {
+      variants.push({
+        name: quality.name,
+        entryPoint: 'playlist.m3u8',
+        mimeType: LongpointMimeType.M3U8,
+        type: 'DERIVATIVE',
+        parentIndexes: masterIndexes,
+      });
+    }
+
+    return { variants };
+  }
+
+  async transform(
+    args: TransformArgs<AdaptiveBitrateStreamInput>
+  ): Promise<TransformResult> {
+    const {
+      source,
+      input: {
+        qualities = [],
+        includeSourceQuality = 'Fallback',
+        playlist = 'HLS+DASH',
+      },
+      variants,
+    } = args;
+
+    if (!source.url) {
+      throw new Error('URL source is required for ABR stream generation');
+    }
+
+    // Probe source for transform
+    const sourceInfo = await probeVideoInfo(source.url);
+    const resolvedQualities = this.resolveQualities(
+      qualities,
+      sourceInfo,
+      includeSourceQuality
+    );
+
+    // Calculate master variant count (masters come first in the variants array)
+    const masterCount =
+      (playlist.includes('HLS') ? 1 : 0) + (playlist.includes('DASH') ? 1 : 0);
+    const masterVariants = variants.slice(0, masterCount);
+    const qualityVariants = variants.slice(masterCount);
+
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'abr-'));
+
+    // Create subdirectories for each quality (named by index for temp processing)
+    for (let i = 0; i < resolvedQualities.length; i++) {
+      const qualityDir = path.join(tempDir, `quality_${i}`);
+      await fs.mkdir(qualityDir, { recursive: true });
+    }
+
+    const uploader = new MultiQualitySegmentUploader(
+      tempDir,
+      qualityVariants,
+      resolvedQualities.map((_, i) => `quality_${i}`)
+    );
+
+    try {
+      uploader.setupWatchers();
+
+      const ffmpeg = this.buildMultiQualityFFmpegCommand({
+        sourceUrl: source.url,
+        qualities: resolvedQualities,
+        tempDir,
+      });
+
+      await this.executeFFmpeg(ffmpeg);
+
+      await this.waitForSegmentsToComplete(uploader);
+
+      // Upload per-quality playlists, init segments, and generate DASH per quality
+      await this.uploadQualityAssets(
+        tempDir,
+        resolvedQualities,
+        qualityVariants,
+        playlist
+      );
+
+      // Generate and upload master playlists
+      await this.uploadMasterPlaylists(
+        tempDir,
+        resolvedQualities,
+        qualityVariants,
+        masterVariants,
+        playlist
+      );
+
+      return {
+        variants: variants.map((v) => ({ id: v.id })),
+      };
+    } catch (error) {
+      return {
+        variants: variants.map((v) => ({
+          id: v.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })),
+      };
+    } finally {
+      uploader.cleanup();
+      await this.cleanupTempDirectory(tempDir);
+    }
+  }
+
+  private resolveQualities(
+    qualities: QualityConfig[],
+    sourceInfo: VideoInfo,
+    includeSourceQuality: string
+  ): ResolvedQuality[] {
+    const resolved: ResolvedQuality[] = [];
+    let hasValidQuality = false;
+
+    for (const q of qualities) {
+      const targetHeight = q.dimensions?.height;
+      const targetWidth = q.dimensions?.width;
+
+      // Check if this would require upscaling
+      const wouldUpscale =
+        (targetHeight && targetHeight > sourceInfo.height) ||
+        (targetWidth && targetWidth > sourceInfo.width);
+
+      if (wouldUpscale && !q.allowUpscaling) {
+        continue;
+      }
+
+      hasValidQuality = true;
+      resolved.push({
+        name: q.name || this.generateQualityName(targetHeight, targetWidth),
+        width: targetWidth,
+        height: targetHeight,
+        bitrate: q.bitrate,
+        codec: q.codec || 'h264',
+        isSource: false,
+      });
+    }
+
+    // Determine if source quality should be included
+    const shouldIncludeSource =
+      includeSourceQuality === 'Always' ||
+      (includeSourceQuality === 'Fallback' && !hasValidQuality);
+
+    if (shouldIncludeSource) {
+      resolved.push({
+        name: 'Source Quality',
+        width: sourceInfo.width,
+        height: sourceInfo.height,
+        bitrate: sourceInfo.bitrate
+          ? Math.round(sourceInfo.bitrate / 1000)
+          : undefined,
+        codec: 'source',
+        isSource: true,
+      });
+    }
+
+    // Sort by height descending (highest quality first)
+    resolved.sort((a, b) => (b.height || 0) - (a.height || 0));
+
+    return resolved;
+  }
+
+  private generateQualityName(height?: number, width?: number): string {
+    if (height) return `${height}p`;
+    if (width) return `${width}w`;
+    return 'default';
+  }
+
+  private buildMultiQualityFFmpegCommand({
+    sourceUrl,
+    qualities,
+    tempDir,
+  }: {
+    sourceUrl: string;
+    qualities: ResolvedQuality[];
+    tempDir: string;
+  }): FFmpegCommand {
+    const ffmpeg = new FFmpegCommand().arg('-i', sourceUrl);
+
+    if (qualities.length === 1) {
+      return this.buildSingleQualityCommand(ffmpeg, qualities[0], tempDir, 0);
+    }
+
+    // Multi-quality with complex filter graph
+    const filterParts: string[] = [];
+    const splitOutputs = qualities.map((_, i) => `[v${i}]`).join('');
+    filterParts.push(`[0:v]split=${qualities.length}${splitOutputs}`);
+
+    for (let i = 0; i < qualities.length; i++) {
+      const q = qualities[i];
+      const scaleFilter = this.buildQualityScaleFilter(q);
+      filterParts.push(`[v${i}]${scaleFilter}[out${i}]`);
+    }
+
+    ffmpeg.arg('-filter_complex', filterParts.join(';'));
+
+    // Add output options for each quality
+    for (let i = 0; i < qualities.length; i++) {
+      const q = qualities[i];
+      const qualityDir = path.join(tempDir, `quality_${i}`);
+
+      ffmpeg.arg('-map', `[out${i}]`).arg('-map', '0:a?');
+
+      this.addCodecOptions(ffmpeg, q);
+      this.addHlsOutputOptions(ffmpeg, qualityDir);
+    }
+
+    return ffmpeg;
+  }
+
+  private buildSingleQualityCommand(
+    ffmpeg: FFmpegCommand,
+    quality: ResolvedQuality,
+    tempDir: string,
+    index: number
+  ): FFmpegCommand {
+    const qualityDir = path.join(tempDir, `quality_${index}`);
+    const scaleFilter = this.buildQualityScaleFilter(quality);
+
+    ffmpeg.arg('-vf', scaleFilter);
+    this.addCodecOptions(ffmpeg, quality);
+    this.addHlsOutputOptions(ffmpeg, qualityDir);
+
+    return ffmpeg;
+  }
+
+  private buildQualityScaleFilter(quality: ResolvedQuality): string {
+    if (quality.isSource) {
+      return 'scale=trunc(iw/2)*2:trunc(ih/2)*2';
+    }
+
+    if (quality.width && quality.height) {
+      const w = this.ensureEven(quality.width);
+      const h = this.ensureEven(quality.height);
+      return `scale=${w}:${h}:force_original_aspect_ratio=decrease,pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2`;
+    }
+
+    if (quality.height) {
+      return `scale=-2:${this.ensureEven(quality.height)}`;
+    }
+
+    if (quality.width) {
+      return `scale=${this.ensureEven(quality.width)}:-2`;
+    }
+
+    return 'scale=trunc(iw/2)*2:trunc(ih/2)*2';
+  }
+
+  private addCodecOptions(
+    ffmpeg: FFmpegCommand,
+    quality: ResolvedQuality
+  ): void {
+    const codecMap: Record<string, string> = {
+      h264: 'libx264',
+      h265: 'libx265',
+      vp9: 'libvpx-vp9',
+      av1: 'libaom-av1',
+      source: 'libx264',
+    };
+
+    const encoder = codecMap[quality.codec] || 'libx264';
+    ffmpeg.arg('-c:v', encoder).arg('-preset', 'fast');
+
+    if (quality.bitrate) {
+      ffmpeg.arg('-b:v', `${quality.bitrate}k`);
+    }
+
+    ffmpeg.arg('-c:a', 'aac').arg('-b:a', '128k');
+  }
+
+  private addHlsOutputOptions(ffmpeg: FFmpegCommand, qualityDir: string): void {
+    const playlistPath = path.join(qualityDir, 'playlist.m3u8');
+
+    ffmpeg
+      .arg('-f', 'hls')
+      .arg('-hls_time', '6')
+      .arg('-hls_list_size', '0')
+      .arg('-hls_segment_type', 'fmp4')
+      .arg('-hls_fmp4_init_filename', 'init.mp4')
+      .arg('-hls_segment_filename', path.join(qualityDir, 'segment_%03d.m4s'))
+      .arg(playlistPath);
+  }
+
+  private async executeFFmpeg(ffmpeg: FFmpegCommand): Promise<void> {
+    await ffmpeg.executeToFiles(undefined, (stderrData, code) => {
+      const parsedError = parseFFmpegError(stderrData);
+      const errorMessage = this.formatFFmpegError(parsedError, code);
+      return new Error(errorMessage);
+    });
+  }
+
+  private formatFFmpegError(parsedError: string, code: number): string {
+    if (parsedError.toLowerCase().includes('not divisible by')) {
+      const dimensionMatch = parsedError.match(/(\d+)x(\d+)/);
+      if (dimensionMatch) {
+        const [, width, height] = dimensionMatch;
+        return `Video dimensions (${width}x${height}) must be divisible by 2 for encoding.`;
+      }
+      return `Video dimensions must be divisible by 2 for encoding. ${parsedError}`;
+    }
+
+    if (
+      parsedError.toLowerCase().includes('error while opening encoder') ||
+      parsedError.toLowerCase().includes('could not open encoder')
+    ) {
+      return `Failed to initialize video encoder: ${parsedError}`;
+    }
+
+    if (parsedError.toLowerCase().includes('conversion failed')) {
+      return `Video conversion failed: ${parsedError}`;
+    }
+
+    if (parsedError.length === 0) {
+      return `FFmpeg exited with code ${code}. The video may be in an unsupported format.`;
+    }
+
+    return parsedError;
+  }
+
+  private async waitForSegmentsToComplete(
+    uploader: MultiQualitySegmentUploader
+  ): Promise<void> {
+    await uploader.waitForCompletion();
+    await uploader.queueRemainingSegments();
+    await uploader.uploadRemainingSegments();
+  }
+
+  private async uploadQualityAssets(
+    tempDir: string,
+    qualities: ResolvedQuality[],
+    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants'],
+    playlist: string
+  ): Promise<void> {
+    for (let i = 0; i < qualities.length; i++) {
+      const quality = qualities[i];
+      const variant = qualityVariants[i];
+      const qualityDir = path.join(tempDir, `quality_${i}`);
+
+      // Upload init.mp4
+      const initPath = path.join(qualityDir, 'init.mp4');
+      try {
+        await fs.access(initPath);
+        const initStream = createReadStream(initPath);
+        await variant.fileOperations.write('init.mp4', initStream);
+      } catch {
+        // init.mp4 may not exist for some configurations
+      }
+
+      // Read and modify HLS playlist to reference segments directory
+      const playlistPath = path.join(qualityDir, 'playlist.m3u8');
+      let hlsContent = await fs.readFile(playlistPath, 'utf-8');
+      hlsContent = hlsContent.replace(/^(segment_\d+\.m4s)$/gm, 'segments/$1');
+
+      // Upload HLS playlist
+      if (playlist.includes('HLS')) {
+        const hlsPath = path.join(qualityDir, 'hls_modified.m3u8');
+        await fs.writeFile(hlsPath, hlsContent, 'utf-8');
+        const hlsStream = createReadStream(hlsPath);
+        await variant.fileOperations.write('playlist.m3u8', hlsStream);
+      }
+
+      // Generate and upload DASH playlist for this quality
+      if (playlist.includes('DASH')) {
+        const dashContent = this.generateQualityDashPlaylist(quality);
+        const dashPath = path.join(qualityDir, 'playlist.mpd');
+        await fs.writeFile(dashPath, dashContent, 'utf-8');
+        const dashStream = createReadStream(dashPath);
+        await variant.fileOperations.write('playlist.mpd', dashStream);
+      }
+    }
+  }
+
+  private generateQualityDashPlaylist(quality: ResolvedQuality): string {
+    const bandwidth = (quality.bitrate || 2000) * 1000;
+    const width =
+      quality.width || Math.round(((quality.height || 1080) * 16) / 9);
+    const height = quality.height || 1080;
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" minBufferTime="PT2S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011">
+  <Period>
+    <AdaptationSet mimeType="video/mp4" segmentAlignment="true" startWithSAP="1">
+      <Representation id="video" bandwidth="${bandwidth}" width="${width}" height="${height}" codecs="avc1.64001f">
+        <SegmentTemplate media="segments/segment_$Number%03d$.m4s" initialization="init.mp4" startNumber="0" timescale="1000" duration="6000"/>
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>`;
+  }
+
+  private async uploadMasterPlaylists(
+    tempDir: string,
+    qualities: ResolvedQuality[],
+    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants'],
+    masterVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants'],
+    playlist: string
+  ): Promise<void> {
+    for (const variant of masterVariants) {
+      if (variant.mimeType === LongpointMimeType.M3U8) {
+        const hlsMaster = this.generateHlsMasterPlaylist(
+          qualities,
+          qualityVariants
+        );
+        const masterPath = path.join(tempDir, 'master.m3u8');
+        await fs.writeFile(masterPath, hlsMaster, 'utf-8');
+        const masterStream = createReadStream(masterPath);
+        await variant.fileOperations.write('playlist.m3u8', masterStream);
+      } else if (variant.mimeType === LongpointMimeType.MPD) {
+        const dashManifest = this.generateDashMasterManifest(
+          qualities,
+          qualityVariants
+        );
+        const manifestPath = path.join(tempDir, 'manifest.mpd');
+        await fs.writeFile(manifestPath, dashManifest, 'utf-8');
+        const manifestStream = createReadStream(manifestPath);
+        await variant.fileOperations.write('playlist.mpd', manifestStream);
+      }
+    }
+  }
+
+  private generateHlsMasterPlaylist(
+    qualities: ResolvedQuality[],
+    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants']
+  ): string {
+    let playlist = '#EXTM3U\n#EXT-X-VERSION:6\n\n';
+
+    for (let i = 0; i < qualities.length; i++) {
+      const quality = qualities[i];
+      const variant = qualityVariants[i];
+      const bandwidth = (quality.bitrate || 2000) * 1000;
+      const resolution =
+        quality.width && quality.height
+          ? `${quality.width}x${quality.height}`
+          : quality.height
+          ? `${Math.round((quality.height * 16) / 9)}x${quality.height}`
+          : '1920x1080';
+
+      playlist += `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},RESOLUTION=${resolution},NAME="${quality.name}"\n`;
+      // Reference sibling variant folder by ID
+      playlist += `../${variant.id}/playlist.m3u8\n\n`;
+    }
+
+    return playlist;
+  }
+
+  private generateDashMasterManifest(
+    qualities: ResolvedQuality[],
+    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants']
+  ): string {
+    const representations = qualities
+      .map((quality, index) => {
+        const variant = qualityVariants[index];
+        const bandwidth = (quality.bitrate || 2000) * 1000;
+        const width =
+          quality.width || Math.round(((quality.height || 1080) * 16) / 9);
+        const height = quality.height || 1080;
+
+        return `      <Representation id="${variant.id}" bandwidth="${bandwidth}" width="${width}" height="${height}" codecs="avc1.64001f">
+        <SegmentTemplate media="../${variant.id}/segments/segment_$Number%03d$.m4s" initialization="../${variant.id}/init.mp4" startNumber="0" timescale="1000" duration="6000"/>
+      </Representation>`;
+      })
+      .join('\n');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" minBufferTime="PT2S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011">
+  <Period>
+    <AdaptationSet mimeType="video/mp4" segmentAlignment="true" startWithSAP="1">
+${representations}
+    </AdaptationSet>
+  </Period>
+</MPD>`;
+  }
+
+  private async cleanupTempDirectory(tempDir: string): Promise<void> {
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    } catch {
+      // Best effort cleanup
+    }
+  }
+
+  private ensureEven(n: number): number {
+    return n % 2 === 0 ? n : n - 1;
+  }
+}
