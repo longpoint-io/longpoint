@@ -37,6 +37,7 @@ export function VariantTable({
     { header: 'Status' },
     { header: 'Dimensions' },
     { header: 'Size' },
+    { header: '' },
   ];
 
   const renderRow = (variant: VariantWithType) => {
@@ -77,6 +78,9 @@ export function VariantTable({
       </TableCell>
       <TableCell>
         <Skeleton className="h-4 w-20" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-8 w-8" />
       </TableCell>
     </TableRow>
   );

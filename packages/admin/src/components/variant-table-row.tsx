@@ -1,11 +1,19 @@
 import { AssetType } from '@/components/asset-type';
 import type { components } from '@longpoint/sdk';
 import { Badge } from '@longpoint/ui/components/badge';
+import { Button } from '@longpoint/ui/components/button';
 import { Checkbox } from '@longpoint/ui/components/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@longpoint/ui/components/dropdown-menu';
 import { TableCell, TableRow } from '@longpoint/ui/components/table';
 import { formatBytes } from '@longpoint/utils/format';
 import { enumToTitleCase } from '@longpoint/utils/string';
-import { ImageIcon, VideoIcon } from 'lucide-react';
+import { Copy, ImageIcon, MoreVertical, VideoIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 export type VariantWithType = components['schemas']['AssetVariant'] & {
   variantType: 'ORIGINAL' | 'DERIVATIVE' | 'THUMBNAIL';
@@ -77,6 +85,18 @@ export function VariantTableRow({
     if (!multiSelect && onVariantClick) {
       onVariantClick(id);
     }
+  };
+
+  const handleCopyUrl = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (url) {
+      navigator.clipboard.writeText(url);
+      toast.success('Variant URL copied to clipboard');
+    }
+  };
+
+  const handleDropdownClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   const displayNameText =
@@ -155,6 +175,23 @@ export function VariantTableRow({
       </TableCell>
       <TableCell className="text-muted-foreground text-sm">
         {size ? formatBytes(size) : '-'}
+      </TableCell>
+      <TableCell onClick={handleDropdownClick}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {url && (
+              <DropdownMenuItem onClick={handleCopyUrl}>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy URL
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </TableCell>
     </TableRow>
   );

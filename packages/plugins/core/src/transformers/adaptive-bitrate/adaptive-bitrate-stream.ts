@@ -18,17 +18,27 @@ import {
   VideoInfo,
 } from '../../lib/ffmpeg.js';
 import { AdaptiveBitrateStreamInput, QualityConfig } from './input.js';
+import {
+  generateDashMasterManifest,
+  generateHlsMasterPlaylist,
+  generateQualityDashPlaylist,
+  type ResolvedQuality,
+  type VariantMapping,
+} from './playlist-generator.js';
 import { MultiQualitySegmentUploader } from './segment-uploader.js';
 
-interface ResolvedQuality {
-  name: string;
-  width?: number;
-  height?: number;
-  bitrate?: number;
-  codec: string;
-  isSource: boolean;
+interface InternalVariantMapping {
+  variant: TransformArgs<AdaptiveBitrateStreamInput>['variants'][0];
+  qualityIndex: number;
+  playlistType: 'HLS' | 'DASH';
 }
 
+/**
+ * Generates an adaptive bitrate stream from a source video by generating multiple
+ * quality variants and master playlists.
+ * @param args - The arguments for the transformer.
+ * @returns The handshake result.
+ */
 export default class AdaptiveBitrateStream extends AssetTransformer {
   constructor(args: AssetTransformerArgs) {
     super(args);
@@ -47,10 +57,7 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       throw new Error('URL source is required for ABR stream generation');
     }
 
-    // Probe source video dimensions
     const sourceInfo = await probeVideoInfo(args.source.url);
-
-    // Resolve which qualities will be produced
     const resolvedQualities = this.resolveQualities(
       qualities,
       sourceInfo,
@@ -65,12 +72,11 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
 
     const variants: HandshakeResult['variants'] = [];
 
-    // Add master playlist variants first (no parents - they are top-level)
     const masterIndexes: number[] = [];
     if (playlist.includes('HLS')) {
       masterIndexes.push(variants.length);
       variants.push({
-        name: `${args.input.name || 'ABR Stream'} (HLS)`,
+        name: `${args.input.name || 'ABR Stream'} (HLS Master)`,
         entryPoint: 'playlist.m3u8',
         mimeType: LongpointMimeType.M3U8,
         type: 'DERIVATIVE',
@@ -79,22 +85,36 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
     if (playlist.includes('DASH')) {
       masterIndexes.push(variants.length);
       variants.push({
-        name: `${args.input.name || 'ABR Stream'} (DASH)`,
+        name: `${args.input.name || 'ABR Stream'} (DASH Master)`,
         entryPoint: 'playlist.mpd',
         mimeType: LongpointMimeType.MPD,
         type: 'DERIVATIVE',
       });
     }
 
-    // Add quality rendition variants (children of master playlists)
     for (const quality of resolvedQualities) {
-      variants.push({
-        name: quality.name,
-        entryPoint: 'playlist.m3u8',
-        mimeType: LongpointMimeType.M3U8,
-        type: 'DERIVATIVE',
-        parentIndexes: masterIndexes,
-      });
+      if (playlist.includes('HLS')) {
+        variants.push({
+          name: `${quality.name} (HLS)`,
+          entryPoint: 'playlist.m3u8',
+          mimeType: LongpointMimeType.M3U8,
+          type: 'DERIVATIVE',
+          parentIndexes: masterIndexes.filter((idx) => {
+            return variants[idx].mimeType === LongpointMimeType.M3U8;
+          }),
+        });
+      }
+      if (playlist.includes('DASH')) {
+        variants.push({
+          name: `${quality.name} (DASH)`,
+          entryPoint: 'playlist.mpd',
+          mimeType: LongpointMimeType.MPD,
+          type: 'DERIVATIVE',
+          parentIndexes: masterIndexes.filter((idx) => {
+            return variants[idx].mimeType === LongpointMimeType.MPD;
+          }),
+        });
+      }
     }
 
     return { variants };
@@ -117,7 +137,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       throw new Error('URL source is required for ABR stream generation');
     }
 
-    // Probe source for transform
     const sourceInfo = await probeVideoInfo(source.url);
     const resolvedQualities = this.resolveQualities(
       qualities,
@@ -131,6 +150,12 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
     const masterVariants = variants.slice(0, masterCount);
     const qualityVariants = variants.slice(masterCount);
 
+    const variantMap = this.mapVariantsToQualities(
+      qualityVariants,
+      resolvedQualities,
+      playlist
+    );
+
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'abr-'));
 
     // Create subdirectories for each quality (named by index for temp processing)
@@ -139,9 +164,14 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       await fs.mkdir(qualityDir, { recursive: true });
     }
 
+    // Only HLS variants get segments uploaded to them
+    const hlsVariants = variantMap
+      .filter((v) => v.playlistType === 'HLS')
+      .map((v) => v.variant);
+
     const uploader = new MultiQualitySegmentUploader(
       tempDir,
-      qualityVariants,
+      hlsVariants,
       resolvedQualities.map((_, i) => `quality_${i}`)
     );
 
@@ -155,22 +185,17 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       });
 
       await this.executeFFmpeg(ffmpeg);
-
       await this.waitForSegmentsToComplete(uploader);
-
-      // Upload per-quality playlists, init segments, and generate DASH per quality
       await this.uploadQualityAssets(
         tempDir,
         resolvedQualities,
-        qualityVariants,
+        variantMap,
         playlist
       );
-
-      // Generate and upload master playlists
       await this.uploadMasterPlaylists(
         tempDir,
         resolvedQualities,
-        qualityVariants,
+        variantMap,
         masterVariants,
         playlist
       );
@@ -203,7 +228,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       const targetHeight = q.dimensions?.height;
       const targetWidth = q.dimensions?.width;
 
-      // Check if this would require upscaling
       const wouldUpscale =
         (targetHeight && targetHeight > sourceInfo.height) ||
         (targetWidth && targetWidth > sourceInfo.width);
@@ -223,7 +247,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       });
     }
 
-    // Determine if source quality should be included
     const shouldIncludeSource =
       includeSourceQuality === 'Always' ||
       (includeSourceQuality === 'Fallback' && !hasValidQuality);
@@ -241,7 +264,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       });
     }
 
-    // Sort by height descending (highest quality first)
     resolved.sort((a, b) => (b.height || 0) - (a.height || 0));
 
     return resolved;
@@ -251,6 +273,42 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
     if (height) return `${height}p`;
     if (width) return `${width}w`;
     return 'default';
+  }
+
+  private mapVariantsToQualities(
+    variants: TransformArgs<AdaptiveBitrateStreamInput>['variants'],
+    qualities: ResolvedQuality[],
+    playlist: string
+  ): InternalVariantMapping[] {
+    const mappings: InternalVariantMapping[] = [];
+    const hasHls = playlist.includes('HLS');
+    const hasDash = playlist.includes('DASH');
+    let variantIndex = 0;
+
+    for (
+      let qualityIndex = 0;
+      qualityIndex < qualities.length;
+      qualityIndex++
+    ) {
+      if (hasHls) {
+        mappings.push({
+          variant: variants[variantIndex],
+          qualityIndex,
+          playlistType: 'HLS',
+        });
+        variantIndex++;
+      }
+      if (hasDash) {
+        mappings.push({
+          variant: variants[variantIndex],
+          qualityIndex,
+          playlistType: 'DASH',
+        });
+        variantIndex++;
+      }
+    }
+
+    return mappings;
   }
 
   private buildMultiQualityFFmpegCommand({
@@ -268,7 +326,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       return this.buildSingleQualityCommand(ffmpeg, qualities[0], tempDir, 0);
     }
 
-    // Multi-quality with complex filter graph
     const filterParts: string[] = [];
     const splitOutputs = qualities.map((_, i) => `[v${i}]`).join('');
     filterParts.push(`[0:v]split=${qualities.length}${splitOutputs}`);
@@ -281,7 +338,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
 
     ffmpeg.arg('-filter_complex', filterParts.join(';'));
 
-    // Add output options for each quality
     for (let i = 0; i < qualities.length; i++) {
       const q = qualities[i];
       const qualityDir = path.join(tempDir, `quality_${i}`);
@@ -415,87 +471,116 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
   private async uploadQualityAssets(
     tempDir: string,
     qualities: ResolvedQuality[],
-    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants'],
+    variantMap: InternalVariantMapping[],
     playlist: string
   ): Promise<void> {
     for (let i = 0; i < qualities.length; i++) {
       const quality = qualities[i];
-      const variant = qualityVariants[i];
       const qualityDir = path.join(tempDir, `quality_${i}`);
 
-      // Upload init.mp4
-      const initPath = path.join(qualityDir, 'init.mp4');
-      try {
-        await fs.access(initPath);
-        const initStream = createReadStream(initPath);
-        await variant.fileOperations.write('init.mp4', initStream);
-      } catch {
-        // init.mp4 may not exist for some configurations
-      }
+      const hlsMapping = variantMap.find(
+        (m) => m.qualityIndex === i && m.playlistType === 'HLS'
+      );
+      const dashMapping = variantMap.find(
+        (m) => m.qualityIndex === i && m.playlistType === 'DASH'
+      );
 
-      // Read and modify HLS playlist to reference segments directory
-      const playlistPath = path.join(qualityDir, 'playlist.m3u8');
-      let hlsContent = await fs.readFile(playlistPath, 'utf-8');
-      hlsContent = hlsContent.replace(/^(segment_\d+\.m4s)$/gm, 'segments/$1');
+      // Upload init.mp4 to HLS variant (segments are colocated with HLS only)
+      if (hlsMapping) {
+        const initPath = path.join(qualityDir, 'init.mp4');
+        try {
+          await fs.access(initPath);
+          const initStream = createReadStream(initPath);
+          await hlsMapping.variant.fileOperations.write('init.mp4', initStream);
+        } catch {
+          // init.mp4 may not exist for some configurations
+        }
 
-      // Upload HLS playlist
-      if (playlist.includes('HLS')) {
+        const playlistPath = path.join(qualityDir, 'playlist.m3u8');
+        let hlsContent = await fs.readFile(playlistPath, 'utf-8');
+        hlsContent = hlsContent.replace(
+          /^(segment_\d+\.m4s)$/gm,
+          'segments/$1'
+        );
+
         const hlsPath = path.join(qualityDir, 'hls_modified.m3u8');
         await fs.writeFile(hlsPath, hlsContent, 'utf-8');
         const hlsStream = createReadStream(hlsPath);
-        await variant.fileOperations.write('playlist.m3u8', hlsStream);
+        await hlsMapping.variant.fileOperations.write(
+          'playlist.m3u8',
+          hlsStream
+        );
       }
 
-      // Generate and upload DASH playlist for this quality
-      if (playlist.includes('DASH')) {
-        const dashContent = this.generateQualityDashPlaylist(quality);
+      if (dashMapping && hlsMapping) {
+        const hlsPlaylistPath = path.join(qualityDir, 'playlist.m3u8');
+        let hlsContent = '';
+        try {
+          hlsContent = await fs.readFile(hlsPlaylistPath, 'utf-8');
+        } catch {
+          // HLS playlist may not exist yet
+        }
+
+        const dashContent = generateQualityDashPlaylist(
+          quality,
+          hlsMapping.variant.id,
+          hlsContent
+        );
         const dashPath = path.join(qualityDir, 'playlist.mpd');
         await fs.writeFile(dashPath, dashContent, 'utf-8');
         const dashStream = createReadStream(dashPath);
-        await variant.fileOperations.write('playlist.mpd', dashStream);
+        await dashMapping.variant.fileOperations.write(
+          'playlist.mpd',
+          dashStream
+        );
       }
     }
-  }
-
-  private generateQualityDashPlaylist(quality: ResolvedQuality): string {
-    const bandwidth = (quality.bitrate || 2000) * 1000;
-    const width =
-      quality.width || Math.round(((quality.height || 1080) * 16) / 9);
-    const height = quality.height || 1080;
-
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" minBufferTime="PT2S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011">
-  <Period>
-    <AdaptationSet mimeType="video/mp4" segmentAlignment="true" startWithSAP="1">
-      <Representation id="video" bandwidth="${bandwidth}" width="${width}" height="${height}" codecs="avc1.64001f">
-        <SegmentTemplate media="segments/segment_$Number%03d$.m4s" initialization="init.mp4" startNumber="0" timescale="1000" duration="6000"/>
-      </Representation>
-    </AdaptationSet>
-  </Period>
-</MPD>`;
   }
 
   private async uploadMasterPlaylists(
     tempDir: string,
     qualities: ResolvedQuality[],
-    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants'],
+    variantMap: InternalVariantMapping[],
     masterVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants'],
     playlist: string
   ): Promise<void> {
     for (const variant of masterVariants) {
       if (variant.mimeType === LongpointMimeType.M3U8) {
-        const hlsMaster = this.generateHlsMasterPlaylist(
-          qualities,
-          qualityVariants
-        );
+        const hlsMappings: VariantMapping[] = variantMap
+          .filter((m) => m.playlistType === 'HLS')
+          .map((m) => ({
+            variant: { id: m.variant.id },
+            qualityIndex: m.qualityIndex,
+            playlistType: m.playlistType,
+          }));
+        const hlsMaster = generateHlsMasterPlaylist(qualities, hlsMappings);
         const masterPath = path.join(tempDir, 'master.m3u8');
         await fs.writeFile(masterPath, hlsMaster, 'utf-8');
         const masterStream = createReadStream(masterPath);
         await variant.fileOperations.write('playlist.m3u8', masterStream);
       } else if (variant.mimeType === LongpointMimeType.MPD) {
-        const dashManifest = this.generateDashMasterManifest(
+        // Read HLS playlists to get segment information for master manifest
+        const hlsPlaylistContents: Map<number, string> = new Map();
+        for (let i = 0; i < qualities.length; i++) {
+          const qualityDir = path.join(tempDir, `quality_${i}`);
+          const hlsPlaylistPath = path.join(qualityDir, 'playlist.m3u8');
+          try {
+            const hlsContent = await fs.readFile(hlsPlaylistPath, 'utf-8');
+            hlsPlaylistContents.set(i, hlsContent);
+          } catch {
+            // HLS playlist may not exist
+          }
+        }
+
+        const dashMappings: VariantMapping[] = variantMap.map((m) => ({
+          variant: { id: m.variant.id },
+          qualityIndex: m.qualityIndex,
+          playlistType: m.playlistType,
+        }));
+        const dashManifest = generateDashMasterManifest(
           qualities,
-          qualityVariants
+          dashMappings,
+          hlsPlaylistContents
         );
         const manifestPath = path.join(tempDir, 'manifest.mpd');
         await fs.writeFile(manifestPath, dashManifest, 'utf-8');
@@ -503,59 +588,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
         await variant.fileOperations.write('playlist.mpd', manifestStream);
       }
     }
-  }
-
-  private generateHlsMasterPlaylist(
-    qualities: ResolvedQuality[],
-    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants']
-  ): string {
-    let playlist = '#EXTM3U\n#EXT-X-VERSION:6\n\n';
-
-    for (let i = 0; i < qualities.length; i++) {
-      const quality = qualities[i];
-      const variant = qualityVariants[i];
-      const bandwidth = (quality.bitrate || 2000) * 1000;
-      const resolution =
-        quality.width && quality.height
-          ? `${quality.width}x${quality.height}`
-          : quality.height
-          ? `${Math.round((quality.height * 16) / 9)}x${quality.height}`
-          : '1920x1080';
-
-      playlist += `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},RESOLUTION=${resolution},NAME="${quality.name}"\n`;
-      // Reference sibling variant folder by ID
-      playlist += `../${variant.id}/playlist.m3u8\n\n`;
-    }
-
-    return playlist;
-  }
-
-  private generateDashMasterManifest(
-    qualities: ResolvedQuality[],
-    qualityVariants: TransformArgs<AdaptiveBitrateStreamInput>['variants']
-  ): string {
-    const representations = qualities
-      .map((quality, index) => {
-        const variant = qualityVariants[index];
-        const bandwidth = (quality.bitrate || 2000) * 1000;
-        const width =
-          quality.width || Math.round(((quality.height || 1080) * 16) / 9);
-        const height = quality.height || 1080;
-
-        return `      <Representation id="${variant.id}" bandwidth="${bandwidth}" width="${width}" height="${height}" codecs="avc1.64001f">
-        <SegmentTemplate media="../${variant.id}/segments/segment_$Number%03d$.m4s" initialization="../${variant.id}/init.mp4" startNumber="0" timescale="1000" duration="6000"/>
-      </Representation>`;
-      })
-      .join('\n');
-
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" minBufferTime="PT2S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011">
-  <Period>
-    <AdaptationSet mimeType="video/mp4" segmentAlignment="true" startWithSAP="1">
-${representations}
-    </AdaptationSet>
-  </Period>
-</MPD>`;
   }
 
   private async cleanupTempDirectory(tempDir: string): Promise<void> {

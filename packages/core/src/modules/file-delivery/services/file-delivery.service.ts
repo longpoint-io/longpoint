@@ -102,6 +102,22 @@ export class FileDeliveryService {
         );
       }
 
+      // Handle DASH playlists
+      if (
+        assetVariant.mimeType === LongpointMimeType.MPD &&
+        entryPoint.endsWith('.mpd')
+      ) {
+        return this.serveDashPlaylist(
+          req,
+          res,
+          assetVariantId,
+          variantEntryPointPath,
+          provider,
+          assetVariant.mimeType,
+          query
+        );
+      }
+
       try {
         const range = req.headers.range;
 
@@ -316,6 +332,7 @@ export class FileDeliveryService {
   /**
    * Processes an HLS playlist by replacing segment file references with signed URLs.
    * Handles both fMP4 (.m4s segments + init.mp4) and legacy TS (.ts) segments.
+   * Also resolves relative paths to other variants (e.g., "../variant-id/playlist.m3u8").
    * @param playlistContent The raw playlist content
    * @param assetVariantId The asset variant ID for generating signed URLs
    * @param playlistExpires The expiration time from the playlist request (optional)
@@ -331,9 +348,9 @@ export class FileDeliveryService {
       ? Math.max(0, playlistExpires - now)
       : undefined;
 
-    const signPath = (filePath: string) => {
+    const signPath = (filePath: string, variantId: string = assetVariantId) => {
       return this.urlSigningService.generateSignedUrl(
-        assetVariantId,
+        variantId,
         filePath.trim(),
         { expiresInSeconds }
       );
@@ -341,11 +358,32 @@ export class FileDeliveryService {
 
     let result = playlistContent;
 
-    // Sign the init segment in #EXT-X-MAP directive (fMP4)
+    // Resolve relative paths to other variants (e.g., "../variant-id/playlist.m3u8")
     result = result.replace(
-      /#EXT-X-MAP:URI="([^"]+)"/g,
-      (match, initPath) => `#EXT-X-MAP:URI="${signPath(initPath)}"`
+      /^(?!https?:\/\/)(\.\.\/[^\/\s]+\/[^\s]+)$/gm,
+      (_, relativePath) => {
+        // Extract variant ID and file path from "../variant-id/path"
+        const match = relativePath.match(/^\.\.\/([^\/]+)\/(.+)$/);
+        if (match) {
+          const [, targetVariantId, filePath] = match;
+          return signPath(filePath, targetVariantId);
+        }
+        return relativePath;
+      }
     );
+
+    // Sign the init segment in #EXT-X-MAP directive (fMP4)
+    result = result.replace(/#EXT-X-MAP:URI="([^"]+)"/g, (match, initPath) => {
+      // Check if it's a relative path to another variant
+      if (initPath.startsWith('../')) {
+        const match = initPath.match(/^\.\.\/([^\/]+)\/(.+)$/);
+        if (match) {
+          const [, targetVariantId, filePath] = match;
+          return `#EXT-X-MAP:URI="${signPath(filePath, targetVariantId)}"`;
+        }
+      }
+      return `#EXT-X-MAP:URI="${signPath(initPath)}"`;
+    });
 
     // Replace fMP4 segment references (.m4s)
     result = result.replace(
@@ -361,5 +399,198 @@ export class FileDeliveryService {
 
     // Ensure the result ends with a newline (HLS spec requirement)
     return result.endsWith('\n') ? result : result + '\n';
+  }
+
+  /**
+   * Serves a DASH playlist with signed URLs for all segment references.
+   * Reads the playlist, replaces segment file references with signed URLs,
+   * and serves the modified playlist.
+   */
+  private async serveDashPlaylist(
+    req: Request,
+    res: Response,
+    assetVariantId: string,
+    playlistPath: string,
+    provider: StorageProviderEntity,
+    mimeType: string,
+    query: SignedUrlParamsDto
+  ) {
+    try {
+      const playlistBuffer = await provider.getFileContents(playlistPath);
+      let playlistContent = playlistBuffer.toString('utf-8');
+
+      const processedContent = this.processDashPlaylist(
+        playlistContent,
+        assetVariantId,
+        query.expires
+      );
+
+      res.setHeader('Content-Type', mimeType);
+      // DASH playlists should have short cache time to allow player to refresh and get updated signed URLs
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.send(Buffer.from(processedContent, 'utf-8'));
+    } catch (error) {
+      throw new FileNotFound(playlistPath);
+    }
+  }
+
+  /**
+   * Processes a DASH playlist by replacing segment file references with signed URLs.
+   * Handles SegmentTemplate media and initialization attributes, and resolves relative paths.
+   * Note: For media templates with $Number$ variables, we resolve the base path but keep
+   * the template structure. Individual segments will be signed when requested.
+   * @param playlistContent The raw playlist content
+   * @param assetVariantId The asset variant ID for generating signed URLs
+   * @param playlistExpires The expiration time from the playlist request (optional)
+   * @returns The processed playlist with signed segment URLs
+   */
+  private processDashPlaylist(
+    playlistContent: string,
+    assetVariantId: string,
+    playlistExpires?: number
+  ): string {
+    const now = Math.floor(Date.now() / 1000);
+    const expiresInSeconds = playlistExpires
+      ? Math.max(0, playlistExpires - now)
+      : undefined;
+
+    const resolveRelativePath = (
+      relativePath: string,
+      currentVariantId: string
+    ): { variantId: string; filePath: string } | null => {
+      const pathMatch = relativePath.match(/^\.\.\/([^\/]+)\/(.+)$/);
+      if (pathMatch) {
+        const [, targetVariantId, filePath] = pathMatch;
+        return { variantId: targetVariantId, filePath };
+      }
+      // Not a relative path to another variant, use current variant
+      if (relativePath.startsWith('./') || !relativePath.startsWith('../')) {
+        return { variantId: currentVariantId, filePath: relativePath };
+      }
+      return null;
+    };
+
+    const signPath = (filePath: string, variantId: string = assetVariantId) => {
+      return this.urlSigningService.generateSignedUrl(
+        variantId,
+        filePath.trim(),
+        { expiresInSeconds }
+      );
+    };
+
+    let result = playlistContent;
+    const baseUrl = this.configService.get('server.baseUrl');
+
+    // Helper to sign and escape URLs for XML
+    const signAndEscapePath = (
+      filePath: string,
+      variantId: string = assetVariantId
+    ) => {
+      const url = this.urlSigningService.generateSignedUrl(
+        variantId,
+        filePath.trim(),
+        { expiresInSeconds }
+      );
+      // Escape XML special characters in URLs (especially & in query parameters)
+      return url.replace(/&/g, '&amp;');
+    };
+
+    // Resolve relative paths in SegmentList SegmentURL media attribute
+    // Pattern: <SegmentURL media="../variant-id/segments/segment_000.m4s" duration="8342"/>
+    result = result.replace(
+      /<SegmentURL\s+media="(\.\.\/[^\/]+\/[^"]+)"([^>]*\/>)/g,
+      (match, mediaPath, restOfTag) => {
+        const resolved = resolveRelativePath(mediaPath, assetVariantId);
+        if (resolved) {
+          // Sign the segment URL directly, preserving other attributes like duration
+          return `<SegmentURL media="${signAndEscapePath(
+            resolved.filePath,
+            resolved.variantId
+          )}"${restOfTag}`;
+        }
+        return match;
+      }
+    );
+
+    // Resolve relative paths in SegmentList Initialization sourceURL
+    // Pattern: <Initialization sourceURL="../variant-id/init.mp4"/>
+    result = result.replace(
+      /<Initialization\s+sourceURL="(\.\.\/[^\/]+\/[^"]+)"/g,
+      (match, initPath) => {
+        const resolved = resolveRelativePath(initPath, assetVariantId);
+        if (resolved) {
+          return `<Initialization sourceURL="${signAndEscapePath(
+            resolved.filePath,
+            resolved.variantId
+          )}"`;
+        }
+        return match;
+      }
+    );
+
+    // Resolve relative paths in SegmentTemplate media attribute (fallback for templates)
+    // Pattern: media="../variant-id/segments/segment_$Number%03d$.m4s"
+    // Convert to full URL format: http://baseurl/v/variant-id/segments/segment_$Number%03d$.m4s
+    // Note: Templates with $Number$ can't be pre-signed, but the full URL structure is needed
+    result = result.replace(
+      /media="(\.\.\/[^\/]+\/[^"]+)"/g,
+      (match, mediaPath) => {
+        const resolved = resolveRelativePath(mediaPath, assetVariantId);
+        if (resolved) {
+          // Convert to full URL format
+          return `media="${baseUrl}/v/${resolved.variantId}/${resolved.filePath}"`;
+        }
+        return match;
+      }
+    );
+
+    // Resolve relative paths in SegmentTemplate initialization attribute
+    // Pattern: initialization="../variant-id/init.mp4"
+    result = result.replace(
+      /initialization="(\.\.\/[^\/]+\/[^"]+)"/g,
+      (match, initPath) => {
+        const resolved = resolveRelativePath(initPath, assetVariantId);
+        if (resolved) {
+          // Initialization is a static path, so we can sign it directly
+          // Use signAndEscapePath if it exists in scope, otherwise use signPath
+          const url = this.urlSigningService.generateSignedUrl(
+            resolved.variantId,
+            resolved.filePath.trim(),
+            { expiresInSeconds }
+          );
+          return `initialization="${url.replace(/&/g, '&amp;')}"`;
+        }
+        return match;
+      }
+    );
+
+    // Resolve relative paths in existing BaseURL elements (if used)
+    result = result.replace(
+      /<BaseURL>(\.\.\/[^\/]+\/[^<]+)<\/BaseURL>/g,
+      (match, baseUrlPath) => {
+        const resolved = resolveRelativePath(baseUrlPath, assetVariantId);
+        if (resolved) {
+          return `<BaseURL>${baseUrl}/v/${resolved.variantId}/${resolved.filePath}</BaseURL>`;
+        }
+        return match;
+      }
+    );
+
+    // Handle non-relative paths (same variant) in SegmentTemplate initialization
+    result = result.replace(
+      /initialization="([^"\/\.][^"]*\.mp4[^"]*)"/g,
+      (match, initPath) => {
+        // Only process if not already a full URL
+        if (
+          !initPath.startsWith('http://') &&
+          !initPath.startsWith('https://')
+        ) {
+          return `initialization="${signPath(initPath)}"`;
+        }
+        return match;
+      }
+    );
+
+    return result;
   }
 }
