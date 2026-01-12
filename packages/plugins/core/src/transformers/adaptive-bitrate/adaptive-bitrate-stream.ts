@@ -72,8 +72,11 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
 
     const variants: HandshakeResult['variants'] = [];
 
+    const isSingleQualityHlsDash =
+      playlist === 'HLS+DASH' && resolvedQualities.length === 1;
+
     const masterIndexes: number[] = [];
-    if (playlist.includes('HLS')) {
+    if (playlist.includes('HLS') && !isSingleQualityHlsDash) {
       masterIndexes.push(variants.length);
       variants.push({
         name: `${args.input.name || 'ABR Stream'} (HLS Master)`,
@@ -82,7 +85,7 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
         type: 'DERIVATIVE',
       });
     }
-    if (playlist.includes('DASH')) {
+    if (playlist.includes('DASH') && !isSingleQualityHlsDash) {
       masterIndexes.push(variants.length);
       variants.push({
         name: `${args.input.name || 'ABR Stream'} (DASH Master)`,
@@ -94,8 +97,12 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
 
     for (const quality of resolvedQualities) {
       if (playlist.includes('HLS')) {
+        // Use input name when single quality, otherwise use quality name
+        const variantName = isSingleQualityHlsDash
+          ? `${args.input.name || 'ABR Stream'} (HLS)`
+          : `${quality.name} (HLS)`;
         variants.push({
-          name: `${quality.name} (HLS)`,
+          name: variantName,
           entryPoint: 'playlist.m3u8',
           mimeType: LongpointMimeType.M3U8,
           type: 'DERIVATIVE',
@@ -105,8 +112,12 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
         });
       }
       if (playlist.includes('DASH')) {
+        // Use input name when single quality, otherwise use quality name
+        const variantName = isSingleQualityHlsDash
+          ? `${args.input.name || 'ABR Stream'} (DASH)`
+          : `${quality.name} (DASH)`;
         variants.push({
-          name: `${quality.name} (DASH)`,
+          name: variantName,
           entryPoint: 'playlist.mpd',
           mimeType: LongpointMimeType.MPD,
           type: 'DERIVATIVE',
@@ -145,8 +156,13 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
     );
 
     // Calculate master variant count (masters come first in the variants array)
-    const masterCount =
-      (playlist.includes('HLS') ? 1 : 0) + (playlist.includes('DASH') ? 1 : 0);
+    // When HLS+DASH and only one quality, no master playlists are created
+    const isSingleQualityHlsDash =
+      playlist === 'HLS+DASH' && resolvedQualities.length === 1;
+    const masterCount = isSingleQualityHlsDash
+      ? 0
+      : (playlist.includes('HLS') ? 1 : 0) +
+        (playlist.includes('DASH') ? 1 : 0);
     const masterVariants = variants.slice(0, masterCount);
     const qualityVariants = variants.slice(masterCount);
 

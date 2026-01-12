@@ -26,7 +26,6 @@ const absInputSchema = {
   qualities: {
     label: 'Qualities',
     type: 'array',
-    minLength: 1,
     items: {
       type: 'object',
       properties: {
