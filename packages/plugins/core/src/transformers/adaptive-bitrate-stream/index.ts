@@ -47,7 +47,7 @@ export const absContribution = {
           {
             name: '1080P Stream',
             codec: 'h265',
-            bitrate: 2000,
+            bitrate: 4000,
             dimensions: {
               width: 1920,
               height: 1080,

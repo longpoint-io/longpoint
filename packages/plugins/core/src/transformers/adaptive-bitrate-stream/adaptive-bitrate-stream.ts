@@ -253,12 +253,15 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       }
 
       hasValidQuality = true;
+      const codec = q.codec || 'h264';
+      const bitrate =
+        q.bitrate ?? this.calculateBitrate(targetHeight, targetWidth, codec);
       resolved.push({
         name: q.name || this.generateQualityName(targetHeight, targetWidth),
         width: targetWidth,
         height: targetHeight,
-        bitrate: q.bitrate,
-        codec: q.codec || 'h264',
+        bitrate,
+        codec,
         isSource: false,
       });
     }
@@ -283,6 +286,58 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
     resolved.sort((a, b) => (b.height || 0) - (a.height || 0));
 
     return resolved;
+  }
+
+  /**
+   * Calculates an appropriate bitrate based on resolution and codec.
+   */
+  private calculateBitrate(
+    height?: number,
+    width?: number,
+    codec: string = 'h264'
+  ): number {
+    // Use height as primary indicator (more standard than width)
+    const resolution = height || width || 0;
+
+    // H.265 (HEVC) is ~25-50% more efficient than H.264
+    // VP9 is similar to H.265 in efficiency
+    // AV1 is ~30% more efficient than VP9
+    const codecMultiplier: Record<string, number> = {
+      h264: 1.0,
+      h265: 0.7, // ~30% reduction from H.264
+      hevc: 0.7, // alias for h265
+      vp9: 0.7,
+      av1: 0.5, // ~50% reduction from H.264
+    };
+
+    const multiplier = codecMultiplier[codec.toLowerCase()] || 1.0;
+
+    let baseBitrate: number;
+
+    if (resolution >= 2160) {
+      // 4K (2160p)
+      baseBitrate = 15000;
+    } else if (resolution >= 1440) {
+      // 1440p
+      baseBitrate = 8000;
+    } else if (resolution >= 1080) {
+      // 1080p
+      baseBitrate = 5000;
+    } else if (resolution >= 720) {
+      // 720p
+      baseBitrate = 2500;
+    } else if (resolution >= 480) {
+      // 480p
+      baseBitrate = 1000;
+    } else if (resolution >= 360) {
+      // 360p
+      baseBitrate = 600;
+    } else {
+      // 240p or lower
+      baseBitrate = 400;
+    }
+
+    return Math.round(baseBitrate * multiplier);
   }
 
   private generateQualityName(height?: number, width?: number): string {
