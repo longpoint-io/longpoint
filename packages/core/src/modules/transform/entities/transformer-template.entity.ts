@@ -81,17 +81,10 @@ export class TransformerTemplateEntity {
     });
 
     const variantMap = new Map<string, AssetVariantEntity>();
-    const indexToVariantId = new Map<number, string>();
 
     const validVariants = new Set(['DERIVATIVE', 'THUMBNAIL']);
-    let pendingVariants: Array<{
-      index: number;
-      variant: (typeof handshakeResult.variants)[0];
-    }> = [];
 
-    // Collect all valid variants
-    for (let i = 0; i < handshakeResult.variants.length; i++) {
-      const variant = handshakeResult.variants[i];
+    for (const variant of handshakeResult.variants) {
       if (!validVariants.has(variant.type)) {
         this.logger.warn(
           `Transformer template returned an invalid variant type: ${variant.type} - skipping`,
@@ -102,69 +95,6 @@ export class TransformerTemplateEntity {
         );
         continue;
       }
-      pendingVariants.push({ index: i, variant });
-    }
-
-    // Process variants in dependency order (loop until no progress)
-    let lastPendingCount = -1;
-    while (
-      pendingVariants.length > 0 &&
-      pendingVariants.length !== lastPendingCount
-    ) {
-      lastPendingCount = pendingVariants.length;
-      const stillPending: typeof pendingVariants = [];
-
-      for (const { index, variant } of pendingVariants) {
-        const parentIndexes =
-          variant.parentIndexes?.filter((pi) => pi !== index) ?? [];
-        if (parentIndexes.length !== variant.parentIndexes?.length) {
-          this.logger.warn(
-            `Variant at index ${index} has self-referential parentIndex - ignoring`
-          );
-        }
-
-        // Check if all parents are created
-        const allParentsExist = parentIndexes.every((pi) =>
-          indexToVariantId.has(pi)
-        );
-        if (!allParentsExist) {
-          stillPending.push({ index, variant });
-          continue;
-        }
-
-        // Resolve parent IDs, default to source variant if none specified
-        const parentIds =
-          parentIndexes.length > 0
-            ? parentIndexes
-                .map((pi) => indexToVariantId.get(pi))
-                .filter((id): id is string => id !== undefined)
-            : [sourceVariantId];
-
-        const variantEntity = await this.assetService.createAssetVariant({
-          assetId: sourceVariant.assetId,
-          type: variant.type,
-          displayName: variant.name ?? this.displayName,
-          mimeType: variant.mimeType,
-          entryPoint: variant.entryPoint,
-          parentIds,
-        });
-        variantMap.set(variantEntity.id, variantEntity);
-        indexToVariantId.set(index, variantEntity.id);
-      }
-
-      pendingVariants = stillPending;
-    }
-
-    // Handle remaining variants with unresolvable parents
-    for (const { index, variant } of pendingVariants) {
-      const unresolvedIndexes = variant.parentIndexes?.filter(
-        (pi) => !indexToVariantId.has(pi)
-      );
-      this.logger.warn(
-        `Variant at index ${index} references non-existent parents at indexes [${unresolvedIndexes?.join(
-          ', '
-        )}] - using source variant as parent`
-      );
 
       const variantEntity = await this.assetService.createAssetVariant({
         assetId: sourceVariant.assetId,
@@ -175,7 +105,6 @@ export class TransformerTemplateEntity {
         parentIds: [sourceVariantId],
       });
       variantMap.set(variantEntity.id, variantEntity);
-      indexToVariantId.set(index, variantEntity.id);
     }
 
     const variantsForTransformer = await Promise.all(

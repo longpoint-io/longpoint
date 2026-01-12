@@ -17,8 +17,8 @@ const metadataExtractorContribution = {
   ],
   templates: {
     basic: {
-      displayName: 'Basic',
-      description: 'Extract basic metadata from a media file',
+      displayName: 'Key Metadata',
+      description: 'Extract key metadata from a media file',
       input: {},
     },
   },

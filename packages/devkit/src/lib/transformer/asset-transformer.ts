@@ -25,10 +25,6 @@ export interface HandshakeResult {
     mimeType: string;
     entryPoint: string;
     type: 'DERIVATIVE' | 'THUMBNAIL';
-    /**
-     * The indexes of another variant in this array that should be the parent.
-     */
-    parentIndexes?: number[];
   }>;
 }
 

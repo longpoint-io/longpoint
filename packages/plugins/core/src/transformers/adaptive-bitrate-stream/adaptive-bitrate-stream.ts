@@ -75,9 +75,7 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
     const isSingleQualityHlsDash =
       playlist === 'HLS+DASH' && resolvedQualities.length === 1;
 
-    const masterIndexes: number[] = [];
     if (playlist.includes('HLS') && !isSingleQualityHlsDash) {
-      masterIndexes.push(variants.length);
       variants.push({
         name: `${args.input.name || 'ABR Stream'} (HLS Master)`,
         entryPoint: 'playlist.m3u8',
@@ -86,7 +84,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
       });
     }
     if (playlist.includes('DASH') && !isSingleQualityHlsDash) {
-      masterIndexes.push(variants.length);
       variants.push({
         name: `${args.input.name || 'ABR Stream'} (DASH Master)`,
         entryPoint: 'playlist.mpd',
@@ -106,9 +103,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
           entryPoint: 'playlist.m3u8',
           mimeType: LongpointMimeType.M3U8,
           type: 'DERIVATIVE',
-          parentIndexes: masterIndexes.filter((idx) => {
-            return variants[idx].mimeType === LongpointMimeType.M3U8;
-          }),
         });
       }
       if (playlist.includes('DASH')) {
@@ -121,9 +115,6 @@ export default class AdaptiveBitrateStream extends AssetTransformer {
           entryPoint: 'playlist.mpd',
           mimeType: LongpointMimeType.MPD,
           type: 'DERIVATIVE',
-          parentIndexes: masterIndexes.filter((idx) => {
-            return variants[idx].mimeType === LongpointMimeType.MPD;
-          }),
         });
       }
     }
